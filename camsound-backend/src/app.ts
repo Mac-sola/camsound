@@ -1,0 +1,104 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+
+// Routes
+import authRoutes from './routes/auth';
+import songsRoutes from './routes/songs';
+import uploadRoutes from './routes/upload';
+import artistsRoutes from './routes/artists';
+import playlistsRoutes from './routes/playlists';
+import favoritesRoutes from './routes/favorites';
+import followsRoutes from './routes/follows';
+import historyRoutes from './routes/history';
+import commentsRoutes from './routes/comments';
+import notificationsRoutes from './routes/notifications';
+import subscriptionsRoutes from './routes/subscriptions';
+import paymentsRoutes from './routes/payments';
+import withdrawalsRoutes from './routes/withdrawals';
+import royaltiesRoutes from './routes/royalties';
+import statsRoutes from './routes/stats';
+import adminRoutes from './routes/admin';
+
+// Middleware
+import { apiLimiter } from './middleware/rateLimiter';
+
+dotenv.config();
+
+const app = express();
+
+const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174',
+].filter(Boolean);
+
+// ── CORS ──────────────────────────────────────────────────────────────────────
+app.use(cors({
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) return callback(null, true);
+        if (process.env.NODE_ENV !== 'production' && /^https?:\/\/(localhost|127\.0\.0\.1):\d+$/.test(origin)) {
+            return callback(null, true);
+        }
+        return callback(new Error(`CORS blocked origin: ${origin}`));
+    },
+    credentials: true,
+}));
+
+// ── Body Parsers ──────────────────────────────────────────────────────────────
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+// ── Rate Limiting (general) ───────────────────────────────────────────────────
+app.use('/api', apiLimiter);
+
+// ── Database Connection ───────────────────────────────────────────────────────
+mongoose.connect(process.env.MONGODB_URI!)
+    .then(() => console.log('✅ MongoDB Connected'))
+    .catch(err => console.error('❌ MongoDB Error:', err));
+
+// ── API Routes ────────────────────────────────────────────────────────────────
+app.use('/api/auth', authRoutes);
+app.use('/api/songs', songsRoutes);
+// Nested comments under songs: /api/songs/:songId/comments
+app.use('/api/songs/:songId/comments', commentsRoutes);
+app.use('/api/upload', uploadRoutes);
+app.use('/api/artists', artistsRoutes);
+app.use('/api/playlists', playlistsRoutes);
+app.use('/api/favorites', favoritesRoutes);
+app.use('/api/follows', followsRoutes);
+app.use('/api/history', historyRoutes);
+app.use('/api/notifications', notificationsRoutes);
+app.use('/api/subscriptions', subscriptionsRoutes);
+app.use('/api/payments', paymentsRoutes);
+app.use('/api/withdrawals', withdrawalsRoutes);
+app.use('/api/royalties', royaltiesRoutes);
+app.use('/api/stats', statsRoutes);
+app.use('/api/admin', adminRoutes);
+
+// ── Health Check ──────────────────────────────────────────────────────────────
+app.get('/api/health', (_req, res) => {
+    res.json({ status: 'OK', message: 'CamSound API is running 🎵', version: '2.0.0' });
+});
+
+// ── 404 Handler ───────────────────────────────────────────────────────────────
+app.use((_req, res) => {
+    res.status(404).json({ success: false, message: 'Route not found' });
+});
+
+// ── Global Error Handler ──────────────────────────────────────────────────────
+app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Internal server error', error: err.message });
+});
+
+// ── Start Server ──────────────────────────────────────────────────────────────
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`🎵 CamSound API v2.0 running on http://localhost:${PORT}`);
+});
+
+export default app;

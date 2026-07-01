@@ -1,0 +1,24 @@
+# Node modules
+camsound-backend/node_modules/
+camsound-frontend/node_modules/
+
+# Environment files
+camsound-backend/.env
+camsound-frontend/.env
+
+# Build outputs
+camsound-backend/dist/
+camsound-frontend/dist/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# VS Code
+.vscode/
