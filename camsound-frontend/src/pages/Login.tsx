@@ -15,6 +15,17 @@ const Login: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    
+    // Validate input
+    if (!email.trim()) {
+      setError('Please enter your email');
+      return;
+    }
+    if (!password) {
+      setError('Please enter your password');
+      return;
+    }
+    
     setLoading(true);
     try {
       const res = await authService.login({ email: email.trim(), password });
@@ -24,9 +35,14 @@ const Login: React.FC = () => {
         if (u.type === 'admin') navigate('/admin');
         else if (u.type === 'artist') navigate('/artist');
         else navigate('/dashboard');
+      } else {
+        setError(res.data.message || 'Login failed');
       }
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Invalid email or password');
+      const errorMsg = err.response?.data?.message || 
+                      err.message || 
+                      'Invalid email or password';
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }

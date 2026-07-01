@@ -13,38 +13,85 @@ export const uploadSong = [
     upload.fields([{ name: 'song_file', maxCount: 1 }, { name: 'cover_art', maxCount: 1 }]),
     async (req: Request, res: Response) => {
         try {
+            // Check user type
             if (req.user?.type !== 'artist') {
-                return res.status(403).json({ success: false, message: 'Only artist accounts can upload songs' });
+                return res.status(403).json({ 
+                    success: false, 
+                    message: 'Only artist accounts can upload songs' 
+                });
             }
-            const artist = await Artist.findOne({ userId: req.user.id });
-            if (!artist) return res.status(404).json({ success: false, message: 'Artist profile not found' });
 
+            // Get artist profile
+            const artist = await Artist.findOne({ userId: req.user.id });
+            if (!artist) {
+                return res.status(404).json({ 
+                    success: false, 
+                    message: 'Artist profile not found' 
+                });
+            }
+
+            // Validate files
             const files = req.files as Record<string, Express.Multer.File[]>;
             if (!files?.song_file?.[0]) {
-                return res.status(400).json({ success: false, message: 'Song file is required' });
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Song file is required' 
+                });
             }
 
-            const { title, genre } = req.body;
-            if (!title || !genre) {
-                return res.status(400).json({ success: false, message: 'Title and genre are required' });
-            }
-
-            // Upload audio to Cloudinary
+            // Validate audio file type
             const audioFile = files.song_file[0];
+            if (!audioFile.mimetype.startsWith('audio/')) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Invalid file type. Please upload an audio file (MP3, WAV, etc.)' 
+                });
+            }
+
+            // Validate body fields
+            const { title, genre } = req.body;
+            if (!title || !title.trim()) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Track title is required' 
+                });
+            }
+            if (!genre) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Genre is required' 
+                });
+            }
+
+            // Upload audio to Cloudinary (or mock)
             const audioResult = await uploadAudio(audioFile.buffer, `song_${genId()}`);
-            const duration = audioResult.duration ? `${Math.floor(audioResult.duration / 60)}:${String(Math.floor(audioResult.duration % 60)).padStart(2, '0')}` : '0:00';
+            const duration = audioResult.duration 
+                ? `${Math.floor(audioResult.duration / 60)}:${String(Math.floor(audioResult.duration % 60)).padStart(2, '0')}`
+                : '3:00';
 
             // Upload cover art if provided
             let coverArtUrl: string | undefined;
             let coverArtId: string | undefined;
             if (files?.cover_art?.[0]) {
-                const imageResult = await uploadImage(files.cover_art[0].buffer, `cover_${genId()}`, 'camsound/artwork');
+                const coverFile = files.cover_art[0];
+                if (!coverFile.mimetype.startsWith('image/')) {
+                    return res.status(400).json({ 
+                        success: false, 
+                        message: 'Invalid cover art. Please upload an image file (PNG, JPG, etc.)' 
+                    });
+                }
+                const imageResult = await uploadImage(
+                    coverFile.buffer, 
+                    `cover_${genId()}`, 
+                    'camsound/artwork'
+                );
                 coverArtUrl = imageResult.secure_url;
                 coverArtId = imageResult.public_id;
             }
 
+            // Create song document
             const song = await Song.create({
-                title,
+                title: title.trim(),
                 artistId: artist._id,
                 genre,
                 duration,
@@ -55,11 +102,21 @@ export const uploadSong = [
                 status: 'active',
                 moderationStatus: 'pending',
             });
+
+            // Update artist song count
             await Artist.findByIdAndUpdate(artist._id, { $inc: { songsCount: 1 } });
 
-            res.status(201).json({ success: true, message: 'Song uploaded successfully', data: song });
+            res.status(201).json({ 
+                success: true, 
+                message: 'Song uploaded successfully and is pending moderation',
+                data: song 
+            });
         } catch (error: any) {
-            res.status(500).json({ success: false, message: error.message });
+            console.error('Upload error:', error);
+            res.status(500).json({ 
+                success: false, 
+                message: error.message || 'Upload failed. Please try again.' 
+            });
         }
     },
 ];

@@ -2,6 +2,7 @@ import axios from 'axios';
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
+  timeout: 30000, // 30 second timeout
 });
 
 // Add a request interceptor to inject the token
@@ -14,6 +15,34 @@ api.interceptors.request.use(
     return config;
   },
   (error) => Promise.reject(error)
+);
+
+// Add a response interceptor to handle auth errors and network issues
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    // Handle 401 - token invalid or expired
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+    
+    // Handle network errors gracefully
+    if (!error.response) {
+      if (error.code === 'ECONNABORTED') {
+        error.message = 'Request timeout - server not responding. Please try again.';
+      } else if (!window.navigator.onLine) {
+        error.message = 'No internet connection';
+      } else {
+        error.message = 'Network error - unable to reach server';
+      }
+    }
+    
+    return Promise.reject(error);
+  }
 );
 
 export default api;
@@ -31,7 +60,7 @@ export const authService = {
 export const songsService = {
   getSongs: (params?: any) => api.get('/api/songs', { params }),
   getSong: (id: string) => api.get(`/api/songs/${id}`),
-  createSong: (data: FormData) => api.post('/api/upload/song', data, { headers: { 'Content-Type': 'multipart/form-data' } }),
+  createSong: (data: FormData) => api.post('/api/upload/song', data),
   updateSong: (id: string, data: any) => api.put(`/api/songs/${id}`, data),
   deleteSong: (id: string) => api.delete(`/api/songs/${id}`),
   trackPlay: (id: string) => api.post(`/api/songs/${id}/play`),

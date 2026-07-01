@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Layout from '../components/Layout';
 import { statsService, songsService, artistsService, notificationsService, subscriptionsService, withdrawalsService } from '../services/api';
+import { useSearchParams } from 'react-router-dom';
 
 const ARTIST_NAV = [
   { label: 'Dashboard Overview', icon: 'fa-tachometer-alt', view: 'dashboard' },
@@ -14,6 +15,7 @@ const ARTIST_NAV = [
 ];
 
 const ArtistDashboard: React.FC = () => {
+  const [searchParams, setSearchParams] = useSearchParams();
   const [activeView, setActiveView] = useState('dashboard');
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -32,6 +34,14 @@ const ArtistDashboard: React.FC = () => {
   const [uploadError, setUploadError] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const coverRef = useRef<HTMLInputElement>(null);
+
+  // Initialize activeView from URL query parameter
+  useEffect(() => {
+    const tabParam = searchParams.get('tab');
+    if (tabParam) {
+      setActiveView(tabParam);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -58,25 +68,62 @@ const ArtistDashboard: React.FC = () => {
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!songFile) { setUploadError('Please select an audio file'); return; }
+    
+    // Validation
+    if (!title.trim()) {
+      setUploadError('Please enter a track title');
+      return;
+    }
+    if (!songFile) {
+      setUploadError('Please select an audio file');
+      return;
+    }
+    if (songFile.size > 50 * 1024 * 1024) {
+      setUploadError('Audio file must be less than 50MB');
+      return;
+    }
+    if (!songFile.type.startsWith('audio/')) {
+      setUploadError('Please select a valid audio file (MP3, WAV, etc.)');
+      return;
+    }
+    
     setUploading(true);
     setUploadError('');
     setUploadSuccess('');
+    
     const fd = new FormData();
-    fd.append('title', title);
+    fd.append('title', title.trim());
     fd.append('genre', genre);
     fd.append('song_file', songFile);
-    if (coverArt) fd.append('cover_art', coverArt);
+    if (coverArt) {
+      if (coverArt.type.startsWith('image/')) {
+        fd.append('cover_art', coverArt);
+      } else {
+        setUploadError('Cover art must be an image file');
+        setUploading(false);
+        return;
+      }
+    }
+    
     try {
       const res = await songsService.createSong(fd);
       if (res.data.success) {
         setUploadSuccess('✅ Track uploaded! It is now pending moderation.');
-        setTitle(''); setSongFile(null); setCoverArt(null);
+        setTitle('');
+        setSongFile(null);
+        setCoverArt(null);
         if (fileRef.current) fileRef.current.value = '';
         if (coverRef.current) coverRef.current.value = '';
+        // Clear success message after 5 seconds
+        setTimeout(() => setUploadSuccess(''), 5000);
+      } else {
+        setUploadError(res.data.message || 'Upload failed');
       }
     } catch (err: any) {
-      setUploadError(err.response?.data?.message || 'Upload failed. Please try again.');
+      const errorMsg = err.response?.data?.message ||
+                      err.message ||
+                      'Upload failed. Please try again.';
+      setUploadError(errorMsg);
     } finally {
       setUploading(false);
     }
@@ -239,7 +286,10 @@ const ArtistDashboard: React.FC = () => {
     <Layout
       navItems={ARTIST_NAV}
       activeView={activeView}
-      onNavClick={setActiveView}
+      onNavClick={(view) => {
+        setActiveView(view);
+        setSearchParams({ tab: view });
+      }}
     >
       {activeView === 'dashboard' && <DashOverview />}
       {activeView === 'music' && <UploadView />}

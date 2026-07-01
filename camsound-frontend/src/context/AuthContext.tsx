@@ -6,6 +6,7 @@ export interface User {
   name: string;
   email: string;
   type: string;
+  status?: string;
   avatar?: string;
 }
 
@@ -26,17 +27,53 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    if (token) {
-      // In a real app, we would fetch /api/auth/me here to validate token
-      // For now, we rely on stored state or just let the next API call fail if invalid
-      const storedUser = localStorage.getItem('user');
-      if (storedUser) {
-        setUser(JSON.parse(storedUser));
+    const validateToken = async () => {
+      if (token) {
+        try {
+          // Validate token with backend
+          const response = await fetch(
+            import.meta.env.VITE_API_URL || 'http://localhost:5000' + '/api/auth/me',
+            {
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              },
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            if (data.success && data.user) {
+              setUser(data.user);
+            }
+          } else if (response.status === 401) {
+            // Token invalid or expired, clear it
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            setToken(null);
+            setUser(null);
+          } else {
+            // Other error, keep user data in cache for offline access
+            const storedUser = localStorage.getItem('user');
+            if (storedUser) {
+              setUser(JSON.parse(storedUser));
+            }
+          }
+        } catch (_error) {
+          // Network error - use cached user data if available
+          const storedUser = localStorage.getItem('user');
+          if (storedUser) {
+            try {
+              setUser(JSON.parse(storedUser));
+            } catch {
+              setUser(null);
+            }
+          }
+        }
       }
-    } else {
-      // Token removed
-    }
-    setIsLoading(false);
+      setIsLoading(false);
+    };
+
+    validateToken();
   }, [token]);
 
   const login = (newToken: string, newUser: User) => {
