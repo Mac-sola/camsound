@@ -1,7 +1,8 @@
-import axios from 'axios';
+import axios, { type AxiosRequestConfig } from 'axios';
 
+const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5000',
+  baseURL: baseUrl,
   timeout: 30000, // 30 second timeout
 });
 
@@ -60,7 +61,7 @@ export const authService = {
 export const songsService = {
   getSongs: (params?: any) => api.get('/api/songs', { params }),
   getSong: (id: string) => api.get(`/api/songs/${id}`),
-  createSong: (data: FormData) => api.post('/api/upload/song', data),
+  createSong: (data: FormData, config?: AxiosRequestConfig) => api.post('/api/upload/song', data, config),
   updateSong: (id: string, data: any) => api.put(`/api/songs/${id}`, data),
   deleteSong: (id: string) => api.delete(`/api/songs/${id}`),
   trackPlay: (id: string) => api.post(`/api/songs/${id}/play`),
@@ -133,6 +134,49 @@ export const adminService = {
   updateSettings: (data: any) => api.put('/api/admin/settings', data),
 };
 
+// --- Categories ---
+export const categoriesService = {
+  getCategories: () => api.get('/api/categories'),
+  getCategory: (id: string) => api.get(`/api/categories/${id}`),
+  createCategory: (data: any) => api.post('/api/categories', data),
+  updateCategory: (id: string, data: any) => api.put(`/api/categories/${id}`, data),
+  deleteCategory: (id: string) => api.delete(`/api/categories/${id}`),
+};
+
+// --- Featured Content ---
+export const featuredService = {
+  getFeatured: () => api.get('/api/featured'),
+  createFeatured: (data: any) => api.post('/api/featured', data),
+  updateFeatured: (id: string, data: any) => api.put(`/api/featured/${id}`, data),
+  deleteFeatured: (id: string) => api.delete(`/api/featured/${id}`),
+};
+
+// --- Ad Revenue ---
+export const adRevenueService = {
+  getAdRevenue: () => api.get('/api/ad-revenue'),
+  createAdRevenue: (data: any) => api.post('/api/ad-revenue', data),
+  updateAdRevenue: (id: string, data: any) => api.put(`/api/ad-revenue/${id}`, data),
+  deleteAdRevenue: (id: string) => api.delete(`/api/ad-revenue/${id}`),
+};
+
+// --- Notification Settings ---
+export const notificationSettingsService = {
+  getSettings: () => api.get('/api/notification-settings'),
+  updateSettings: (data: any) => api.put('/api/notification-settings', data),
+};
+
+// --- Admin Logs ---
+export const adminLogsService = {
+  getLogs: () => api.get('/api/admin-logs'),
+  createLog: (data: any) => api.post('/api/admin-logs', data),
+};
+
+// --- Reports ---
+export const reportsService = {
+  getMyReports: () => api.get('/api/reports'),
+  submitReport: (data: any) => api.post('/api/reports', data),
+};
+
 // --- Subscriptions ---
 export const subscriptionsService = {
   getPlans: () => api.get('/api/subscriptions/plans'),
@@ -145,6 +189,7 @@ export const subscriptionsService = {
 export const paymentsService = {
   getPayments: () => api.get('/api/payments'),
   createPayment: (data: any) => api.post('/api/payments', data),
+  updatePaymentStatus: (id: string, data: any) => api.put(`/api/payments/${id}/status`, data),
 };
 
 // --- Withdrawals ---

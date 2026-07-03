@@ -20,6 +20,12 @@ import withdrawalsRoutes from './routes/withdrawals';
 import royaltiesRoutes from './routes/royalties';
 import statsRoutes from './routes/stats';
 import adminRoutes from './routes/admin';
+import categoriesRoutes from './routes/categories';
+import featuredRoutes from './routes/featured';
+import adRevenueRoutes from './routes/adrevenue';
+import notificationSettingsRoutes from './routes/notificationSettings';
+import adminLogsRoutes from './routes/adminLogs';
+import reportsRoutes from './routes/reports';
 
 // Middleware
 import { apiLimiter } from './middleware/rateLimiter';
@@ -72,10 +78,16 @@ app.use('/api/favorites', favoritesRoutes);
 app.use('/api/follows', followsRoutes);
 app.use('/api/history', historyRoutes);
 app.use('/api/notifications', notificationsRoutes);
+app.use('/api/categories', categoriesRoutes);
+app.use('/api/featured', featuredRoutes);
 app.use('/api/subscriptions', subscriptionsRoutes);
 app.use('/api/payments', paymentsRoutes);
 app.use('/api/withdrawals', withdrawalsRoutes);
 app.use('/api/royalties', royaltiesRoutes);
+app.use('/api/ad-revenue', adRevenueRoutes);
+app.use('/api/notification-settings', notificationSettingsRoutes);
+app.use('/api/admin-logs', adminLogsRoutes);
+app.use('/api/reports', reportsRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/admin', adminRoutes);
 

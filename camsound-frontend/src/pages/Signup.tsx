@@ -9,6 +9,7 @@ const Signup: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [country, setCountry] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
@@ -29,7 +30,7 @@ const Signup: React.FC = () => {
     setError('');
     setLoading(true);
     try {
-      const res = await authService.signup({ name: name.trim(), email: email.trim(), password, type });
+      const res = await authService.signup({ name: name.trim(), email: email.trim(), password, type, country: country.trim() });
       if (res.data.success) {
         login(res.data.token, res.data.user);
         if (type === 'artist') navigate('/artist');
@@ -135,6 +136,20 @@ const Signup: React.FC = () => {
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
+                  />
+                </div>
+              </div>
+
+              <div className="auth-form-group" style={{ gridColumn: '1/-1' }}>
+                <label className="auth-label">Country</label>
+                <div className="input-icon-wrap">
+                  <i className="fas fa-globe" />
+                  <input
+                    type="text"
+                    className="auth-input"
+                    placeholder="Country"
+                    value={country}
+                    onChange={e => setCountry(e.target.value)}
                   />
                 </div>
               </div>

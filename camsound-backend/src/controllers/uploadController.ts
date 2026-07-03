@@ -41,7 +41,13 @@ export const uploadSong = [
 
             // Validate audio file type
             const audioFile = files.song_file[0];
-            if (!audioFile.mimetype.startsWith('audio/')) {
+            const acceptedAudioTypes = ['audio/', 'application/octet-stream'];
+            const audioExtensions = ['.mp3', '.wav', '.ogg', '.m4a', '.flac', '.aac'];
+            const audioExt = audioFile.originalname ? audioFile.originalname.toLowerCase().split('.').pop() : '';
+            const isValidAudio = acceptedAudioTypes.some((type) => audioFile.mimetype.startsWith(type))
+                || (audioFile.mimetype === 'application/octet-stream' && audioExtensions.includes(`.${audioExt}`));
+
+            if (!isValidAudio) {
                 return res.status(400).json({ 
                     success: false, 
                     message: 'Invalid file type. Please upload an audio file (MP3, WAV, etc.)' 

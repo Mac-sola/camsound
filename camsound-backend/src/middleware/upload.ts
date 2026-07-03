@@ -1,4 +1,5 @@
 import multer from 'multer';
+import path from 'path';
 import { Request } from 'express';
 
 // Store files in memory so we can stream them to Cloudinary
@@ -17,6 +18,9 @@ const fileFilter = (
         'audio/x-wav',
         'audio/ogg',
         'application/ogg',
+        'audio/aac',
+        'audio/flac',
+        'application/octet-stream',
         // Images
         'image/jpeg',
         'image/png',
@@ -24,7 +28,11 @@ const fileFilter = (
         'image/webp',
     ];
 
-    if (allowedMimeTypes.includes(file.mimetype)) {
+    const allowedAudioExtensions = ['.mp3', '.wav', '.ogg', '.m4a', '.flac', '.aac'];
+    const extension = path.extname(file.originalname).toLowerCase();
+    const isFallbackAudio = file.mimetype === 'application/octet-stream' && allowedAudioExtensions.includes(extension);
+
+    if (allowedMimeTypes.includes(file.mimetype) || isFallbackAudio) {
         cb(null, true);
     } else {
         cb(new Error(`Unsupported file type: ${file.mimetype}`));

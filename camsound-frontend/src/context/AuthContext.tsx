@@ -8,12 +8,17 @@ export interface User {
   type: string;
   status?: string;
   avatar?: string;
+  country?: string;
+  subscriptionStatus?: string;
+  phone?: string;
+  bio?: string;
 }
 
 interface AuthContextType {
   user: User | null;
   token: string | null;
   login: (token: string, user: User) => void;
+  updateUser: (user: User) => void;
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
@@ -25,20 +30,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
   const [isLoading, setIsLoading] = useState(true);
+  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   useEffect(() => {
     const validateToken = async () => {
       if (token) {
         try {
           // Validate token with backend
-          const response = await fetch(
-            import.meta.env.VITE_API_URL || 'http://localhost:5000' + '/api/auth/me',
-            {
-              headers: {
-                'Authorization': `Bearer ${token}`,
-              },
-            }
-          );
+          const response = await fetch(`${baseUrl}/api/auth/me`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+            },
+          });
 
           if (response.ok) {
             const data = await response.json();
@@ -83,6 +86,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(newUser);
   };
 
+  const updateUser = (updatedUser: User) => {
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+    setUser(updatedUser);
+  };
+
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -91,7 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, logout, isAuthenticated: !!token, isLoading }}>
+    <AuthContext.Provider value={{ user, token, login, updateUser, logout, isAuthenticated: !!token, isLoading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -9,9 +9,10 @@ const generateToken = (id: string, email: string, type: string) => {
 
 export const signup = async (req: Request, res: Response) => {
     try {
-        const { name, email, password, phone, type = 'fan' } = req.body;
+        const { name, email, password, phone, country, type = 'fan' } = req.body;
         const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
         const normalizedName = typeof name === 'string' ? name.trim() : name;
+        const normalizedCountry = typeof country === 'string' ? country.trim() : undefined;
         if (!name || !email || !password) {
             return res.status(400).json({ success: false, message: 'Name, email and password are required' });
         }
@@ -26,7 +27,16 @@ export const signup = async (req: Request, res: Response) => {
         if (existing) {
             return res.status(400).json({ success: false, message: 'Email already registered' });
         }
-        const user = await User.create({ name: normalizedName, email: normalizedEmail, password, phone, type });
+        const subscriptionStatus = type === 'artist' ? 'artist' : 'free';
+        const user = await User.create({
+            name: normalizedName,
+            email: normalizedEmail,
+            password,
+            phone,
+            country: normalizedCountry,
+            type,
+            subscriptionStatus,
+        });
 
         // Auto-create artist profile if signing up as artist
         if (type === 'artist') {
@@ -38,7 +48,17 @@ export const signup = async (req: Request, res: Response) => {
             success: true,
             message: 'Signup successful',
             token,
-            user: { _id: user._id, name: user.name, email: user.email, type: user.type, status: user.status },
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                type: user.type,
+                status: user.status,
+                country: user.country,
+                subscriptionStatus: user.subscriptionStatus,
+                avatar: user.avatar,
+                bio: user.bio,
+            },
         });
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
@@ -71,7 +91,17 @@ export const login = async (req: Request, res: Response) => {
             success: true,
             message: 'Login successful',
             token,
-            user: { _id: user._id, name: user.name, email: user.email, type: user.type, status: user.status, avatar: user.avatar },
+            user: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                type: user.type,
+                status: user.status,
+                country: user.country,
+                subscriptionStatus: user.subscriptionStatus,
+                avatar: user.avatar,
+                bio: user.bio,
+            },
         });
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
@@ -90,10 +120,10 @@ export const getProfile = async (req: Request, res: Response) => {
 
 export const updateProfile = async (req: Request, res: Response) => {
     try {
-        const { name, phone, bio } = req.body;
+        const { name, phone, bio, country } = req.body;
         const user = await User.findByIdAndUpdate(
             req.user?.id,
-            { name, phone, bio },
+            { name, phone, bio, country },
             { new: true, runValidators: true }
         ).select('-password');
         res.json({ success: true, message: 'Profile updated', user });

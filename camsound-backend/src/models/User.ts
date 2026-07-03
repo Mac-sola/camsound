@@ -5,11 +5,13 @@ export interface IUser extends Document {
     name: string;
     email: string;
     phone?: string;
+    country?: string;
     password: string;
     firstName?: string;
     lastName?: string;
     type: 'fan' | 'artist' | 'admin';
     status: 'active' | 'pending' | 'blocked';
+    subscriptionStatus: 'free' | 'premium' | 'artist';
     accountNotes?: string;
     avatar?: string;
     bio?: string;
@@ -22,11 +24,13 @@ const UserSchema = new Schema<IUser>(
         name: { type: String, required: true, trim: true },
         email: { type: String, required: true, unique: true, lowercase: true, trim: true },
         phone: { type: String, trim: true },
+        country: { type: String, trim: true },
         password: { type: String, required: true, minlength: 6 },
         firstName: { type: String, trim: true },
         lastName: { type: String, trim: true },
         type: { type: String, enum: ['fan', 'artist', 'admin'], default: 'fan' },
         status: { type: String, enum: ['active', 'pending', 'blocked'], default: 'active' },
+        subscriptionStatus: { type: String, enum: ['free', 'premium', 'artist'], default: 'free' },
         accountNotes: { type: String, default: '' },
         avatar: { type: String, default: '' },
         bio: { type: String, default: '' },

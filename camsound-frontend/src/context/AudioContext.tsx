@@ -64,6 +64,13 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     };
   }, []);
 
+  const getAudioSource = (url: string) => {
+    if (url.includes('mock-cdn.example.com/audio/')) {
+      return 'https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3';
+    }
+    return url;
+  };
+
   const playSong = async (song: Song) => {
     if (audioRef.current) {
       if (currentSong?._id === song._id) {
@@ -72,7 +79,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
       
       setCurrentSong(song);
-      audioRef.current.src = song.filePath;
+      audioRef.current.src = getAudioSource(song.filePath);
       audioRef.current.volume = isMuted ? 0 : volume;
       audioRef.current.play();
       setIsPlaying(true);

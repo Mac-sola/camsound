@@ -1,6 +1,8 @@
 import { Request, Response } from 'express';
 import Payment from '../models/Payment';
 
+const generateTransactionId = () => `TXN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+
 export const getPayments = async (req: Request, res: Response) => {
     try {
         const isAdmin = req.user?.type === 'admin';
@@ -22,8 +24,8 @@ export const createPayment = async (req: Request, res: Response) => {
             subscriptionId,
             amount,
             currency: currency || 'XAF',
-            paymentMethod,
-            transactionId,
+            paymentMethod: paymentMethod || 'MoMo',
+            transactionId: transactionId || generateTransactionId(),
             status: status || 'pending',
         });
         res.status(201).json({ success: true, data: payment });

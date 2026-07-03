@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { useAudio } from '../context/AudioContext';
-import { songsService, notificationsService, favoritesService, playlistsService, historyService, followsService, authService } from '../services/api';
+import { songsService, notificationsService, favoritesService, playlistsService, historyService, followsService, authService, featuredService, notificationSettingsService, categoriesService } from '../services/api';
 
 const FAN_NAV = [
   { section: 'Discover' },
@@ -24,7 +24,7 @@ const FAN_NAV = [
 const GENRES = ['Makossa', 'Afrobeat', 'Bikutsi', 'Assiko', 'Ndombolo', 'Hip Hop', 'R&B', 'Zouk'];
 
 const Dashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, updateUser } = useAuth();
   const { playSong } = useAudio();
   const [activeView, setActiveView] = useState('discover');
   const [searchValue, setSearchValue] = useState('');
@@ -33,18 +33,82 @@ const Dashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [activeGenre, setActiveGenre] = useState('');
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [featured, setFeatured] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>(GENRES);
+  const [notifSettings, setNotifSettings] = useState<any>(null);
   const [favorites, setFavorites] = useState<any[]>([]);
   const [playlists, setPlaylists] = useState<any[]>([]);
   const [history, setHistory] = useState<any[]>([]);
   const [following, setFollowing] = useState<any[]>([]);
   const [profile, setProfile] = useState<any>(null);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState({ name: '', phone: '', country: '', bio: '' });
+  const [profileSaving, setProfileSaving] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
 
   const fetchFavorites = async () => { try { const res = await favoritesService.getFavorites(); if (res.data.success) setFavorites(res.data.data); } catch (_) {} };
   const fetchPlaylists = async () => { try { const res = await playlistsService.getPlaylists(); if (res.data.success) setPlaylists(res.data.data); } catch (_) {} };
   const fetchHistory = async () => { try { const res = await historyService.getHistory(); if (res.data.success) setHistory(res.data.data); } catch (_) {} };
   const fetchFollowing = async () => { try { const res = await followsService.getFollowing(); if (res.data.success) setFollowing(res.data.data); } catch (_) {} };
-  const fetchProfile = async () => { try { const res = await authService.getProfile(); if (res.data.success) setProfile(res.data.data); } catch (_) {} };
+  const fetchProfile = async () => {
+    try {
+      const res = await authService.getProfile();
+      if (res.data.success) setProfile(res.data.data);
+    } catch (_) {
+    }
+  };
+
+  useEffect(() => {
+    if (profile) {
+      setProfileForm({
+        name: profile.name || '',
+        phone: profile.phone || '',
+        country: profile.country || '',
+        bio: profile.bio || '',
+      });
+    }
+  }, [profile]);
+
+  const handleProfileFormChange = (field: string, value: string) => {
+    setProfileForm(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleSaveProfile = async () => {
+    setProfileSaving(true);
+    try {
+      const res = await authService.updateProfile(profileForm);
+      if (res.data.success) {
+        const updatedUser = res.data.user;
+        setProfile(updatedUser);
+        if (user) {
+          updateUser({
+            ...user,
+            name: updatedUser.name,
+            country: updatedUser.country,
+            avatar: updatedUser.avatar,
+            bio: updatedUser.bio,
+          });
+        }
+        setIsEditingProfile(false);
+      }
+    } catch (error) {
+      // Leave the form open so the user can retry
+    } finally {
+      setProfileSaving(false);
+    }
+  };
+
+  const handleCancelProfileEdit = () => {
+    if (profile) {
+      setProfileForm({
+        name: profile.name || '',
+        phone: profile.phone || '',
+        country: profile.country || '',
+        bio: profile.bio || '',
+      });
+    }
+    setIsEditingProfile(false);
+  };
 
   const fetchNotifications = async () => {
     try {
@@ -72,6 +136,21 @@ const Dashboard: React.FC = () => {
     };
     fetchSongs();
     fetchNotifications();
+    // fetch featured
+    (async () => {
+      try {
+        const r = await featuredService.getFeatured();
+        if (r.data.success) setFeatured(r.data.data);
+      } catch (_) {}
+      try {
+        const c = await categoriesService.getCategories();
+        if (c.data.success) setCategories(c.data.data.map((x: any) => x.name));
+      } catch (_) {}
+      try {
+        const s = await notificationSettingsService.getSettings();
+        if (s.data.success) setNotifSettings(s.data.data);
+      } catch (_) {}
+    })();
   }, []);
 
   useEffect(() => {
@@ -193,7 +272,7 @@ const Dashboard: React.FC = () => {
               <h2>🎵 Browse by Genre</h2>
             </div>
             <div className="genre-chips">
-              {GENRES.map(g => (
+              {categories.map(g => (
                 <button
                   key={g}
                   className={`genre-chip ${activeGenre === g ? 'active' : ''}`}
@@ -260,13 +339,29 @@ const Dashboard: React.FC = () => {
         </div>
       )}
 
+      {/* Featured Section */}
+      {featured.length > 0 && (
+        <div className="section-card" style={{ marginTop: 20 }}>
+          <div className="section-header"><h2>Featured</h2></div>
+          <div style={{ display: 'flex', gap: 12, overflowX: 'auto', padding: '12px 6px' }}>
+            {featured.map(f => (
+              <div key={f._id} style={{ minWidth: 240, background: 'var(--bg-tertiary)', borderRadius: 12, padding: 12 }}>
+                {f.image ? <img src={f.image} style={{ width: '100%', height: 130, objectFit: 'cover', borderRadius: 8 }} /> : <div style={{ height: 130, background: 'var(--bg-secondary)', borderRadius: 8 }} />}
+                <h4 style={{ margin: '8px 0 0' }}>{f.title}</h4>
+                <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{f.description}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Genres View */}
       {activeView === 'genres' && (
         <div>
           <div className="section-card">
             <div className="section-header"><h2>Music Genres</h2></div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 16 }}>
-              {GENRES.map((g, i) => {
+              {categories.map((g, i) => {
                 const icons = ['fa-music','fa-drum','fa-guitar','fa-compact-disc','fa-headphones','fa-microphone','fa-record-vinyl','fa-itunes-note'];
                 return (
                   <div
@@ -539,19 +634,86 @@ const Dashboard: React.FC = () => {
               {profile.name.charAt(0)}
             </div>
             <div style={{ flex: 1 }}>
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 4 }}>Full Name</label>
-                <div style={{ fontSize: '1.2rem', fontWeight: 600 }}>{profile.name}</div>
-              </div>
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 4 }}>Email</label>
-                <div style={{ fontSize: '1rem' }}>{profile.email}</div>
-              </div>
-              <div style={{ marginBottom: 16 }}>
-                <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 4 }}>Member Since</label>
-                <div style={{ fontSize: '1rem' }}>{new Date(profile.createdAt).toLocaleDateString()}</div>
-              </div>
-              <button className="btn-camsound">Edit Profile</button>
+              {isEditingProfile ? (
+                <div style={{ display: 'grid', gap: 16 }}>
+                  <div>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 4 }}>Full Name</label>
+                    <input
+                      type="text"
+                      className="search-input-db"
+                      value={profileForm.name}
+                      onChange={e => handleProfileFormChange('name', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 4 }}>Phone</label>
+                    <input
+                      type="text"
+                      className="search-input-db"
+                      value={profileForm.phone}
+                      onChange={e => handleProfileFormChange('phone', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 4 }}>Country</label>
+                    <input
+                      type="text"
+                      className="search-input-db"
+                      value={profileForm.country}
+                      onChange={e => handleProfileFormChange('country', e.target.value)}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 4 }}>Bio</label>
+                    <textarea
+                      rows={4}
+                      className="search-input-db"
+                      value={profileForm.bio}
+                      onChange={e => handleProfileFormChange('bio', e.target.value)}
+                    />
+                  </div>
+                  <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+                    <button
+                      className="btn-camsound-yellow"
+                      onClick={handleSaveProfile}
+                      disabled={profileSaving}
+                    >
+                      {profileSaving ? 'Saving...' : 'Save Changes'}
+                    </button>
+                    <button className="btn-camsound-outline" onClick={handleCancelProfileEdit} disabled={profileSaving}>
+                      Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 4 }}>Full Name</label>
+                    <div style={{ fontSize: '1.2rem', fontWeight: 600 }}>{profile.name}</div>
+                  </div>
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 4 }}>Email</label>
+                    <div style={{ fontSize: '1rem' }}>{profile.email}</div>
+                  </div>
+                  {profile.country && (
+                    <div style={{ marginBottom: 16 }}>
+                      <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 4 }}>Country</label>
+                      <div style={{ fontSize: '1rem' }}>{profile.country}</div>
+                    </div>
+                  )}
+                  {profile.subscriptionStatus && (
+                    <div style={{ marginBottom: 16 }}>
+                      <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 4 }}>Plan</label>
+                      <div style={{ fontSize: '1rem', textTransform: 'capitalize' }}>{profile.subscriptionStatus}</div>
+                    </div>
+                  )}
+                  <div style={{ marginBottom: 16 }}>
+                    <label style={{ display: 'block', color: 'var(--text-muted)', fontSize: '0.8rem', marginBottom: 4 }}>Member Since</label>
+                    <div style={{ fontSize: '1rem' }}>{new Date(profile.createdAt).toLocaleDateString()}</div>
+                  </div>
+                  <button className="btn-camsound" onClick={() => setIsEditingProfile(true)}>Edit Profile</button>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -567,9 +729,20 @@ const Dashboard: React.FC = () => {
             <div>
               <h4 style={{ marginBottom: 12 }}>Notifications</h4>
               <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer' }}>
-                <input type="checkbox" defaultChecked />
+                <input type="checkbox" checked={notifSettings?.emailNotifications ?? true} onChange={e => setNotifSettings((prev: any) => ({ ...prev, emailNotifications: e.target.checked }))} />
                 <span>Email me about new releases from artists I follow</span>
               </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', marginTop: 8 }}>
+                <input type="checkbox" checked={notifSettings?.smsNotifications ?? false} onChange={e => setNotifSettings((prev: any) => ({ ...prev, smsNotifications: e.target.checked }))} />
+                <span>SMS notifications</span>
+              </label>
+              <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', marginTop: 8 }}>
+                <input type="checkbox" checked={notifSettings?.pushNotifications ?? true} onChange={e => setNotifSettings((prev: any) => ({ ...prev, pushNotifications: e.target.checked }))} />
+                <span>Push notifications</span>
+              </label>
+              <div style={{ marginTop: 12 }}>
+                <button className="btn-camsound-yellow" onClick={async () => { try { await notificationSettingsService.updateSettings(notifSettings); alert('Notification settings saved'); } catch (err) { alert('Unable to save settings'); } }}>Save Notification Settings</button>
+              </div>
             </div>
             <div>
               <h4 style={{ marginBottom: 12 }}>Playback</h4>
