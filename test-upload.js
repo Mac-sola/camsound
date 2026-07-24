@@ -16,7 +16,7 @@ async function test() {
       password: testPassword
     });
     
-    const token = loginRes.data.data.token;
+    const token = loginRes.data.token;
     console.log('✅ Login successful, token:', token.substring(0, 20) + '...');
 
     // Create a minimal WAV file

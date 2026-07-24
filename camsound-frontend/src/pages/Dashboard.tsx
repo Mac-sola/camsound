@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
 import { useAudio } from '../context/AudioContext';
-import { songsService, notificationsService, favoritesService, playlistsService, historyService, followsService, authService, featuredService, notificationSettingsService, categoriesService } from '../services/api';
+import { songsService, notificationsService, favoritesService, playlistsService, historyService, followsService, authService, featuredService, notificationSettingsService, categoriesService, commentsService, artistsService } from '../services/api';
 
 const FAN_NAV = [
   { section: 'Discover' },
@@ -45,6 +45,19 @@ const Dashboard: React.FC = () => {
   const [profileForm, setProfileForm] = useState({ name: '', phone: '', country: '', bio: '' });
   const [profileSaving, setProfileSaving] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+
+  // New states for Song Detail, Artist Detail, Community
+  const [selectedSong, setSelectedSong] = useState<any>(null);
+  const [songComments, setSongComments] = useState<any[]>([]);
+  const [commentText, setCommentText] = useState('');
+  
+  const [selectedArtist, setSelectedArtist] = useState<any>(null);
+  const [artistStats, setArtistStats] = useState<any>(null);
+  
+  const [communityPosts, setCommunityPosts] = useState<any[]>([]);
+  const [communityTab, setCommunityTab] = useState('all');
+  const [composerSongId, setComposerSongId] = useState('');
+  const [composerText, setComposerText] = useState('');
 
   const fetchFavorites = async () => { try { const res = await favoritesService.getFavorites(); if (res.data.success) setFavorites(res.data.data); } catch (_) {} };
   const fetchPlaylists = async () => { try { const res = await playlistsService.getPlaylists(); if (res.data.success) setPlaylists(res.data.data); } catch (_) {} };
@@ -160,7 +173,53 @@ const Dashboard: React.FC = () => {
     else if (activeView === 'history') fetchHistory();
     else if (activeView === 'following') fetchFollowing();
     else if (activeView === 'profile') fetchProfile();
+    else if (activeView === 'community') fetchCommunityPosts();
   }, [activeView]);
+
+  const openSongDetails = async (song: any) => {
+    setSelectedSong(song);
+    setActiveView('song-detail');
+    try {
+      const res = await commentsService.getSongComments(song._id);
+      if (res.data.success) setSongComments(res.data.data);
+    } catch (_) {}
+  };
+
+  const handlePostComment = async () => {
+    if (!commentText.trim() || !selectedSong) return;
+    try {
+      await commentsService.postComment(selectedSong._id, commentText);
+      setCommentText('');
+      const res = await commentsService.getSongComments(selectedSong._id);
+      if (res.data.success) setSongComments(res.data.data);
+    } catch (_) {}
+  };
+
+  const openArtistDetails = async (artist: any) => {
+    setSelectedArtist(artist);
+    setActiveView('artist-detail');
+    try {
+      const res = await artistsService.getArtistStats(artist._id || artist.id);
+      if (res.data.success) setArtistStats(res.data.data);
+    } catch (_) {}
+  };
+
+  const fetchCommunityPosts = async () => {
+    try {
+      const res = await commentsService.getRecentActivity();
+      if (res.data.success) setCommunityPosts(res.data.data);
+    } catch (_) {}
+  };
+
+  const handleCommunityPost = async () => {
+    if (!composerText.trim() || !composerSongId) return;
+    try {
+      await commentsService.postComment(composerSongId, composerText);
+      setComposerText('');
+      setComposerSongId('');
+      fetchCommunityPosts();
+    } catch (_) {}
+  };
 
   const filteredSongs = allSongs.filter(s => {
     const q = searchValue.toLowerCase();
@@ -168,8 +227,8 @@ const Dashboard: React.FC = () => {
   });
 
   const SongCard = ({ song }: { song: any }) => (
-    <div className="music-card" onClick={() => playSong(song)}>
-      <div className="music-card-cover">
+    <div className="music-card">
+      <div className="music-card-cover" onClick={() => playSong(song)}>
         {song.coverArt
           ? <img src={song.coverArt} alt={song.title} />
           : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-green-section)' }}>
@@ -179,9 +238,16 @@ const Dashboard: React.FC = () => {
           <button className="play-circle-btn"><i className="fas fa-play" /></button>
         </div>
       </div>
-      <div className="music-card-info">
-        <div className="music-card-title">{song.title}</div>
-        <div className="music-card-artist">{song.artistId?.name || 'Unknown Artist'}</div>
+      <div className="music-card-info" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div>
+          <div className="music-card-title">{song.title}</div>
+          <div className="music-card-artist" onClick={(e) => { e.stopPropagation(); openArtistDetails(song.artistId); }} style={{ cursor: 'pointer' }}>
+            {song.artistId?.name || 'Unknown Artist'}
+          </div>
+        </div>
+        <button onClick={() => openSongDetails(song)} className="btn-camsound-outline" style={{ padding: '4px 8px', fontSize: '0.75rem', borderRadius: 4 }}>
+          <i className="fas fa-info-circle" />
+        </button>
       </div>
     </div>
   );
@@ -204,6 +270,8 @@ const Dashboard: React.FC = () => {
       searchValue={searchValue}
       onSearchChange={setSearchValue}
       notifCount={unreadCount}
+      totalPlays={history.length}
+      totalLikes={favorites.length}
     >
       {/* Discover View */}
       {activeView === 'discover' && (
@@ -215,7 +283,7 @@ const Dashboard: React.FC = () => {
               <p>Discover the best of Cameroonian music — from traditional rhythms to modern beats.</p>
               <div className="hero-stats">
                 <div>
-                  <span className="hero-stat-value">0</span>
+                  <span className="hero-stat-value">{history.length}</span>
                   <span className="hero-stat-label">Plays Today</span>
                 </div>
                 <div>
@@ -385,51 +453,136 @@ const Dashboard: React.FC = () => {
       {/* Community View */}
       {activeView === 'community' && (
         <div>
-          <div style={{ background: 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))', borderRadius: 16, padding: 32, marginBottom: 24 }}>
-            <h1 style={{ fontSize: '1.8rem', marginBottom: 8 }}>🌐 Community Hub</h1>
-            <p style={{ color: 'rgba(255,255,255,0.75)', marginBottom: 0 }}>Connect with artists and fans across Cameroon. Share your love for music.</p>
+          {/* Hero Banner */}
+          <div style={{ background: 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))', borderRadius: 16, padding: '32px 40px', marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', right: -60, top: -60, width: 250, height: 250, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', zIndex: 0 }} />
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              <h1 style={{ fontSize: '1.8rem', marginBottom: 8, margin: '0 0 8px 0' }}>🌐 Community Hub</h1>
+              <p style={{ color: 'rgba(255,255,255,0.75)', marginBottom: 0 }}>Connect with artists and fans across Cameroon. Share your love for music.</p>
+            </div>
           </div>
 
-          <div className="community-composer">
+          {/* Post Composer */}
+          <div className="community-composer" style={{ marginBottom: 24 }}>
             <div className="composer-avatar">{user?.name?.charAt(0) ?? '?'}</div>
-            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <select
+                className="search-input-db"
+                value={composerSongId}
+                onChange={e => setComposerSongId(e.target.value)}
+                style={{ width: '100%', padding: '8px 12px', fontSize: '0.9rem' }}
+              >
+                <option value="">🎵 Select a track to discuss (required)</option>
+                {allSongs.map(s => (
+                  <option key={s._id} value={s._id}>{s.title} — {s.artistId?.name || 'Unknown'}</option>
+                ))}
+              </select>
               <textarea
                 className="composer-input"
-                placeholder="Share your thoughts about a track, an artist, or Cameroonian music…"
-                rows={2}
+                placeholder="Share your thoughts about this track..."
+                rows={3}
+                value={composerText}
+                onChange={e => setComposerText(e.target.value)}
               />
-              <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-                <button className="composer-submit"><i className="fas fa-paper-plane" style={{ marginRight: 6 }} />Post</button>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                  {composerSongId ? '✅ Track selected' : '⚠️ Select a track to post'}
+                </span>
+                <button
+                  className="composer-submit"
+                  onClick={handleCommunityPost}
+                  disabled={!composerText.trim() || !composerSongId}
+                  style={{ opacity: (!composerText.trim() || !composerSongId) ? 0.5 : 1 }}
+                >
+                  <i className="fas fa-paper-plane" style={{ marginRight: 6 }} />Post
+                </button>
               </div>
             </div>
           </div>
 
-          <div className="section-card" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* Activity Tabs */}
+          <div style={{ display: 'flex', gap: 4, marginBottom: 20, background: 'var(--bg-tertiary)', borderRadius: 10, padding: 4 }}>
             {[
-              { id: 1, user: 'Samuel Eto', text: 'Does anyone know the title of that new Makossa track playing on Trace Africa? It has a very catchy guitar riff.', time: '2 hours ago', likes: 14, comments: 3 },
-              { id: 2, user: 'Charlotte D.', text: 'The new Afrobeat compilation on CamSound is pure fire! 🔥 Perfect for the weekend.', time: '5 hours ago', likes: 42, comments: 8 },
-              { id: 3, user: 'Franck B.', text: 'Just discovered an amazing upcoming Bikutsi artist. You all should check out "Mvet Evolution" in the discover section.', time: '1 day ago', likes: 27, comments: 5 },
-            ].map(post => (
-              <div key={post.id} style={{ display: 'flex', gap: 16, padding: '16px 0', borderBottom: '1px solid var(--border-color)' }}>
-                <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>
-                  {post.user.charAt(0)}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
-                    <span style={{ fontWeight: 600 }}>{post.user}</span>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{post.time}</span>
-                  </div>
-                  <p style={{ margin: '0 0 12px 0', fontSize: '0.9rem', lineHeight: 1.5 }}>{post.text}</p>
-                  <div style={{ display: 'flex', gap: 16, color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                    <span style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}><i className="far fa-heart" /> {post.likes}</span>
-                    <span style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 6 }}><i className="far fa-comment" /> {post.comments}</span>
-                  </div>
-                </div>
-              </div>
+              { key: 'all', label: '🔥 All Activity' },
+              { key: 'discussions', label: '💬 Discussions' },
+              { key: 'artists', label: '🎤 Artist Spotlight' },
+            ].map(tab => (
+              <button
+                key={tab.key}
+                onClick={() => setCommunityTab(tab.key)}
+                style={{
+                  flex: 1, padding: '8px 12px', borderRadius: 8, border: 'none', fontSize: '0.88rem',
+                  fontWeight: communityTab === tab.key ? 700 : 400,
+                  background: communityTab === tab.key ? 'var(--primary-color)' : 'transparent',
+                  color: communityTab === tab.key ? '#fff' : 'var(--text-muted)',
+                  cursor: 'pointer', transition: 'all 0.2s',
+                }}
+              >
+                {tab.label}
+              </button>
             ))}
+          </div>
+
+          {/* Activity Feed */}
+          <div className="section-card" style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+            {communityPosts.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
+                <i className="fas fa-comments" style={{ fontSize: '3rem', opacity: 0.3, display: 'block', marginBottom: 16 }} />
+                <p>No activity yet. Be the first to start a discussion!</p>
+              </div>
+            ) : (
+              communityPosts
+                .filter(post => {
+                  if (communityTab === 'discussions') return true;
+                  if (communityTab === 'artists') return post.userId?.type === 'artist';
+                  return true;
+                })
+                .map((post, idx, arr) => (
+                  <div
+                    key={post._id}
+                    style={{
+                      display: 'flex', gap: 16,
+                      padding: '20px 0',
+                      borderBottom: idx < arr.length - 1 ? '1px solid var(--border-color)' : 'none',
+                    }}
+                  >
+                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '1.1rem', flexShrink: 0 }}>
+                      {post.userId?.name?.charAt(0) || 'U'}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4, flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 700 }}>{post.userId?.name || 'Community Member'}</span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>commented on</span>
+                        <span
+                          style={{ fontSize: '0.85rem', color: 'var(--accent-color)', fontWeight: 600, cursor: 'pointer' }}
+                          onClick={() => { if (post.songId) openSongDetails(post.songId); }}
+                        >
+                          🎵 {post.songId?.title || 'Unknown Track'}
+                        </span>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginLeft: 'auto' }}>
+                          {new Date(post.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p style={{ margin: '0 0 12px 0', fontSize: '0.92rem', lineHeight: 1.6, color: 'var(--text-light)' }}>{post.content}</p>
+                      <div style={{ display: 'flex', gap: 16, color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+                        <span style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+                          <i className="far fa-heart" /> 0
+                        </span>
+                        <span
+                          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}
+                          onClick={() => { if (post.songId) openSongDetails(post.songId); }}
+                        >
+                          <i className="far fa-comment" /> Reply
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))
+            )}
           </div>
         </div>
       )}
+
 
       {/* Notifications View */}
       {activeView === 'notifications' && (
@@ -714,6 +867,141 @@ const Dashboard: React.FC = () => {
                   <button className="btn-camsound" onClick={() => setIsEditingProfile(true)}>Edit Profile</button>
                 </>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Song Detail View */}
+      {activeView === 'song-detail' && selectedSong && (
+        <div>
+          <button className="view-all-btn" style={{ marginBottom: 20 }} onClick={() => setActiveView('discover')}>
+            <i className="fas fa-arrow-left" /> Back to Discover
+          </button>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: 32, '@media (min-width: 768px)': { gridTemplateColumns: '300px 1fr' } } as any}>
+            <div>
+              <div style={{ width: '100%', aspectRatio: '1/1', background: 'var(--bg-tertiary)', borderRadius: 12, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 24, overflow: 'hidden' }}>
+                {selectedSong.coverArt ? (
+                  <img src={selectedSong.coverArt} alt={selectedSong.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <i className="fas fa-music" style={{ fontSize: '4rem', color: 'var(--text-muted)' }} />
+                )}
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                <button className="btn-camsound-yellow" onClick={() => playSong(selectedSong)} style={{ width: '100%', padding: '12px' }}>
+                  <i className="fas fa-play" style={{ marginRight: 8 }} /> Play Now
+                </button>
+                <button className="btn-camsound-outline" style={{ width: '100%', padding: '12px' }}>
+                  <i className="far fa-heart" style={{ marginRight: 8 }} /> Favorite
+                </button>
+              </div>
+            </div>
+            
+            <div>
+              <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '0 0 8px 0' }}>{selectedSong.title}</h1>
+              <h3 style={{ color: 'var(--text-muted)', cursor: 'pointer', margin: '0 0 24px 0' }} onClick={() => openArtistDetails(selectedSong.artistId)}>
+                {selectedSong.artistId?.name || 'Unknown Artist'}
+              </h3>
+              
+              <div style={{ display: 'flex', gap: 32, paddingBottom: 24, borderBottom: '1px solid var(--border-color)', marginBottom: 32 }}>
+                <div>
+                  <small style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.7rem', display: 'block' }}>Genre</small>
+                  <span style={{ fontWeight: 600 }}>{selectedSong.genre || 'Unknown'}</span>
+                </div>
+                <div>
+                  <small style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.7rem', display: 'block' }}>Plays</small>
+                  <span style={{ fontWeight: 600 }}>{selectedSong.plays || 0}</span>
+                </div>
+                <div>
+                  <small style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1, fontSize: '0.7rem', display: 'block' }}>Duration</small>
+                  <span style={{ fontWeight: 600 }}>{selectedSong.duration || '0:00'}</span>
+                </div>
+              </div>
+
+              {/* Comments Section */}
+              <div>
+                <h4 style={{ marginBottom: 24 }}><i className="fas fa-comments" style={{ marginRight: 8 }} /> Discussion</h4>
+                
+                <div style={{ display: 'flex', gap: 16, marginBottom: 32, padding: 16, background: 'var(--bg-tertiary)', borderRadius: 12 }}>
+                  <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, flexShrink: 0 }}>
+                    {user?.name?.charAt(0) || 'U'}
+                  </div>
+                  <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 8 }}>
+                    <textarea 
+                      className="search-input-db" 
+                      rows={2} 
+                      placeholder="What do you think of this track?"
+                      value={commentText}
+                      onChange={e => setCommentText(e.target.value)}
+                    />
+                    <div style={{ alignSelf: 'flex-end' }}>
+                      <button className="btn-camsound-yellow" style={{ padding: '6px 16px', fontSize: '0.9rem' }} onClick={handlePostComment}>
+                        Post Comment
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+                  {songComments.length === 0 ? (
+                    <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--text-muted)' }}>No comments yet. Be the first!</div>
+                  ) : (
+                    songComments.map(comment => (
+                      <div key={comment._id} style={{ display: 'flex', gap: 16 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, flexShrink: 0 }}>
+                          {comment.userId?.name?.charAt(0) || 'U'}
+                        </div>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
+                            <span style={{ fontWeight: 600 }}>{comment.userId?.name || 'Unknown'}</span>
+                            <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{new Date(comment.createdAt).toLocaleDateString()}</span>
+                          </div>
+                          <p style={{ margin: 0, fontSize: '0.9rem', lineHeight: 1.5 }}>{comment.content}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Artist Detail View */}
+      {activeView === 'artist-detail' && selectedArtist && (
+        <div>
+          <button className="view-all-btn" style={{ marginBottom: 20 }} onClick={() => setActiveView('discover')}>
+            <i className="fas fa-arrow-left" /> Back to Discover
+          </button>
+          
+          <div className="section-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', padding: 48, textAlign: 'center' }}>
+            <div style={{ width: 150, height: 150, borderRadius: '50%', background: 'var(--bg-tertiary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '4rem', color: 'var(--text-muted)', overflow: 'hidden', marginBottom: 24, border: '4px solid var(--primary-color)' }}>
+              {selectedArtist.image ? <img src={selectedArtist.image} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : selectedArtist.name?.charAt(0)}
+            </div>
+            <h1 style={{ fontSize: '2.5rem', fontWeight: 800, margin: '0 0 8px 0' }}>{selectedArtist.name}</h1>
+            <p style={{ color: 'var(--text-muted)', marginBottom: 24 }}>{selectedArtist.genre || 'Artist'} • {selectedArtist.followers || 0} Followers</p>
+            
+            <div style={{ display: 'flex', gap: 16, marginBottom: 32 }}>
+              <button className="btn-camsound-yellow" style={{ padding: '8px 32px', borderRadius: 30 }}>
+                Follow
+              </button>
+            </div>
+            
+            <div style={{ display: 'flex', gap: 48, borderTop: '1px solid var(--border-color)', paddingTop: 32, width: '100%', justifyContent: 'center' }}>
+              <div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{artistStats?.totalPlays || 0}</div>
+                <small style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: '0.7rem' }}>Plays</small>
+              </div>
+              <div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{artistStats?.totalLikes || 0}</div>
+                <small style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: '0.7rem' }}>Likes</small>
+              </div>
+              <div>
+                <div style={{ fontSize: '1.5rem', fontWeight: 700 }}>{artistStats?.totalSongs || 0}</div>
+                <small style={{ color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: 1.5, fontSize: '0.7rem' }}>Tracks</small>
+              </div>
             </div>
           </div>
         </div>

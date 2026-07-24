@@ -78,10 +78,6 @@ export const getArtistStats = async (req: Request, res: Response) => {
         const artist = await Artist.findById(req.params.id);
         if (!artist) return res.status(404).json({ success: false, message: 'Artist not found' });
 
-        const isAdmin = req.user?.type === 'admin';
-        const isOwner = artist.userId.toString() === req.user?.id;
-        if (!isAdmin && !isOwner) return res.status(403).json({ success: false, message: 'Forbidden' });
-
         const songs = await Song.find({ artistId: artist._id });
         const totalPlays = songs.reduce((sum, s) => sum + s.plays, 0);
         const totalLikes = songs.reduce((sum, s) => sum + s.likes, 0);

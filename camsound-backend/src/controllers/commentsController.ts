@@ -63,3 +63,17 @@ export const pinComment = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+export const getRecentComments = async (req: Request, res: Response) => {
+    try {
+        const comments = await Comment.find({ parentId: null })
+            .populate('userId', 'name avatar')
+            .populate('songId', 'title artistId coverArt')
+            .sort({ createdAt: -1 })
+            .limit(20);
+
+        res.json({ success: true, data: comments });
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};

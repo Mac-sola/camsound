@@ -198,3 +198,10 @@ export const withdrawalsService = {
   requestWithdrawal: (data: any) => api.post('/api/withdrawals', data),
   updateWithdrawal: (id: string, data: any) => api.put(`/api/withdrawals/${id}`, data),
 };
+
+// --- Comments & Community ---
+export const commentsService = {
+  getSongComments: (songId: string) => api.get(`/api/songs/${songId}/comments`),
+  postComment: (songId: string, content: string, parentId?: string) => api.post(`/api/songs/${songId}/comments`, { content, parentId }),
+  getRecentActivity: () => api.get('/api/community/comments'),
+};

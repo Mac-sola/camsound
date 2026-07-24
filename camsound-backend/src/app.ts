@@ -26,6 +26,7 @@ import adRevenueRoutes from './routes/adrevenue';
 import notificationSettingsRoutes from './routes/notificationSettings';
 import adminLogsRoutes from './routes/adminLogs';
 import reportsRoutes from './routes/reports';
+import * as commentsController from './controllers/commentsController';
 
 // Middleware
 import { apiLimiter } from './middleware/rateLimiter';
@@ -90,6 +91,9 @@ app.use('/api/admin-logs', adminLogsRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/admin', adminRoutes);
+
+// Community global routes
+app.get('/api/community/comments', commentsController.getRecentComments);
 
 // ── Health Check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

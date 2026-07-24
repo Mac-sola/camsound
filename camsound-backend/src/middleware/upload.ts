@@ -15,6 +15,7 @@ const fileFilter = (
         'audio/mpeg',
         'audio/mp3',
         'audio/wav',
+        'audio/wave',
         'audio/x-wav',
         'audio/ogg',
         'application/ogg',

@@ -94,10 +94,11 @@ interface TopBarProps {
   userName?: string;
   userAvatar?: string;
   onLogout: () => void;
+  onNavClick?: (view: string) => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
-  onMenuToggle, searchValue, onSearchChange, notifCount, userName, userAvatar, onLogout
+  onMenuToggle, searchValue, onSearchChange, notifCount, userName, userAvatar, onLogout, onNavClick
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -150,15 +151,15 @@ export const TopBar: React.FC<TopBarProps> = ({
               borderRadius: 12, padding: 4, zIndex: 999, boxShadow: 'var(--shadow-medium)'
             }}>
               {[
-                { label: 'Profile', icon: 'fa-user' },
-                { label: 'Settings', icon: 'fa-cog' },
+                { label: 'Profile', icon: 'fa-user', view: 'profile' },
+                { label: 'Settings', icon: 'fa-cog', view: 'settings' },
               ].map(item => (
                 <button
                   key={item.label}
                   style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', padding: '10px 14px', background: 'none', border: 'none', color: 'var(--text-light)', fontSize: '0.9rem', cursor: 'pointer', borderRadius: 8 }}
                   onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.05)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-                  onClick={() => setDropdownOpen(false)}
+                  onClick={() => { setDropdownOpen(false); onNavClick?.(item.view); }}
                 >
                   <i className={`fas ${item.icon}`} style={{ width: 16 }} />
                   {item.label}
@@ -253,10 +254,12 @@ interface LayoutProps {
   searchValue?: string;
   onSearchChange?: (v: string) => void;
   notifCount?: number;
+  totalPlays?: number;
+  totalLikes?: number;
 }
 
 const Layout: React.FC<LayoutProps> = ({
-  children, navItems, activeView, onNavClick, searchValue = '', onSearchChange = () => {}, notifCount = 0
+  children, navItems, activeView, onNavClick, searchValue = '', onSearchChange = () => {}, notifCount = 0, totalPlays = 0, totalLikes = 0
 }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -276,6 +279,8 @@ const Layout: React.FC<LayoutProps> = ({
         onLogout={handleLogout}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        totalPlays={totalPlays}
+        totalLikes={totalLikes}
       />
 
       <div className="main-col">
@@ -287,6 +292,7 @@ const Layout: React.FC<LayoutProps> = ({
           userName={user?.name}
           userAvatar={user?.avatar}
           onLogout={handleLogout}
+          onNavClick={onNavClick}
         />
 
         <div className="content-area">
