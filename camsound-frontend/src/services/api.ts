@@ -4,14 +4,29 @@ const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 const api = axios.create({
   baseURL: baseUrl,
   timeout: 30000, // 30 second timeout
+  withCredentials: true,
 });
 
-// Add a request interceptor to inject the token
+// Add a request interceptor to inject the token and CSRF header
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
+    const csrfToken = localStorage.getItem('csrfToken');
     if (token) {
+      config.headers = config.headers || {};
       config.headers['Authorization'] = `Bearer ${token}`;
+    }
+    if (csrfToken && config.method && ['post', 'put', 'patch', 'delete'].includes(config.method)) {
+      config.headers = config.headers || {};
+      config.headers['X-CSRF-Token'] = csrfToken;
+    }
+
+    // Debug: expose outgoing mutating request headers in dev
+    if (import.meta.env.MODE !== 'production') {
+      try {
+        // eslint-disable-next-line no-console
+        console.log('API request:', { method: config.method, url: config.url, headers: config.headers });
+      } catch {}
     }
     return config;
   },
@@ -19,6 +34,7 @@ api.interceptors.request.use(
 );
 
 // Add a response interceptor to handle auth errors and network issues
+let isRedirecting = false;
 api.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -26,7 +42,9 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
-      if (window.location.pathname !== '/login') {
+      window.dispatchEvent(new CustomEvent('camsound:unauthorized'));
+      if (window.location.pathname !== '/login' && !isRedirecting) {
+        isRedirecting = true;
         window.location.href = '/login';
       }
     }
@@ -55,6 +73,7 @@ export const authService = {
   logout: () => api.post('/api/auth/logout'),
   getProfile: () => api.get('/api/auth/me'),
   updateProfile: (data: any) => api.put('/api/auth/me', data),
+  changePassword: (data: any) => api.put('/api/auth/change-password', data),
 };
 
 // --- Songs ---
@@ -84,6 +103,7 @@ export const followsService = {
 // --- History ---
 export const historyService = {
   getHistory: (params?: any) => api.get('/api/history', { params }),
+  addHistory: (data: any) => api.post('/api/history', data),
   clearHistory: () => api.delete('/api/history'),
 };
 
@@ -103,6 +123,7 @@ export const artistsService = {
   getArtists: (params?: any) => api.get('/api/artists', { params }),
   getArtistMe: () => api.get('/api/artists/me'),
   getArtist: (id: string) => api.get(`/api/artists/${id}`),
+  getArtistStats: (id: string) => api.get(`/api/artists/${id}/stats`),
   updateArtist: (id: string, data: any) => api.put(`/api/artists/${id}`, data),
 };
 
@@ -183,6 +204,10 @@ export const subscriptionsService = {
   getSubscriptions: () => api.get('/api/subscriptions'),
   getSubscription: (id: string) => api.get(`/api/subscriptions/${id}`),
   createSubscription: (data: any) => api.post('/api/subscriptions', data),
+  // Admin Plans CRUD
+  createPlan: (data: any) => api.post('/api/subscriptions/plans', data),
+  updatePlan: (id: string, data: any) => api.put(`/api/subscriptions/plans/${id}`, data),
+  deletePlan: (id: string) => api.delete(`/api/subscriptions/plans/${id}`),
 };
 
 // --- Payments ---
@@ -203,5 +228,14 @@ export const withdrawalsService = {
 export const commentsService = {
   getSongComments: (songId: string) => api.get(`/api/songs/${songId}/comments`),
   postComment: (songId: string, content: string, parentId?: string) => api.post(`/api/songs/${songId}/comments`, { content, parentId }),
+  deleteComment: (songId: string, commentId: string) => api.delete(`/api/songs/${songId}/comments/${commentId}`),
+  pinComment: (songId: string, commentId: string, pin: boolean) => api.put(`/api/songs/${songId}/comments/${commentId}/pin`, { pin }),
   getRecentActivity: () => api.get('/api/community/comments'),
 };
+
+// --- Artist extended ---
+export const artistsExtendedService = {
+  requestVerification: () => api.post('/api/artists/me/verify'),
+  getMySongs: () => api.get('/api/songs', { params: { artistId: 'me', limit: 100 } }),
+};
+

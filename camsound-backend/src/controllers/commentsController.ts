@@ -1,5 +1,7 @@
 import { Request, Response } from 'express';
+import Artist from '../models/Artist';
 import Comment from '../models/Comment';
+import Song from '../models/Song';
 
 export const getComments = async (req: Request, res: Response) => {
     try {
@@ -40,9 +42,14 @@ export const deleteComment = async (req: Request, res: Response) => {
         const comment = await Comment.findById(req.params.commentId);
         if (!comment) return res.status(404).json({ success: false, message: 'Comment not found' });
 
+        const song = await Song.findById(comment.songId);
+        const artist = song ? await Artist.findById(song.artistId).populate('userId', '_id') : null;
+        const artistUserId = (artist?.userId as any)?._id?.toString() ?? artist?.userId?.toString();
+
         const isOwner = comment.userId.toString() === req.user?.id;
+        const isArtist = artistUserId === req.user?.id;
         const isAdmin = req.user?.type === 'admin';
-        if (!isOwner && !isAdmin) return res.status(403).json({ success: false, message: 'Forbidden' });
+        if (!isOwner && !isArtist && !isAdmin) return res.status(403).json({ success: false, message: 'Forbidden' });
 
         await Comment.findByIdAndDelete(req.params.commentId);
         // Also delete replies
@@ -55,10 +62,22 @@ export const deleteComment = async (req: Request, res: Response) => {
 
 export const pinComment = async (req: Request, res: Response) => {
     try {
-        if (req.user?.type !== 'admin') return res.status(403).json({ success: false, message: 'Admin only' });
-        const comment = await Comment.findByIdAndUpdate(req.params.commentId, { isPinned: true }, { new: true });
+        const comment = await Comment.findById(req.params.commentId);
         if (!comment) return res.status(404).json({ success: false, message: 'Comment not found' });
-        res.json({ success: true, message: 'Comment pinned', data: comment });
+
+        const song = await Song.findById(comment.songId);
+        const artist = song ? await Artist.findById(song.artistId).populate('userId', '_id') : null;
+        const artistUserId = (artist?.userId as any)?._id?.toString() ?? artist?.userId?.toString();
+
+        const isArtist = artistUserId === req.user?.id;
+        const isAdmin = req.user?.type === 'admin';
+        if (!isArtist && !isAdmin) return res.status(403).json({ success: false, message: 'Only the artist or admin can pin/unpin comments' });
+
+        const pin = req.body.pin ?? true;
+        const updatedComment = await Comment.findByIdAndUpdate(req.params.commentId, { isPinned: pin }, { new: true });
+        await updatedComment?.populate('userId', 'name avatar');
+
+        res.json({ success: true, message: pin ? 'Comment pinned' : 'Comment unpinned', data: updatedComment });
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });
     }

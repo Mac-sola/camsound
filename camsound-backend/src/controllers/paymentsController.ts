@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Payment from '../models/Payment';
+import { initiatePayment } from '../services/momoService';
 
 const generateTransactionId = () => `TXN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
 
@@ -19,15 +20,23 @@ export const createPayment = async (req: Request, res: Response) => {
         const { subscriptionId, amount, currency, paymentMethod, transactionId, status } = req.body;
         if (!amount) return res.status(400).json({ success: false, message: 'Amount is required' });
 
+        const tx = transactionId || generateTransactionId();
         const payment = await Payment.create({
             userId: req.user?.id,
             subscriptionId,
             amount,
             currency: currency || 'XAF',
             paymentMethod: paymentMethod || 'MoMo',
-            transactionId: transactionId || generateTransactionId(),
+            transactionId: tx,
             status: status || 'pending',
         });
+
+        if ((paymentMethod || 'MoMo').toLowerCase() === 'momo') {
+            const phone = (req.body.phone || req.body.momoNumber || req.body.momo_number) as string | undefined;
+            const checkout = await initiatePayment(amount, phone, payment.transactionId);
+            return res.status(201).json({ success: true, data: payment, checkout });
+        }
+
         res.status(201).json({ success: true, data: payment });
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });

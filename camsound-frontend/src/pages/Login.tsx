@@ -30,7 +30,7 @@ const Login: React.FC = () => {
     try {
       const res = await authService.login({ email: email.trim(), password });
       if (res.data.success) {
-        login(res.data.token, res.data.user);
+        login(res.data.token, res.data.user, res.data.csrfToken);
         const u = res.data.user;
         if (u.type === 'admin') navigate('/admin');
         else if (u.type === 'artist') navigate('/artist');
@@ -47,6 +47,11 @@ const Login: React.FC = () => {
       setLoading(false);
     }
   };
+
+  const [isForgotOpen, setIsForgotOpen] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotMsg, setForgotMsg] = useState('');
+  const [socialMsg, setSocialMsg] = useState('');
 
   return (
     <div className="auth-page-body">
@@ -112,10 +117,16 @@ const Login: React.FC = () => {
           </div>
 
           <div className="forgot-password-link">
-            <a href="#">Forgot Password?</a>
+            <button
+              type="button"
+              onClick={() => { setForgotMsg(''); setIsForgotOpen(true); }}
+              style={{ background: 'none', border: 'none', color: 'var(--accent-color)', cursor: 'pointer', fontSize: '0.85rem' }}
+            >
+              Forgot Password?
+            </button>
           </div>
 
-          <button type="submit" className="btn-auth-submit" disabled={loading}>
+          <button type="submit" className="btn-auth-submit" disabled={loading} style={{ marginTop: 12 }}>
             {loading ? <><i className="fas fa-spinner fa-spin" /> Logging in...</> : <><i className="fas fa-sign-in-alt" /> Login to Account</>}
           </button>
         </form>
@@ -123,10 +134,20 @@ const Login: React.FC = () => {
         {/* Divider */}
         <div className="auth-divider"><span>Or continue with</span></div>
 
+        {socialMsg && (
+          <div style={{ textAlign: 'center', margin: '8px 0', fontSize: '0.82rem', color: 'var(--accent-color)' }}>
+            {socialMsg}
+          </div>
+        )}
+
         {/* Social */}
         <div className="social-buttons">
-          <button className="btn-social"><i className="fab fa-google" /> Google</button>
-          <button className="btn-social"><i className="fab fa-facebook-f" /> Facebook</button>
+          <button className="btn-social" onClick={() => { setSocialMsg('Google login is currently disabled in test environment.'); setTimeout(() => setSocialMsg(''), 3000); }}>
+            <i className="fab fa-google" /> Google
+          </button>
+          <button className="btn-social" onClick={() => { setSocialMsg('Facebook login is currently disabled in test environment.'); setTimeout(() => setSocialMsg(''), 3000); }}>
+            <i className="fab fa-facebook-f" /> Facebook
+          </button>
         </div>
 
         {/* Footer */}
@@ -135,6 +156,43 @@ const Login: React.FC = () => {
           <p><Link to="/"><i className="fas fa-home" style={{ marginRight: 4 }} />Back to Home</Link></p>
         </div>
       </div>
+
+      {/* Forgot Password Modal */}
+      {isForgotOpen && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div style={{ background: 'var(--bg-secondary)', borderRadius: 16, padding: 32, maxWidth: 420, width: '100%', border: '1px solid var(--border-color)' }}>
+            <h3 style={{ margin: '0 0 8px' }}>Reset Password</h3>
+            <p style={{ fontSize: '0.88rem', color: 'var(--text-muted)', marginBottom: 20 }}>Enter your registered email address and we'll send instructions to reset your password.</p>
+            {forgotMsg && (
+              <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: 'rgba(34,197,94,0.12)', color: '#4ade80', fontSize: '0.88rem' }}>
+                {forgotMsg}
+              </div>
+            )}
+            <input
+              type="email"
+              placeholder="name@example.com"
+              value={forgotEmail}
+              onChange={e => setForgotEmail(e.target.value)}
+              className="auth-input"
+              style={{ width: '100%', marginBottom: 16 }}
+            />
+            <div style={{ display: 'flex', gap: 12 }}>
+              <button
+                className="btn-camsound-yellow"
+                style={{ flex: 1, justifyContent: 'center' }}
+                onClick={() => {
+                  if (!forgotEmail.trim()) return;
+                  setForgotMsg(`✅ Password reset instructions sent to ${forgotEmail}`);
+                  setTimeout(() => { setIsForgotOpen(false); setForgotEmail(''); }, 3000);
+                }}
+              >
+                Send Reset Link
+              </button>
+              <button className="btn-camsound-outline" onClick={() => setIsForgotOpen(false)}>Cancel</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

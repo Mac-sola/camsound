@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
-import { songsService } from '../services/api';
+import { songsService, historyService } from '../services/api';
 
 interface Song {
   _id: string;
@@ -14,6 +14,7 @@ interface AudioContextType {
   isPlaying: boolean;
   progress: number;
   duration: number;
+  audioError: string | null;
   playSong: (song: Song) => void;
   togglePlay: () => void;
   seek: (percentage: number) => void;
@@ -34,37 +35,48 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [duration, setDuration] = useState(0);
   const [volume, setVolumeState] = useState(0.8);
   const [isMuted, setIsMuted] = useState(false);
+  const [audioError, setAudioError] = useState<string | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     audioRef.current = new Audio();
-    
-    audioRef.current.addEventListener('timeupdate', () => {
-      if (audioRef.current) {
-        setProgress(audioRef.current.currentTime);
-      }
-    });
 
-    audioRef.current.addEventListener('loadedmetadata', () => {
-      if (audioRef.current) {
-        setDuration(audioRef.current.duration);
-      }
-    });
+    const handleTimeUpdate = () => {
+      if (audioRef.current) setProgress(audioRef.current.currentTime);
+    };
 
-    audioRef.current.addEventListener('ended', () => {
+    const handleLoadedMetadata = () => {
+      if (audioRef.current) setDuration(audioRef.current.duration);
+    };
+
+    const handleEnded = () => {
       setIsPlaying(false);
       setProgress(0);
-    });
+    };
+
+    const handleError = () => {
+      setIsPlaying(false);
+      setAudioError('Unable to load or play audio track. Check network connection or media format.');
+    };
+
+    const audio = audioRef.current;
+    audio.addEventListener('timeupdate', handleTimeUpdate);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('error', handleError);
 
     return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current = null;
-      }
+      audio.removeEventListener('timeupdate', handleTimeUpdate);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('error', handleError);
+      audio.pause();
+      audioRef.current = null;
     };
   }, []);
 
   const getAudioSource = (url: string) => {
+    if (!url) return '';
     if (url.includes('mock-cdn.example.com/audio/')) {
       return 'https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3';
     }
@@ -73,31 +85,54 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const playSong = async (song: Song) => {
     if (audioRef.current) {
+      setAudioError(null);
       if (currentSong?._id === song._id) {
         togglePlay();
         return;
       }
-      
+
       setCurrentSong(song);
-      audioRef.current.src = getAudioSource(song.filePath);
+      const source = getAudioSource(song.filePath);
+      audioRef.current.src = source;
       audioRef.current.volume = isMuted ? 0 : volume;
-      audioRef.current.play();
-      setIsPlaying(true);
       
       try {
+        await audioRef.current.play();
+        setIsPlaying(true);
+      } catch (err: any) {
+        console.error('Audio playback error:', err);
+        setIsPlaying(false);
+        setAudioError('Audio playback failed or was blocked by browser.');
+      }
+
+      try {
         await songsService.trackPlay(song._id);
-      } catch (_) {}
+      } catch {}
+
+      try {
+        if (historyService && typeof historyService.addHistory === 'function') {
+          try { await historyService.addHistory({ song_id: song._id }); } catch { }
+        }
+      } catch {}
     }
   };
 
-  const togglePlay = () => {
+  const togglePlay = async () => {
     if (audioRef.current && currentSong) {
+      setAudioError(null);
       if (isPlaying) {
         audioRef.current.pause();
+        setIsPlaying(false);
       } else {
-        audioRef.current.play();
+        try {
+          await audioRef.current.play();
+          setIsPlaying(true);
+        } catch (err) {
+          console.error('Playback toggle error:', err);
+          setIsPlaying(false);
+          setAudioError('Unable to resume playback.');
+        }
       }
-      setIsPlaying(!isPlaying);
     }
   };
 
@@ -136,7 +171,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return (
-    <AudioContext.Provider value={{ currentSong, isPlaying, progress, duration, playSong, togglePlay, seek, skipForward, skipBackward, volume, setVolume, isMuted, toggleMute }}>
+    <AudioContext.Provider value={{ currentSong, isPlaying, progress, duration, audioError, playSong, togglePlay, seek, skipForward, skipBackward, volume, setVolume, isMuted, toggleMute }}>
       {children}
     </AudioContext.Provider>
   );

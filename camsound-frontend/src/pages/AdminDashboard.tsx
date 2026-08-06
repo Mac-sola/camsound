@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
-import { statsService, adminService, artistsService, paymentsService, withdrawalsService, adRevenueService, adminLogsService, featuredService } from '../services/api';
+import { statsService, adminService, artistsService, paymentsService, withdrawalsService, adRevenueService, adminLogsService, featuredService, subscriptionsService } from '../services/api';
 
 const ADMIN_NAV = [
   { label: 'Overview', icon: 'fa-tachometer-alt', view: 'overview' },
@@ -8,13 +8,16 @@ const ADMIN_NAV = [
   { label: 'Songs', icon: 'fa-music', view: 'songs' },
   { label: 'Artists', icon: 'fa-microphone', view: 'artists' },
   { label: 'Moderation Queue', icon: 'fa-shield-alt', view: 'moderation' },
+  { label: 'Featured Content', icon: 'fa-star', view: 'featured' },
+  { label: 'Subscription Plans', icon: 'fa-crown', view: 'plans' },
   { label: 'Payments', icon: 'fa-dollar-sign', view: 'payments' },
   { label: 'Ad Revenue', icon: 'fa-ad', view: 'adRevenue' },
   { label: 'Withdrawals', icon: 'fa-wallet', view: 'withdrawals' },
-  { label: 'Admin Logs', icon: 'fa-clipboard-list', view: 'logs' },
   { label: 'Reports', icon: 'fa-chart-bar', view: 'reports' },
+  { label: 'Admin Logs', icon: 'fa-clipboard-list', view: 'logs' },
   { label: 'Settings', icon: 'fa-cog', view: 'settings' },
 ];
+
 
 const AdminDashboard: React.FC = () => {
   const [activeView, setActiveView] = useState('overview');
@@ -31,7 +34,13 @@ const AdminDashboard: React.FC = () => {
   const [editingAdId, setEditingAdId] = useState<string | null>(null);
   const [adminLogs, setAdminLogs] = useState<any[]>([]);
   const [reports, setReports] = useState<any[]>([]);
-  const [, setSettings] = useState<any>(null);
+  const [plans, setPlans] = useState<any[]>([]);
+  const [planForm, setPlanForm] = useState<any>({ name: '', price: '', currency: 'XAF', period: '/month', description: '', features: '', isPopular: false });
+  const [editingPlanId, setEditingPlanId] = useState<string | null>(null);
+  const [planMessage, setPlanMessage] = useState('');
+  const [settingsForm, setSettingsForm] = useState({ platformName: 'CamSound', supportEmail: 'support@camsound.com', commissionRate: '15', maintenanceMode: 'off' });
+  const [settingsMessage, setSettingsMessage] = useState('');
+  const [settingsSaving, setSettingsSaving] = useState(false);
   const [stats, setStats] = useState<any>({ totalUsers: 0, totalArtists: 0, totalSongs: 0, totalRevenue: 0, userGrowth: [], userGrowthLabels: [], genreDistribution: [] });
   const [loading, setLoading] = useState(false);
 
@@ -41,7 +50,7 @@ const AdminDashboard: React.FC = () => {
       try {
         const res = await statsService.getGlobalStats();
         if (res.data.success) setStats(res.data.data);
-      } catch (_) {
+      } catch {
       } finally {
         setLoading(false);
       }
@@ -49,16 +58,47 @@ const AdminDashboard: React.FC = () => {
     fetchStats();
   }, []);
 
-  const fetchUsers = async () => { try { const res = await adminService.getUsers(); if (res.data.success) setUsers(res.data.data); } catch (_) {} };
-  const fetchSongs = async () => { try { const res = await adminService.getSongs(); if (res.data.success) setSongs(res.data.data); } catch (_) {} };
-  const fetchArtists = async () => { try { const res = await artistsService.getArtists(); if (res.data.success) setArtists(res.data.data); } catch (_) {} };
-  const fetchPayments = async () => { try { const res = await paymentsService.getPayments(); if (res.data.success) setPayments(res.data.data); } catch (_) {} };
-  const fetchWithdrawals = async () => { try { const res = await withdrawalsService.getWithdrawals(); if (res.data.success) setWithdrawals(res.data.data); } catch (_) {} };
-  const fetchAdRevenue = async () => { try { const res = await adRevenueService.getAdRevenue(); if (res.data.success) setAdRevenue(res.data.data); } catch (_) {} };
-  const fetchFeatured = async () => { try { const res = await featuredService.getFeatured(); if (res.data.success) setFeaturedList(res.data.data); } catch (_) {} };
-  const fetchAdminLogs = async () => { try { const res = await adminLogsService.getLogs(); if (res.data.success) setAdminLogs(res.data.data); } catch (_) {} };
-  const fetchReports = async () => { try { const res = await adminService.getReports(); if (res.data.success) setReports(res.data.data); } catch (_) {} };
-  const fetchSettings = async () => { try { const res = await adminService.getSettings(); if (res.data.success) setSettings(res.data.data); } catch (_) {} };
+  const fetchUsers = async () => { try { const res = await adminService.getUsers(); if (res.data.success) setUsers(res.data.data); } catch {} };
+  const fetchSongs = async () => { try { const res = await adminService.getSongs(); if (res.data.success) setSongs(res.data.data); } catch {} };
+  const fetchArtists = async () => { try { const res = await artistsService.getArtists(); if (res.data.success) setArtists(res.data.data); } catch {} };
+  const fetchPayments = async () => { try { const res = await paymentsService.getPayments(); if (res.data.success) setPayments(res.data.data); } catch {} };
+  const fetchWithdrawals = async () => { try { const res = await withdrawalsService.getWithdrawals(); if (res.data.success) setWithdrawals(res.data.data); } catch {} };
+  const fetchAdRevenue = async () => { try { const res = await adRevenueService.getAdRevenue(); if (res.data.success) setAdRevenue(res.data.data); } catch {} };
+  const fetchFeatured = async () => { try { const res = await featuredService.getFeatured(); if (res.data.success) setFeaturedList(res.data.data); } catch {} };
+  const fetchAdminLogs = async () => { try { const res = await adminLogsService.getLogs(); if (res.data.success) setAdminLogs(res.data.data); } catch {} };
+  const fetchReports = async () => { try { const res = await adminService.getReports(); if (res.data.success) setReports(res.data.data); } catch {} };
+  const fetchPlans = async () => { try { const res = await subscriptionsService.getPlans(); if (res.data.success) setPlans(res.data.data); } catch {} };
+  const fetchSettings = async () => {
+    try {
+      const res = await adminService.getSettings();
+      if (res.data.success && res.data.data) {
+        const s = res.data.data;
+        setSettingsForm({
+          platformName: s.platformName || s.platform_name || 'CamSound',
+          supportEmail: s.supportEmail || s.support_email || 'support@camsound.com',
+          commissionRate: String(s.commissionRate || s.commission_rate || '15'),
+          maintenanceMode: s.maintenanceMode || s.maintenance_mode || 'off',
+        });
+      }
+    } catch {}
+  };
+  const handleSaveSettings = async () => {
+    setSettingsSaving(true);
+    setSettingsMessage('');
+    try {
+      const res = await adminService.updateSettings(settingsForm);
+      if (res.data.success) {
+        setSettingsMessage('✅ Settings saved successfully.');
+      } else {
+        setSettingsMessage(res.data.message || 'Failed to save settings.');
+      }
+    } catch (err: any) {
+      setSettingsMessage(err.response?.data?.message || 'Error saving settings.');
+    } finally {
+      setSettingsSaving(false);
+      setTimeout(() => setSettingsMessage(''), 4000);
+    }
+  };
 
   useEffect(() => {
     if (activeView === 'users') fetchUsers();
@@ -71,6 +111,7 @@ const AdminDashboard: React.FC = () => {
     else if (activeView === 'withdrawals') fetchWithdrawals();
     else if (activeView === 'reports') fetchReports();
     else if (activeView === 'settings') fetchSettings();
+    else if (activeView === 'plans') fetchPlans();
   }, [activeView]);
 
   const OverviewView = () => (
@@ -243,17 +284,51 @@ const AdminDashboard: React.FC = () => {
         <div className="section-card">
           <div className="section-header"><h2>Artists Directory</h2></div>
           <div className="cards-grid">
-            {artists.map(a => (
-              <div key={a._id} className="music-card" style={{ padding: 16, textAlign: 'center' }}>
-                <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--bg-tertiary)', margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  {a.image ? <img src={a.image} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /> : <i className="fas fa-user" />}
+            {artists.map(a => {
+              const isVerified = a.verification === 'approved' || a.status === 'verified';
+              const isPending = a.verification === 'pending';
+              return (
+                <div key={a._id} className="music-card" style={{ padding: 16, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <div>
+                    <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--bg-tertiary)', margin: '0 auto 12px', display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
+                      {a.image ? <img src={a.image} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /> : <i className="fas fa-user" style={{ fontSize: '1.8rem', color: 'var(--text-muted)' }} />}
+                      {isVerified && <i className="fas fa-check-circle" style={{ position: 'absolute', bottom: 2, right: 2, color: '#4ade80', background: 'var(--bg-primary)', borderRadius: '50%', fontSize: '1.1rem' }} />}
+                    </div>
+                    <h4 style={{ margin: '0 0 4px' }}>{a.name}</h4>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{a.genre || 'Afrobeat'}</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: 8 }}>{a.followers || 0} followers</div>
+                    <div style={{ marginBottom: 12 }}>
+                      {isVerified ? (
+                        <span style={{ fontSize: '0.75rem', background: 'rgba(34,197,94,0.15)', color: '#4ade80', padding: '3px 10px', borderRadius: 999, fontWeight: 600 }}>Verified</span>
+                      ) : isPending ? (
+                        <span style={{ fontSize: '0.75rem', background: 'rgba(250,204,21,0.15)', color: 'var(--accent-color)', padding: '3px 10px', borderRadius: 999, fontWeight: 600 }}>Verification Pending</span>
+                      ) : (
+                        <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', padding: '3px 10px', borderRadius: 999 }}>Unverified</span>
+                      )}
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: 6, width: '100%', justifyContent: 'center' }}>
+                    {!isVerified ? (
+                      <button className="btn-camsound-yellow" style={{ fontSize: '0.78rem', padding: '5px 12px', width: '100%' }}
+                        onClick={async () => {
+                          await artistsService.updateArtist(a._id, { verification: 'approved', status: 'verified' });
+                          fetchArtists();
+                        }}>
+                        Approve Verification
+                      </button>
+                    ) : (
+                      <button className="btn-camsound-outline" style={{ fontSize: '0.78rem', padding: '5px 12px', width: '100%', borderColor: 'rgba(239,68,68,0.4)', color: '#f87171' }}
+                        onClick={async () => {
+                          await artistsService.updateArtist(a._id, { verification: 'rejected', status: 'pending' });
+                          fetchArtists();
+                        }}>
+                        Revoke Status
+                      </button>
+                    )}
+                  </div>
                 </div>
-                <h4 style={{ margin: '0 0 4px' }}>{a.name}</h4>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{a.genre}</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{a.followers} followers</div>
-                {a.verification === 'verified' && <i className="fas fa-check-circle" style={{ color: '#1da1f2', marginTop: 8 }} />}
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
@@ -477,28 +552,182 @@ const AdminDashboard: React.FC = () => {
       {activeView === 'settings' && (
         <div className="section-card">
           <div className="section-header"><h2>Platform Settings</h2></div>
+          {settingsMessage && (
+            <div style={{ marginTop: 16, padding: '10px 16px', borderRadius: 8, background: settingsMessage.startsWith('✅') ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)', color: settingsMessage.startsWith('✅') ? '#4ade80' : '#f87171', fontSize: '0.9rem' }}>
+              {settingsMessage}
+            </div>
+          )}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24, marginTop: 24 }}>
             <div>
               <label style={{ display: 'block', marginBottom: 8, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Platform Name</label>
-              <input type="text" defaultValue="CamSound" style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'white' }} />
+              <input
+                type="text"
+                value={settingsForm.platformName}
+                onChange={e => setSettingsForm(f => ({ ...f, platformName: e.target.value }))}
+                style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'white' }}
+              />
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: 8, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Support Email</label>
-              <input type="email" defaultValue="support@camsound.com" style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'white' }} />
+              <input
+                type="email"
+                value={settingsForm.supportEmail}
+                onChange={e => setSettingsForm(f => ({ ...f, supportEmail: e.target.value }))}
+                style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'white' }}
+              />
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: 8, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Commission Rate (%)</label>
-              <input type="number" defaultValue="15" style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'white' }} />
+              <input
+                type="number"
+                value={settingsForm.commissionRate}
+                onChange={e => setSettingsForm(f => ({ ...f, commissionRate: e.target.value }))}
+                style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'white' }}
+              />
             </div>
             <div>
               <label style={{ display: 'block', marginBottom: 8, color: 'var(--text-muted)', fontSize: '0.9rem' }}>Maintenance Mode</label>
-              <select style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'white' }}>
-                <option>Off</option>
-                <option>On</option>
+              <select
+                value={settingsForm.maintenanceMode}
+                onChange={e => setSettingsForm(f => ({ ...f, maintenanceMode: e.target.value }))}
+                style={{ width: '100%', padding: '10px 12px', background: 'var(--bg-tertiary)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'white' }}
+              >
+                <option value="off">Off</option>
+                <option value="on">On</option>
               </select>
             </div>
           </div>
-          <button className="btn-camsound-yellow" style={{ marginTop: 24, padding: '10px 24px' }}>Save Settings</button>
+          <button
+            className="btn-camsound-yellow"
+            style={{ marginTop: 24, padding: '10px 24px' }}
+            onClick={handleSaveSettings}
+            disabled={settingsSaving}
+          >
+            {settingsSaving ? 'Saving...' : 'Save Settings'}
+          </button>
+        </div>
+      )}
+
+      {/* Subscription Plans View */}
+      {activeView === 'plans' && (
+        <div className="section-card">
+          <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2>Subscription Plans</h2>
+          </div>
+
+          {/* Add / Edit Plan Form */}
+          <div style={{ background: 'var(--bg-tertiary)', borderRadius: 12, padding: 24, marginTop: 24, border: '1px solid var(--border-color)' }}>
+            <h4 style={{ marginBottom: 16, color: 'var(--text-white)' }}>{editingPlanId ? 'Edit Plan' : 'Add New Plan'}</h4>
+            {planMessage && (
+              <div style={{ marginBottom: 12, padding: '8px 14px', borderRadius: 8, background: planMessage.startsWith('✅') ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)', color: planMessage.startsWith('✅') ? '#4ade80' : '#f87171', fontSize: '0.88rem' }}>
+                {planMessage}
+              </div>
+            )}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 16 }}>
+              <div>
+                <label style={{ display: 'block', marginBottom: 6, color: 'var(--text-muted)', fontSize: '0.85rem' }}>Plan Name</label>
+                <input type="text" placeholder="e.g. Artist Pro" value={planForm.name} onChange={e => setPlanForm((f: any) => ({ ...f, name: e.target.value }))}
+                  style={{ width: '100%', padding: '9px 12px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'white', fontSize: '0.9rem' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: 6, color: 'var(--text-muted)', fontSize: '0.85rem' }}>Price (XAF)</label>
+                <input type="number" placeholder="5000" value={planForm.price} onChange={e => setPlanForm((f: any) => ({ ...f, price: e.target.value }))}
+                  style={{ width: '100%', padding: '9px 12px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'white', fontSize: '0.9rem' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: 6, color: 'var(--text-muted)', fontSize: '0.85rem' }}>Period</label>
+                <select value={planForm.period} onChange={e => setPlanForm((f: any) => ({ ...f, period: e.target.value }))}
+                  style={{ width: '100%', padding: '9px 12px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'white', fontSize: '0.9rem' }}>
+                  <option value="/month">/month</option>
+                  <option value="/year">/year</option>
+                  <option value="/forever">/forever</option>
+                </select>
+              </div>
+              <div style={{ gridColumn: '1 / -1' }}>
+                <label style={{ display: 'block', marginBottom: 6, color: 'var(--text-muted)', fontSize: '0.85rem' }}>Features (comma-separated)</label>
+                <input type="text" placeholder="Unlimited uploads, Analytics, MoMo Payouts" value={planForm.features} onChange={e => setPlanForm((f: any) => ({ ...f, features: e.target.value }))}
+                  style={{ width: '100%', padding: '9px 12px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'white', fontSize: '0.9rem' }} />
+              </div>
+              <div>
+                <label style={{ display: 'block', marginBottom: 6, color: 'var(--text-muted)', fontSize: '0.85rem' }}>Description</label>
+                <input type="text" placeholder="Short description" value={planForm.description} onChange={e => setPlanForm((f: any) => ({ ...f, description: e.target.value }))}
+                  style={{ width: '100%', padding: '9px 12px', background: 'var(--bg-secondary)', border: '1px solid var(--border-color)', borderRadius: 8, color: 'white', fontSize: '0.9rem' }} />
+              </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, paddingTop: 22 }}>
+                <input type="checkbox" id="planPopular" checked={planForm.isPopular} onChange={e => setPlanForm((f: any) => ({ ...f, isPopular: e.target.checked }))} />
+                <label htmlFor="planPopular" style={{ color: 'var(--text-light)', fontSize: '0.9rem', cursor: 'pointer' }}>Mark as Popular</label>
+              </div>
+            </div>
+            <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+              <button className="btn-camsound-yellow" style={{ padding: '9px 24px' }} onClick={async () => {
+                setPlanMessage('');
+                try {
+                  const payload = { ...planForm, price: Number(planForm.price), features: planForm.features.split(',').map((f: string) => f.trim()).filter(Boolean) };
+                  if (editingPlanId) {
+                    await subscriptionsService.updatePlan(editingPlanId, payload);
+                    setPlanMessage('✅ Plan updated successfully.');
+                  } else {
+                    await subscriptionsService.createPlan(payload);
+                    setPlanMessage('✅ Plan created successfully.');
+                  }
+                  setPlanForm({ name: '', price: '', currency: 'XAF', period: '/month', description: '', features: '', isPopular: false });
+                  setEditingPlanId(null);
+                  await fetchPlans();
+                } catch (err: any) { setPlanMessage(err.response?.data?.message || 'Failed to save plan.'); }
+                setTimeout(() => setPlanMessage(''), 4000);
+              }}>
+                {editingPlanId ? 'Update Plan' : 'Add Plan'}
+              </button>
+              {editingPlanId && (
+                <button className="btn-camsound-outline" style={{ padding: '9px 24px' }} onClick={() => { setEditingPlanId(null); setPlanForm({ name: '', price: '', currency: 'XAF', period: '/month', description: '', features: '', isPopular: false }); }}>Cancel</button>
+              )}
+            </div>
+          </div>
+
+          {/* Plans Table */}
+          <div style={{ overflowX: 'auto', marginTop: 24 }}>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+              <thead>
+                <tr style={{ borderBottom: '1px solid var(--border-color)' }}>
+                  {['Plan Name', 'Price', 'Period', 'Features', 'Popular', 'Actions'].map(h => (
+                    <th key={h} style={{ padding: '12px 8px', color: 'var(--text-muted)', textAlign: 'left', fontWeight: 600 }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {plans.length === 0 ? (
+                  <tr><td colSpan={6} style={{ padding: '32px', textAlign: 'center', color: 'var(--text-muted)' }}>No plans yet. Add one above.</td></tr>
+                ) : plans.map((p: any) => (
+                  <tr key={p._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <td style={{ padding: '12px 8px' }}>
+                      <span style={{ fontWeight: 600 }}>{p.name}</span>
+                      {p.isPopular && <span style={{ marginLeft: 8, padding: '2px 8px', borderRadius: 999, fontSize: '0.72rem', background: 'rgba(250,204,21,0.15)', color: 'var(--accent-color)' }}>POPULAR</span>}
+                    </td>
+                    <td style={{ padding: '12px 8px', color: 'var(--accent-color)', fontWeight: 700 }}>XAF {Number(p.price).toLocaleString()}</td>
+                    <td style={{ padding: '12px 8px', color: 'var(--text-muted)' }}>{p.period || '/month'}</td>
+                    <td style={{ padding: '12px 8px', color: 'var(--text-muted)', fontSize: '0.82rem' }}>
+                      {Array.isArray(p.features) ? p.features.slice(0, 2).join(', ') + (p.features.length > 2 ? '...' : '') : p.features}
+                    </td>
+                    <td style={{ padding: '12px 8px' }}>
+                      {p.isPopular ? <i className="fas fa-check" style={{ color: '#4ade80' }} /> : <i className="fas fa-times" style={{ color: 'var(--text-muted)' }} />}
+                    </td>
+                    <td style={{ padding: '12px 8px' }}>
+                      <div style={{ display: 'flex', gap: 8 }}>
+                        <button className="btn-camsound-outline" style={{ padding: '4px 12px', fontSize: '0.8rem' }} onClick={() => {
+                          setEditingPlanId(p._id);
+                          setPlanForm({ name: p.name, price: String(p.price), currency: p.currency || 'XAF', period: p.period || '/month', description: p.description || '', features: Array.isArray(p.features) ? p.features.join(', ') : p.features || '', isPopular: p.isPopular || false });
+                        }}>Edit</button>
+                        <button style={{ padding: '4px 12px', fontSize: '0.8rem', background: 'rgba(239,68,68,0.12)', color: '#f87171', border: '1px solid rgba(239,68,68,0.3)', borderRadius: 8, cursor: 'pointer' }}
+                          onClick={async () => { if (!confirm(`Delete plan "${p.name}"?`)) return; await subscriptionsService.deletePlan(p._id); fetchPlans(); }}>
+                          Delete
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       )}
     </Layout>
@@ -506,3 +735,4 @@ const AdminDashboard: React.FC = () => {
 };
 
 export default AdminDashboard;
+

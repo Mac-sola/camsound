@@ -94,3 +94,20 @@ export const getArtistStats = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+export const requestVerification = async (req: Request, res: Response) => {
+    try {
+        const artist = await Artist.findOne({ userId: req.user?.id });
+        if (!artist) return res.status(404).json({ success: false, message: 'Artist profile not found' });
+        if (artist.verification === 'approved' || artist.status === 'verified') {
+            return res.json({ success: true, message: 'Your artist profile is already verified.', data: artist });
+        }
+        artist.verification = 'pending';
+        await artist.save();
+        res.json({ success: true, message: 'Verification request submitted! Admin will review your profile.', data: artist });
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+

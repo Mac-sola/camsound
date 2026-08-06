@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 
 
 export interface User {
@@ -17,11 +17,13 @@ export interface User {
 interface AuthContextType {
   user: User | null;
   token: string | null;
-  login: (token: string, user: User) => void;
+  csrfToken: string | null;
+  login: (token: string, user: User, csrfToken?: string) => void;
   updateUser: (user: User) => void;
   logout: () => void;
   isAuthenticated: boolean;
   isLoading: boolean;
+  setNavigate: (callback: (path: string) => void) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,40 +31,50 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
+  const [csrfToken, setCsrfToken] = useState<string | null>(localStorage.getItem('csrfToken'));
   const [isLoading, setIsLoading] = useState(true);
+  const navigateRef = useRef<((path: string) => void) | undefined>(undefined);
   const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
+  const setNavigate = (callback: (path: string) => void) => {
+    navigateRef.current = callback;
+  };
 
   useEffect(() => {
     const validateToken = async () => {
       if (token) {
         try {
-          // Validate token with backend
-          const response = await fetch(`${baseUrl}/api/auth/me`, {
-            headers: {
-              'Authorization': `Bearer ${token}`,
-            },
+          const headers: HeadersInit = {};
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
+          }
+
+          const response = await fetch(`${baseUrl}/api/auth/session`, {
+            method: 'GET',
+            headers,
+            credentials: 'include',
           });
 
           if (response.ok) {
             const data = await response.json();
-            if (data.success && data.user) {
-              setUser(data.user);
+            if (data.success && data.data) {
+              setUser(data.data.user);
+              if (data.data.csrfToken) {
+                setCsrfToken(data.data.csrfToken);
+                localStorage.setItem('csrfToken', data.data.csrfToken);
+              }
             }
           } else if (response.status === 401) {
-            // Token invalid or expired, clear it
             localStorage.removeItem('token');
             localStorage.removeItem('user');
             setToken(null);
             setUser(null);
+            if (navigateRef.current) navigateRef.current('/login');
           } else {
-            // Other error, keep user data in cache for offline access
             const storedUser = localStorage.getItem('user');
-            if (storedUser) {
-              setUser(JSON.parse(storedUser));
-            }
+            if (storedUser) setUser(JSON.parse(storedUser));
           }
-        } catch (_error) {
-          // Network error - use cached user data if available
+        } catch {
           const storedUser = localStorage.getItem('user');
           if (storedUser) {
             try {
@@ -77,11 +89,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     validateToken();
-  }, [token]);
+  }, [token, baseUrl]);
 
-  const login = (newToken: string, newUser: User) => {
+  const login = (newToken: string, newUser: User, newCsrfToken?: string) => {
     localStorage.setItem('token', newToken);
     localStorage.setItem('user', JSON.stringify(newUser));
+    if (newCsrfToken) {
+      localStorage.setItem('csrfToken', newCsrfToken);
+      setCsrfToken(newCsrfToken);
+    }
     setToken(newToken);
     setUser(newUser);
   };
@@ -94,12 +110,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('csrfToken');
     setToken(null);
+    setCsrfToken(null);
     setUser(null);
   };
 
   return (
-    <AuthContext.Provider value={{ user, token, login, updateUser, logout, isAuthenticated: !!token, isLoading }}>
+    <AuthContext.Provider value={{ user, token, csrfToken, login, updateUser, logout, isAuthenticated: !!user, isLoading, setNavigate }}>
       {children}
     </AuthContext.Provider>
   );

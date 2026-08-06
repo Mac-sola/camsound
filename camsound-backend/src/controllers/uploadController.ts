@@ -54,6 +54,15 @@ export const uploadSong = [
                 });
             }
 
+            // Legacy PHP contract expects an explicit upload type, so keep that compatibility layer here.
+            const uploadType = String(req.body.upload_type || 'song').toLowerCase().trim();
+            if (uploadType !== 'song') {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: 'Invalid upload type' 
+                });
+            }
+
             // Validate body fields
             const { title, genre } = req.body;
             if (!title || !title.trim()) {
@@ -115,7 +124,17 @@ export const uploadSong = [
             res.status(201).json({ 
                 success: true, 
                 message: 'Song uploaded successfully and is pending moderation',
-                data: song 
+                data: {
+                    id: song._id,
+                    title: song.title,
+                    artistId: song.artistId,
+                    genre: song.genre,
+                    duration: song.duration,
+                    filePath: song.filePath,
+                    coverArt: song.coverArt,
+                    status: song.status,
+                    moderationStatus: song.moderationStatus,
+                }
             });
         } catch (error: any) {
             console.error('Upload error:', error);

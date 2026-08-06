@@ -16,6 +16,7 @@ import commentsRoutes from './routes/comments';
 import notificationsRoutes from './routes/notifications';
 import subscriptionsRoutes from './routes/subscriptions';
 import paymentsRoutes from './routes/payments';
+import momoRoutes from './routes/momo';
 import withdrawalsRoutes from './routes/withdrawals';
 import royaltiesRoutes from './routes/royalties';
 import statsRoutes from './routes/stats';
@@ -27,6 +28,7 @@ import notificationSettingsRoutes from './routes/notificationSettings';
 import adminLogsRoutes from './routes/adminLogs';
 import reportsRoutes from './routes/reports';
 import * as commentsController from './controllers/commentsController';
+import { verifyCsrf } from './middleware/csrf';
 
 // Middleware
 import { apiLimiter } from './middleware/rateLimiter';
@@ -62,6 +64,9 @@ app.use(express.urlencoded({ extended: true }));
 // ── Rate Limiting (general) ───────────────────────────────────────────────────
 app.use('/api', apiLimiter);
 
+// ── CSRF Protection ───────────────────────────────────────────────────────────
+app.use('/api', verifyCsrf);
+
 // ── Database Connection ───────────────────────────────────────────────────────
 mongoose.connect(process.env.MONGODB_URI!)
     .then(() => console.log('✅ MongoDB Connected'))
@@ -83,6 +88,7 @@ app.use('/api/categories', categoriesRoutes);
 app.use('/api/featured', featuredRoutes);
 app.use('/api/subscriptions', subscriptionsRoutes);
 app.use('/api/payments', paymentsRoutes);
+app.use('/api/momo', momoRoutes);
 app.use('/api/withdrawals', withdrawalsRoutes);
 app.use('/api/royalties', royaltiesRoutes);
 app.use('/api/ad-revenue', adRevenueRoutes);
@@ -108,13 +114,22 @@ app.use((_req, res) => {
 // ── Global Error Handler ──────────────────────────────────────────────────────
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error(err);
-    res.status(500).json({ success: false, message: 'Internal server error', error: err.message });
+    const responseError = process.env.NODE_ENV === 'production' ? undefined : err.message;
+    res.status(500).json({ success: false, message: 'Internal server error', ...(responseError ? { error: responseError } : {}) });
 });
 
 // ── Start Server ──────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`🎵 CamSound API v2.0 running on http://localhost:${PORT}`);
+    
+    // Environment validation checks
+    if (!process.env.JWT_SECRET || process.env.JWT_SECRET === 'camsound_super_secret_key_2026') {
+        console.warn('⚠️ WARNING: Using weak default JWT_SECRET. Please set a strong JWT_SECRET in production.');
+    }
+    if (!process.env.CLOUDINARY_NAME || process.env.CLOUDINARY_NAME.includes('your_cloudinary')) {
+        console.warn('⚠️ WARNING: Cloudinary credentials appear to be placeholder values. File uploads may fail.');
+    }
 });
 
 export default app;

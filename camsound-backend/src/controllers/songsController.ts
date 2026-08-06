@@ -5,15 +5,32 @@ import ListeningHistory from '../models/ListeningHistory';
 
 export const getSongs = async (req: Request, res: Response) => {
     try {
-        const { genre, search, page = 1, limit = 20 } = req.query;
+        const { genre, search, sort = 'date', artistId, page = 1, limit = 20 } = req.query;
         const isAdmin = req.user?.type === 'admin';
         const filter: any = isAdmin ? {} : { status: 'active', moderationStatus: 'approved' };
+        
         if (genre) filter.genre = genre;
         if (search) filter.title = { $regex: search, $options: 'i' };
 
+        if (artistId === 'me' && req.user?.type === 'artist') {
+            const artist = await Artist.findOne({ userId: req.user.id });
+            if (artist) filter.artistId = artist._id;
+        } else if (artistId && artistId !== 'me') {
+            filter.artistId = artistId;
+        }
+
+        let sortOption: any = { createdAt: -1 };
+        if (sort === 'plays') {
+            sortOption = { plays: -1, createdAt: -1 };
+        } else if (sort === 'likes') {
+            sortOption = { likes: -1, createdAt: -1 };
+        } else if (sort === 'date') {
+            sortOption = { createdAt: -1 };
+        }
+
         const songs = await Song.find(filter)
             .populate('artistId', 'name image genre instagramUrl twitterUrl facebookUrl youtubeUrl')
-            .sort({ createdAt: -1 })
+            .sort(sortOption)
             .skip((+page - 1) * +limit)
             .limit(+limit);
 

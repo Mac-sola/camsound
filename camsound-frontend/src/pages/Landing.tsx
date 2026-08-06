@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 const Landing: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -20,24 +21,50 @@ const Landing: React.FC = () => {
               <i className="fas fa-drum" />
               CamSound
             </a>
-            <ul className="navbar-nav" style={{ display: 'flex', alignItems: 'center', gap: 32, listStyle: 'none' }}>
+
+            {/* Mobile Hamburger Toggle */}
+            <button
+              className="d-lg-none"
+              onClick={() => setMobileMenuOpen(o => !o)}
+              style={{ color: 'var(--text-white)', fontSize: '1.4rem', background: 'none', border: 'none', cursor: 'pointer', padding: 8 }}
+              aria-label="Toggle navigation"
+            >
+              <i className={`fas ${mobileMenuOpen ? 'fa-times' : 'fa-bars'}`} />
+            </button>
+
+            {/* Desktop Navigation */}
+            <ul className="navbar-nav d-none d-lg-flex" style={{ display: 'flex', alignItems: 'center', gap: 32, listStyle: 'none' }}>
               <li><a className="nav-link active" href="/">Home</a></li>
               <li><a className="nav-link" href="#discover">Discover</a></li>
               <li><a className="nav-link" href="#artists">Artists</a></li>
               <li><a className="nav-link" href="#pricing">Pricing</a></li>
             </ul>
-            <div className="navbar-actions">
+            <div className="navbar-actions d-none d-lg-flex">
               <Link to="/login" className="btn-camsound-outline" style={{ borderRadius: 30, padding: '8px 20px', fontSize: '0.9rem' }}>Login</Link>
               <Link to="/signup" className="btn-camsound-yellow" style={{ padding: '8px 20px', fontSize: '0.9rem' }}>Sign Up</Link>
             </div>
           </div>
         </div>
+
+        {/* Mobile Dropdown Drawer */}
+        {mobileMenuOpen && (
+          <div style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <a className="nav-link" href="/" onClick={() => setMobileMenuOpen(false)}>Home</a>
+            <a className="nav-link" href="#discover" onClick={() => setMobileMenuOpen(false)}>Discover</a>
+            <a className="nav-link" href="#artists" onClick={() => setMobileMenuOpen(false)}>Artists</a>
+            <a className="nav-link" href="#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
+            <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
+              <Link to="/login" className="btn-camsound-outline" style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }} onClick={() => setMobileMenuOpen(false)}>Login</Link>
+              <Link to="/signup" className="btn-camsound-yellow" style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }} onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
+            </div>
+          </div>
+        )}
       </nav>
 
       {/* ── Hero ── */}
       <section className="hero-section">
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 48, alignItems: 'center' }}>
+          <div className="hero-grid">
             <div>
               <h1 className="hero-title">Discover, Stream &amp; Promote Cameroonian Music.</h1>
               <p className="hero-subtitle">The premier platform connecting local talent with fans across Cameroon and beyond.</p>
@@ -46,7 +73,7 @@ const Landing: React.FC = () => {
                 <Link to="/signup" className="btn-camsound-outline-green">Listen as a Fan</Link>
               </div>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
               <div className="hero-stacked-cards">
                 <div className="stacked-card">
                   <svg className="vinyl-record" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
@@ -108,11 +135,11 @@ const Landing: React.FC = () => {
       {/* ── Why Choose Us ── */}
       <section className="why-choose-us-section">
         <div className="container">
-          <div style={{ display: 'grid', gridTemplateColumns: '2fr 3fr', gap: 48, alignItems: 'center' }}>
+          <div className="why-choose-grid">
             <div>
               <h2 style={{ fontSize: '2.2rem', color: 'white' }}>Why Choose Us</h2>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 0 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16 }}>
               {[
                 { icon: 'fa-map-marker-alt', title: 'Local Focus', desc: 'Promoting Cameroonian artists and local music culture.' },
                 { icon: 'fa-eye', title: 'Fair Visibility', desc: 'Fair algorithmic visibility for emerging and established artists.' },
@@ -197,6 +224,52 @@ const Landing: React.FC = () => {
         </div>
       </section>
 
+      {/* ── Pricing Section ── */}
+      <section className="pricing-section" id="pricing" style={{ padding: '80px 0', background: 'var(--bg-secondary)' }}>
+        <div className="container">
+          <h2 style={{ fontSize: '2.2rem', textAlign: 'center', marginBottom: 12 }}>Transparent Pricing</h2>
+          <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginBottom: 48 }}>Choose the plan that fits your musical journey.</p>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
+            <div style={{ background: 'var(--bg-tertiary)', borderRadius: 16, padding: 32, border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
+              <h3>Fan Free</h3>
+              <div style={{ fontSize: '2.2rem', fontWeight: 800, margin: '16px 0', color: 'var(--text-white)' }}>XAF 0 <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 400 }}>/forever</span></div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0', display: 'flex', flexDirection: 'column', gap: 12, flex: 1, color: 'var(--text-light)', fontSize: '0.92rem' }}>
+                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Stream Cameroonian songs</li>
+                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Create personal playlists</li>
+                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Follow favorite artists</li>
+                <li style={{ opacity: 0.5 }}><i className="fas fa-times" style={{ marginRight: 8 }} />Ad-free experience</li>
+              </ul>
+              <Link to="/signup" className="btn-camsound-outline" style={{ justifyContent: 'center' }}>Get Started Free</Link>
+            </div>
+
+            <div style={{ background: 'linear-gradient(135deg, var(--bg-green-section), var(--bg-tertiary))', borderRadius: 16, padding: 32, border: '2px solid var(--accent-color)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+              <div style={{ position: 'absolute', top: -12, right: 24, background: 'var(--accent-color)', color: '#000', fontWeight: 700, fontSize: '0.75rem', padding: '3px 12px', borderRadius: 999 }}>POPULAR</div>
+              <h3>Artist Pro</h3>
+              <div style={{ fontSize: '2.2rem', fontWeight: 800, margin: '16px 0', color: 'var(--accent-color)' }}>XAF 5,000 <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 400 }}>/month</span></div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0', display: 'flex', flexDirection: 'column', gap: 12, flex: 1, color: 'var(--text-light)', fontSize: '0.92rem' }}>
+                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Unlimited track uploads</li>
+                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Stream & play analytics</li>
+                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />MoMo Mobile Money Payouts</li>
+                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Verified Artist Badge</li>
+              </ul>
+              <Link to="/signup?role=artist" className="btn-camsound-yellow" style={{ justifyContent: 'center' }}>Join as Artist</Link>
+            </div>
+
+            <div style={{ background: 'var(--bg-tertiary)', borderRadius: 16, padding: 32, border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
+              <h3>Fan VIP</h3>
+              <div style={{ fontSize: '2.2rem', fontWeight: 800, margin: '16px 0', color: 'var(--text-white)' }}>XAF 2,000 <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 400 }}>/month</span></div>
+              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0', display: 'flex', flexDirection: 'column', gap: 12, flex: 1, color: 'var(--text-light)', fontSize: '0.92rem' }}>
+                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Ad-free music streaming</li>
+                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />High quality audio playback</li>
+                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Exclusive community access</li>
+                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Direct artist support</li>
+              </ul>
+              <Link to="/signup" className="btn-camsound-outline" style={{ justifyContent: 'center' }}>Upgrade to VIP</Link>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ── Testimonials ── */}
       <section className="testimonials-section">
         <div className="container">
@@ -221,7 +294,7 @@ const Landing: React.FC = () => {
       </section>
 
       {/* ── CTA ── */}
-      <section className="cta-section" id="pricing">
+      <section className="cta-section">
         <div className="container">
           <h2 className="cta-section h2">Start Promoting Your<br />Music Today</h2>
           <Link to="/signup?role=artist" className="btn-camsound-yellow" style={{ padding: '14px 40px', fontSize: '1.1rem', marginTop: 8 }}>GET STARTED</Link>
@@ -239,22 +312,23 @@ const Landing: React.FC = () => {
             <div className="footer-col">
               <h5>Quick Links</h5>
               <ul className="footer-links">
-                <li><a href="/">About</a></li>
-                <li><a href="#">Contact</a></li>
-                <li><a href="#">Terms</a></li>
-                <li><a href="#">Privacy</a></li>
+                <li><a href="#how">How It Works</a></li>
+                <li><a href="#discover">Discover</a></li>
+                <li><a href="#artists">Artists</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="mailto:support@camsound.com">Contact Support</a></li>
               </ul>
             </div>
             <div className="footer-col">
-              <h5>Social</h5>
+              <h5>Social Media</h5>
               <div className="footer-social">
                 {['fa-facebook-f','fa-twitter','fa-instagram','fa-youtube'].map(icon => (
-                  <a key={icon} href="#" className="footer-social-link"><i className={`fab ${icon}`} /></a>
+                  <a key={icon} href="#" onClick={e => e.preventDefault()} aria-disabled="true" className="footer-social-link"><i className={`fab ${icon}`} /></a>
                 ))}
               </div>
             </div>
             <div className="footer-col">
-              <h5>Legal</h5>
+              <h5>Legal &amp; Policies</h5>
               <ul className="footer-links">
                 <li><a href="#">Terms of Service</a></li>
                 <li><a href="#">Privacy Policy</a></li>
@@ -264,14 +338,9 @@ const Landing: React.FC = () => {
           </div>
           <div className="footer-bottom">
             <p>&copy; 2026 CamSound. All rights reserved.</p>
-            <div style={{ marginTop: 8 }}>
-              <Link to="/login?role=admin" style={{ fontSize: '0.75rem', color: 'var(--text-muted)', border: '1px solid rgba(255,255,255,0.15)', padding: '3px 10px', borderRadius: 4 }}>Admin Portal</Link>
-            </div>
           </div>
         </div>
       </footer>
-
-      {/* FontAwesome (loaded globally via CDN in index.html) */}
     </div>
   );
 };

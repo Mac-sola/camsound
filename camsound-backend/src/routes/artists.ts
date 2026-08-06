@@ -6,6 +6,7 @@ const router = express.Router();
 
 router.get('/', artists.getArtists);
 router.get('/me', protect, artists.getArtistMe);
+router.post('/me/verify', protect, artists.requestVerification);
 router.get('/:id', artists.getArtist);
 router.put('/:id', protect, artists.updateArtist);
 router.get('/:id/stats', protect, artists.getArtistStats);

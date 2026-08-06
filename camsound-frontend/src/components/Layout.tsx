@@ -64,7 +64,7 @@ export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => 
               <i className="fas fa-chart-bar" />
               <span>Quick Stats</span>
             </div>
-            <i className={`fas fa-chevron-${statsOpen ? 'down' : 'up'}`} style={{ fontSize: '0.75rem', marginLeft: 'auto' }} />
+            <i className={`fas fa-chevron-${statsOpen ? 'up' : 'down'}`} style={{ fontSize: '0.75rem', marginLeft: 'auto' }} />
           </button>
 
           {statsOpen && (
@@ -125,7 +125,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       </div>
 
       <div className="top-bar-right">
-        <button className="notif-btn">
+        <button className="notif-btn" onClick={() => onNavClick?.('notifications')} title="Notifications">
           <i className="fas fa-bell" />
           {notifCount ? <span className="notif-badge">{notifCount}</span> : null}
         </button>

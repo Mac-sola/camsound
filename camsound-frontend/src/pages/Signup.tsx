@@ -13,6 +13,8 @@ const Signup: React.FC = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showConfirmPass, setShowConfirmPass] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -28,11 +30,22 @@ const Signup: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (name.trim().length < 2) {
+      setError('Name must be at least 2 characters long.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await authService.signup({ name: name.trim(), email: email.trim(), password, type, country: country.trim() });
       if (res.data.success) {
-        login(res.data.token, res.data.user);
+        login(res.data.token, res.data.user, res.data.csrfToken);
         if (type === 'artist') navigate('/artist');
         else navigate('/dashboard');
       }
@@ -202,12 +215,36 @@ const Signup: React.FC = () => {
                   );
                 })()}
               </div>
+
+              <div className="auth-form-group" style={{ gridColumn: '1/-1' }}>
+                <label className="auth-label">Confirm Password</label>
+                <div className="input-icon-wrap" style={{ position: 'relative' }}>
+                  <i className="fas fa-lock" />
+                  <input
+                    type={showConfirmPass ? 'text' : 'password'}
+                    className="auth-input"
+                    placeholder="Re-enter your password"
+                    value={confirmPassword}
+                    onChange={e => setConfirmPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    style={{ paddingRight: 44 }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPass(p => !p)}
+                    style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#666', cursor: 'pointer', padding: 4 }}
+                  >
+                    <i className={`far ${showConfirmPass ? 'fa-eye-slash' : 'fa-eye'}`} />
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div style={{ margin: '16px 0', fontSize: '0.83rem', color: 'var(--text-muted)' }}>
               By creating an account, you agree to our{' '}
-              <a href="#" style={{ color: 'var(--secondary-color)' }}>Terms of Service</a> and{' '}
-              <a href="#" style={{ color: 'var(--secondary-color)' }}>Privacy Policy</a>.
+              <a href="#" onClick={e => e.preventDefault()} style={{ color: 'var(--secondary-color)' }}>Terms of Service</a> and{' '}
+              <a href="#" onClick={e => e.preventDefault()} style={{ color: 'var(--secondary-color)' }}>Privacy Policy</a>.
             </div>
 
             <button type="submit" className="btn-auth-submit" disabled={loading}>

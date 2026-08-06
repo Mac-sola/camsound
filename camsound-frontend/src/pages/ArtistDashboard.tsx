@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Layout from '../components/Layout';
-import { statsService, songsService, artistsService, notificationsService, subscriptionsService, paymentsService, withdrawalsService } from '../services/api';
+import Modal from '../components/Modal';
+import { statsService, songsService, artistsService, notificationsService, subscriptionsService, paymentsService, withdrawalsService, artistsExtendedService, commentsService } from '../services/api';
 import { useSearchParams } from 'react-router-dom';
 
 const ARTIST_NAV = [
@@ -20,7 +21,7 @@ const ArtistDashboard: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
-  const [profileForm, setProfileForm] = useState({ name: '', genre: '', bio: '' });
+  const [profileForm, setProfileForm] = useState({ name: '', genre: '', bio: '', instagramUrl: '', twitterUrl: '', facebookUrl: '', youtubeUrl: '' });
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMessage, setProfileMessage] = useState('');
   const [plans, setPlans] = useState<any[]>([]);
@@ -28,6 +29,14 @@ const ArtistDashboard: React.FC = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [subscriptionMessage, setSubscriptionMessage] = useState('');
   const [isSubscribing, setIsSubscribing] = useState(false);
+  const [selectedPlan, setSelectedPlan] = useState<any>(null);
+  const [subscriptionMomoNumber, setSubscriptionMomoNumber] = useState('');
+  const [withdrawalAmount, setWithdrawalAmount] = useState('');
+  const [withdrawalMomoNumber, setWithdrawalMomoNumber] = useState('');
+  const [withdrawalMessage, setWithdrawalMessage] = useState('');
+  const [isRequestingWithdrawal, setIsRequestingWithdrawal] = useState(false);
+  const [artistComments, setArtistComments] = useState<any[]>([]);
+  const [socialMessage, setSocialMessage] = useState('');
 
   // Upload form
   const [title, setTitle] = useState('');
@@ -140,18 +149,6 @@ const ArtistDashboard: React.FC = () => {
       setActiveView(tabParam);
     }
   }, [searchParams]);
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const res = await statsService.getArtistStats();
-        if (res.data.success) setStats(res.data.data);
-      } catch (_) {}
-      finally { setLoading(false); }
-    };
-    fetchStats();
-  }, []);
-
   const fetchProfile = async () => {
     try {
       const res = await artistsService.getArtistMe();
@@ -161,13 +158,43 @@ const ArtistDashboard: React.FC = () => {
           name: res.data.data.name || '',
           genre: res.data.data.genre || '',
           bio: res.data.data.bio || '',
+          instagramUrl: res.data.data.instagramUrl || '',
+          twitterUrl: res.data.data.twitterUrl || '',
+          facebookUrl: res.data.data.facebookUrl || '',
+          youtubeUrl: res.data.data.youtubeUrl || '',
         });
       }
-    } catch (_) {}
+    } catch {}
   };
-  const fetchPlans = async () => { try { const res = await subscriptionsService.getPlans(); if (res.data.success) setPlans(res.data.data); } catch (_) {} };
-  const fetchWithdrawals = async () => { try { const res = await withdrawalsService.getWithdrawals(); if (res.data.success) setWithdrawals(res.data.data); } catch (_) {} };
-  const fetchNotifications = async () => { try { const res = await notificationsService.getNotifications(); if (res.data.success) { setNotifications(res.data.data); } } catch (_) {} };
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const res = await statsService.getArtistStats();
+        if (res.data.success) setStats(res.data.data);
+      } catch {} finally { setLoading(false); }
+    };
+
+    fetchStats();
+    fetchProfile();
+  }, []);
+  const fetchPlans = async () => { try { const res = await subscriptionsService.getPlans(); if (res.data.success) setPlans(res.data.data); } catch {} };
+  const fetchWithdrawals = async () => { try { const res = await withdrawalsService.getWithdrawals(); if (res.data.success) setWithdrawals(res.data.data); } catch {} };
+  const fetchNotifications = async () => { try { const res = await notificationsService.getNotifications(); if (res.data.success) { setNotifications(res.data.data); } } catch {} };
+  const fetchArtistComments = async () => {
+    try {
+      const res = await commentsService.getRecentActivity();
+      if (res.data.success) {
+        const ownArtistId = profile?._id;
+        const filtered = res.data.data.filter((comment: any) => {
+          const songArtist = comment.songId?.artistId;
+          const songArtistId = typeof songArtist === 'string' ? songArtist : songArtist?._id;
+          return !ownArtistId || songArtistId === ownArtistId;
+        });
+        setArtistComments(filtered);
+      }
+    } catch {}
+  };
 
   const handleSaveProfile = async () => {
     if (!profile) return;
@@ -229,6 +256,36 @@ const ArtistDashboard: React.FC = () => {
     }
   };
 
+  const handleRequestWithdrawal = async () => {
+    if (!withdrawalAmount || !withdrawalMomoNumber) {
+      setWithdrawalMessage('Please enter both an amount and a mobile money number.');
+      return;
+    }
+
+    setIsRequestingWithdrawal(true);
+    setWithdrawalMessage('');
+
+    try {
+      const res = await withdrawalsService.requestWithdrawal({
+        amount: Number(withdrawalAmount),
+        momoNumber: withdrawalMomoNumber,
+      });
+
+      if (!res.data.success) {
+        throw new Error(res.data.message || 'Withdrawal request failed');
+      }
+
+      setWithdrawalAmount('');
+      setWithdrawalMomoNumber('');
+      setWithdrawalMessage('Withdrawal request submitted successfully.');
+      await fetchWithdrawals();
+    } catch (error: any) {
+      setWithdrawalMessage(error.response?.data?.message || error.message || 'Withdrawal request failed.');
+    } finally {
+      setIsRequestingWithdrawal(false);
+    }
+  };
+
   useEffect(() => {
     if (activeView === 'profile') fetchProfile();
     else if (activeView === 'subscription') fetchPlans();
@@ -274,6 +331,7 @@ const ArtistDashboard: React.FC = () => {
     setUploadMessage(`Uploading ${titleTrimmed}...`);
 
     const fd = new FormData();
+    fd.append('upload_type', 'song');
     fd.append('title', titleTrimmed);
     fd.append('genre', genre);
     fd.append('song_file', songFile);
@@ -415,6 +473,13 @@ const ArtistDashboard: React.FC = () => {
 
   const UploadView = () => (
     <div>
+      {import.meta.env.MODE !== 'production' && (
+        <div style={{ marginBottom: 12, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.06)', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+          <strong>Debug:</strong>
+          <div>token: {typeof window !== 'undefined' ? localStorage.getItem('token')?.slice(0, 40) : 'n/a'}...</div>
+          <div>csrfToken: {typeof window !== 'undefined' ? localStorage.getItem('csrfToken') : 'n/a'}</div>
+        </div>
+      )}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
         <div className="upload-form-card">
           <div className="upload-form-title">
@@ -452,6 +517,19 @@ const ArtistDashboard: React.FC = () => {
                   setTitle(e.target.value);
                   resetUploadNotice();
                 }}
+                onFocus={() => console.log('track-title:focus')}
+                onBlur={() => {
+                  console.log('track-title:blur');
+                  if (import.meta.env.MODE !== 'production') {
+                    // Workaround: restore focus in dev when an external host steals it
+                    window.setTimeout(() => {
+                      const el = document.getElementById('track-title') as HTMLInputElement | null;
+                      if (el) el.focus();
+                    }, 10);
+                  }
+                }}
+                onKeyDown={(e) => console.log('track-title:keyDown', e.key)}
+                onKeyUp={(e) => console.log('track-title:keyUp', e.key)}
               />
             </div>
             <div className="form-field">
@@ -469,6 +547,8 @@ const ArtistDashboard: React.FC = () => {
                 type="file"
                 accept="audio/*,audio/mpeg,audio/wav,audio/ogg,audio/flac"
                 onChange={handleSongFileChange}
+                onFocus={() => console.log('audio-file:focus')}
+                onBlur={() => console.log('audio-file:blur')}
               />
               <div className="upload-file-hint">{selectedSongLabel}</div>
             </div>
@@ -481,6 +561,8 @@ const ArtistDashboard: React.FC = () => {
                 type="file"
                 accept="image/*"
                 onChange={handleCoverArtChange}
+                onFocus={() => console.log('cover-art:focus')}
+                onBlur={() => console.log('cover-art:blur')}
               />
               <div className="upload-file-hint">{selectedCoverLabel}</div>
             </div>
@@ -539,17 +621,52 @@ const ArtistDashboard: React.FC = () => {
       {/* Profile Management */}
       {activeView === 'profile' && profile && (
         <div className="section-card">
-          <div className="section-header"><h2>Profile Management</h2></div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 32 }}>
+          <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2>Profile Management</h2>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {(profile.verification === 'approved' || profile.status === 'verified') ? (
+                <span style={{ background: 'rgba(34,197,94,0.15)', color: '#4ade80', padding: '6px 14px', borderRadius: 999, fontSize: '0.85rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <i className="fas fa-check-circle" /> Verified Artist
+                </span>
+              ) : profile.verification === 'pending' ? (
+                <span style={{ background: 'rgba(250,204,21,0.15)', color: 'var(--accent-color)', padding: '6px 14px', borderRadius: 999, fontSize: '0.85rem', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+                  <i className="fas fa-clock" /> Verification Pending Review
+                </span>
+              ) : (
+                <button
+                  className="btn-camsound-outline"
+                  style={{ fontSize: '0.85rem', padding: '6px 14px' }}
+                  onClick={async () => {
+                    setProfileMessage('');
+                    try {
+                      const res = await artistsExtendedService.requestVerification();
+                      if (res.data.success) {
+                        setProfileMessage('✅ ' + res.data.message);
+                        fetchProfile();
+                      }
+                    } catch (err: any) {
+                      setProfileMessage('❌ ' + (err.response?.data?.message || 'Verification request failed.'));
+                    }
+                  }}
+                >
+                  <i className="fas fa-shield-alt" style={{ marginRight: 6 }} /> Request Artist Verification
+                </button>
+              )}
+            </div>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 32, marginTop: 16 }}>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ width: 160, height: 160, borderRadius: '50%', background: 'var(--bg-tertiary)', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '4rem', color: 'var(--text-muted)' }}>
+              <div style={{ width: 160, height: 160, borderRadius: '50%', background: 'var(--bg-tertiary)', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '4rem', color: 'var(--text-muted)', position: 'relative' }}>
                 {profile.name?.charAt(0) || 'A'}
+                {(profile.verification === 'approved' || profile.status === 'verified') && (
+                  <i className="fas fa-check-circle" style={{ position: 'absolute', bottom: 8, right: 8, fontSize: '1.6rem', color: '#4ade80', background: 'var(--bg-primary)', borderRadius: '50%' }} />
+                )}
               </div>
               <button className="btn-camsound-outline" style={{ width: '100%' }}>Change Avatar</button>
             </div>
             <div>
               {profileMessage && (
-                <div style={{ marginBottom: 16, color: profileMessage.includes('successfully') ? '#51cf66' : '#ff6b6b' }}>
+                <div style={{ marginBottom: 16, padding: '10px 14px', borderRadius: 8, background: profileMessage.startsWith('✅') ? 'rgba(34,197,94,0.12)' : 'rgba(239,68,68,0.12)', color: profileMessage.startsWith('✅') ? '#4ade80' : '#f87171', fontSize: '0.9rem' }}>
                   {profileMessage}
                 </div>
               )}
@@ -574,14 +691,33 @@ const ArtistDashboard: React.FC = () => {
               <div className="form-field">
                 <label>Bio</label>
                 <textarea
-                  rows={4}
+                  rows={3}
                   value={profileForm.bio}
                   onChange={e => setProfileForm(prev => ({ ...prev, bio: e.target.value }))}
                   className="search-input-db"
                 />
               </div>
-              <button className="btn-camsound-yellow" onClick={handleSaveProfile} disabled={profileSaving}>
-                {profileSaving ? 'Saving...' : 'Save Changes'}
+              <h4 style={{ marginTop: 16, marginBottom: 12, color: 'var(--text-white)' }}>Social Media Handles</h4>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="form-field">
+                  <label><i className="fab fa-instagram" style={{ marginRight: 6, color: '#e1306c' }} />Instagram URL</label>
+                  <input type="url" placeholder="https://instagram.com/artist" value={profileForm.instagramUrl} onChange={e => setProfileForm(p => ({ ...p, instagramUrl: e.target.value }))} className="search-input-db" />
+                </div>
+                <div className="form-field">
+                  <label><i className="fab fa-twitter" style={{ marginRight: 6, color: '#1da1f2' }} />Twitter / X URL</label>
+                  <input type="url" placeholder="https://x.com/artist" value={profileForm.twitterUrl} onChange={e => setProfileForm(p => ({ ...p, twitterUrl: e.target.value }))} className="search-input-db" />
+                </div>
+                <div className="form-field">
+                  <label><i className="fab fa-facebook" style={{ marginRight: 6, color: '#4267b2' }} />Facebook URL</label>
+                  <input type="url" placeholder="https://facebook.com/artist" value={profileForm.facebookUrl} onChange={e => setProfileForm(p => ({ ...p, facebookUrl: e.target.value }))} className="search-input-db" />
+                </div>
+                <div className="form-field">
+                  <label><i className="fab fa-youtube" style={{ marginRight: 6, color: '#ff0000' }} />YouTube URL</label>
+                  <input type="url" placeholder="https://youtube.com/@artist" value={profileForm.youtubeUrl} onChange={e => setProfileForm(p => ({ ...p, youtubeUrl: e.target.value }))} className="search-input-db" />
+                </div>
+              </div>
+              <button className="btn-camsound-yellow" style={{ marginTop: 16 }} onClick={handleSaveProfile} disabled={profileSaving}>
+                {profileSaving ? 'Saving...' : 'Save Profile & Links'}
               </button>
             </div>
           </div>
@@ -624,10 +760,33 @@ const ArtistDashboard: React.FC = () => {
             <div className="section-header"><h2>Available Balance</h2></div>
             <h1 style={{ color: 'var(--accent-color)', fontSize: '2.5rem', margin: '0 0 24px' }}>XAF 0</h1>
             <div className="form-field">
-              <label>Mobile Money Number</label>
-              <input type="text" placeholder="e.g. 670000000" className="search-input-db" />
+              <label>Withdrawal Amount</label>
+              <input
+                type="number"
+                placeholder="e.g. 5000"
+                className="search-input-db"
+                value={withdrawalAmount}
+                onChange={e => setWithdrawalAmount(e.target.value)}
+              />
             </div>
-            <button className="btn-camsound-yellow" style={{ width: '100%' }}>Request Withdrawal</button>
+            <div className="form-field">
+              <label>Mobile Money Number</label>
+              <input
+                type="text"
+                placeholder="e.g. 670000000"
+                className="search-input-db"
+                value={withdrawalMomoNumber}
+                onChange={e => setWithdrawalMomoNumber(e.target.value)}
+              />
+            </div>
+            <button className="btn-camsound-yellow" style={{ width: '100%' }} onClick={handleRequestWithdrawal} disabled={isRequestingWithdrawal}>
+              {isRequestingWithdrawal ? 'Submitting...' : 'Request Withdrawal'}
+            </button>
+            {withdrawalMessage && (
+              <p style={{ marginTop: 12, color: withdrawalMessage.includes('successfully') ? '#27ae60' : 'var(--text-muted)' }}>
+                {withdrawalMessage}
+              </p>
+            )}
           </div>
           <div className="section-card">
             <div className="section-header"><h2>Withdrawal History</h2></div>
