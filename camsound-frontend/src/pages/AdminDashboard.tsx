@@ -514,7 +514,35 @@ const AdminDashboard: React.FC = () => {
       {/* Reports View */}
       {activeView === 'reports' && (
         <div className="section-card">
-          <div className="section-header"><h2>Reports & Violations</h2></div>
+          <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2>Reports & Violations</h2>
+            <button
+              className="btn-camsound-yellow"
+              style={{ fontSize: '0.85rem', padding: '6px 14px' }}
+              onClick={() => {
+                const rows = [
+                  ['Type', 'Item ID', 'Reason', 'Status', 'Date'],
+                  ...reports.map((r: any) => [
+                    `"${r.type || ''}"`,
+                    `"${r.itemId || ''}"`,
+                    `"${(r.reason || '').replace(/"/g, '""')}"`,
+                    `"${r.status || 'pending'}"`,
+                    `"${r.createdAt ? new Date(r.createdAt).toISOString() : ''}"`,
+                  ]),
+                ];
+                const csvContent = 'data:text/csv;charset=utf-8,' + rows.map(e => e.join(',')).join('\n');
+                const encodedUri = encodeURI(csvContent);
+                const link = document.createElement('a');
+                link.setAttribute('href', encodedUri);
+                link.setAttribute('download', `camsound_reports_${new Date().toISOString().slice(0, 10)}.csv`);
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+              }}
+            >
+              <i className="fas fa-file-csv" style={{ marginRight: 6 }} /> Export CSV
+            </button>
+          </div>
           <table style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left' }}>

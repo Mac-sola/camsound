@@ -5,26 +5,31 @@ import { useAuth } from '../context/AuthContext';
 import { useAudio } from '../context/AudioContext';
 import { songsService, notificationsService, favoritesService, playlistsService, historyService, followsService, authService, featuredService, notificationSettingsService, categoriesService, commentsService, artistsService } from '../services/api';
 
+import { useNavigate } from 'react-router-dom';
+
 const FAN_NAV = [
   { section: 'Discover' },
   { label: 'Home', icon: 'fa-home', view: 'discover' },
   { label: 'Browse', icon: 'fa-search', view: 'browse' },
   { label: 'Genres', icon: 'fa-tags', view: 'genres' },
   { label: 'Community', icon: 'fa-users', view: 'community' },
-  { section: 'Your Library' },
+  { section: 'My Music' },
   { label: 'My Music', icon: 'fa-music', view: 'mymusic' },
   { label: 'Playlists', icon: 'fa-list', view: 'playlists' },
   { label: 'History', icon: 'fa-history', view: 'history' },
+  { section: 'Following' },
   { label: 'Following', icon: 'fa-user-friends', view: 'following' },
-  { section: 'Account' },
   { label: 'Notifications', icon: 'fa-bell', view: 'notifications' },
+  { section: 'Account' },
   { label: 'Profile', icon: 'fa-user', view: 'profile' },
   { label: 'Settings', icon: 'fa-cog', view: 'settings' },
+  { label: 'Get Premium', icon: 'fa-crown', view: 'subscription' },
 ];
 
 const GENRES = ['Makossa', 'Afrobeat', 'Bikutsi', 'Assiko', 'Ndombolo', 'Hip Hop', 'R&B', 'Zouk'];
 
 const Dashboard: React.FC = () => {
+  const navigate = useNavigate();
   const { user, updateUser } = useAuth();
   const { playSong } = useAudio();
   const [activeView, setActiveView] = useState('discover');
@@ -398,7 +403,13 @@ const Dashboard: React.FC = () => {
     <Layout
       navItems={FAN_NAV}
       activeView={activeView}
-      onNavClick={setActiveView}
+      onNavClick={(view) => {
+        if (view === 'subscription') {
+          navigate('/subscription');
+        } else {
+          setActiveView(view);
+        }
+      }}
       searchValue={searchValue}
       onSearchChange={setSearchValue}
       notifCount={unreadCount}

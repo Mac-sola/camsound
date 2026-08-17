@@ -31,7 +31,7 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode; requiredRole?: strin
   // Check if user has required role (admin can access any protected route)
   if (requiredRole && user?.type !== requiredRole && user?.type !== 'admin') {
     // User doesn't have the required role, redirect to appropriate dashboard
-    const defaultRoute = user?.type === 'artist' ? '/artist' : user?.type === 'admin' ? '/admin' : '/dashboard';
+    const defaultRoute = user?.type === 'artist' ? '/artist' : user?.type === 'admin' ? '/admin' : '/fan';
     return <Navigate to={defaultRoute} replace />;
   }
 

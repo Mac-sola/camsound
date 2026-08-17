@@ -9,6 +9,7 @@ import Dashboard from './pages/Dashboard';
 import ArtistDashboard from './pages/ArtistDashboard';
 import AdminDashboard from './pages/AdminDashboard';
 import FanDashboard from './pages/FanDashboard';
+import Subscription from './pages/Subscription';
 
 function App() {
   return (
@@ -43,8 +44,9 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-                      <Route path="/fan" element={<ProtectedRoute requiredRole="fan"><FanDashboard /></ProtectedRoute>} />
-            </Routes>
+            <Route path="/fan" element={<ProtectedRoute requiredRole="fan"><FanDashboard /></ProtectedRoute>} />
+            <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+          </Routes>
         </Router>
       </AudioProvider>
     </AuthProvider>

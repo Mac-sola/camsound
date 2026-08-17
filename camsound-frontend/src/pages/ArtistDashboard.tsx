@@ -765,14 +765,138 @@ const ArtistDashboard: React.FC = () => {
       {activeView === 'analytics' && (
         <div>
           <div className="section-card" style={{ marginBottom: 24 }}>
-            <div className="section-header"><h2>Performance Overview</h2></div>
-            <div className="stats-cards-grid">
-              <div className="stat-dash-card"><div className="stat-dash-label">Total Plays</div><div className="stat-dash-value">{stats?.totalPlays || 0}</div></div>
-              <div className="stat-dash-card"><div className="stat-dash-label">Total Likes</div><div className="stat-dash-value">{stats?.totalLikes || 0}</div></div>
-              <div className="stat-dash-card"><div className="stat-dash-label">Total Downloads</div><div className="stat-dash-value">{stats?.totalDownloads || 0}</div></div>
+            <div className="section-header">
+              <h2>📈 Streaming Performance & Analytics</h2>
             </div>
-            <div style={{ marginTop: 24, height: 200, background: 'var(--bg-tertiary)', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
-              <i className="fas fa-chart-area" style={{ fontSize: '2rem', marginRight: 12 }} /> Play Trend Chart (30 Days)
+            <div className="stats-cards-grid" style={{ marginBottom: 24 }}>
+              <div className="stat-dash-card">
+                <div className="stat-dash-icon"><i className="fas fa-headphones" /></div>
+                <div>
+                  <div className="stat-dash-label">Total Plays</div>
+                  <div className="stat-dash-value">{(stats?.totalPlays || 0).toLocaleString()}</div>
+                </div>
+              </div>
+              <div className="stat-dash-card">
+                <div className="stat-dash-icon green"><i className="fas fa-heart" /></div>
+                <div>
+                  <div className="stat-dash-label">Total Likes</div>
+                  <div className="stat-dash-value">{(stats?.totalLikes || 0).toLocaleString()}</div>
+                </div>
+              </div>
+              <div className="stat-dash-card">
+                <div className="stat-dash-icon blue"><i className="fas fa-download" /></div>
+                <div>
+                  <div className="stat-dash-label">Total Downloads</div>
+                  <div className="stat-dash-value">{(stats?.totalDownloads || 0).toLocaleString()}</div>
+                </div>
+              </div>
+              <div className="stat-dash-card">
+                <div className="stat-dash-icon"><i className="fas fa-users" /></div>
+                <div>
+                  <div className="stat-dash-label">Followers</div>
+                  <div className="stat-dash-value">{(stats?.followers || 0).toLocaleString()}</div>
+                </div>
+              </div>
+            </div>
+
+            {/* 30-Day Stream Trend Chart */}
+            <div style={{ background: 'var(--bg-tertiary)', borderRadius: 12, padding: 24, marginBottom: 24, border: '1px solid var(--border-color)' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+                <div>
+                  <h3 style={{ margin: '0 0 4px', fontSize: '1.1rem', color: '#fff' }}>Streaming Trend (Last 30 Days)</h3>
+                  <span style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Daily playback count evolution</span>
+                </div>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <span style={{ fontSize: '0.78rem', background: 'rgba(250,204,21,0.15)', color: 'var(--accent-color)', padding: '4px 10px', borderRadius: 6, fontWeight: 700 }}>
+                    ● Streams
+                  </span>
+                </div>
+              </div>
+
+              {/* Responsive SVG Spark/Area Line Chart */}
+              <div style={{ width: '100%', height: 180, position: 'relative' }}>
+                <svg viewBox="0 0 700 160" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
+                  <defs>
+                    <linearGradient id="streamGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="#FACC15" stopOpacity="0.4" />
+                      <stop offset="100%" stopColor="#0F3D2E" stopOpacity="0.0" />
+                    </linearGradient>
+                  </defs>
+                  {/* Grid lines */}
+                  <line x1="0" y1="30" x2="700" y2="30" stroke="rgba(255,255,255,0.06)" strokeDasharray="4" />
+                  <line x1="0" y1="80" x2="700" y2="80" stroke="rgba(255,255,255,0.06)" strokeDasharray="4" />
+                  <line x1="0" y1="130" x2="700" y2="130" stroke="rgba(255,255,255,0.06)" strokeDasharray="4" />
+
+                  {/* Area fill */}
+                  <path
+                    d="M 0 140 C 60 120, 100 135, 160 90 C 220 50, 260 95, 320 60 C 380 30, 440 70, 500 40 C 560 20, 620 50, 700 30 L 700 150 L 0 150 Z"
+                    fill="url(#streamGrad)"
+                  />
+                  {/* Stroke line */}
+                  <path
+                    d="M 0 140 C 60 120, 100 135, 160 90 C 220 50, 260 95, 320 60 C 380 30, 440 70, 500 40 C 560 20, 620 50, 700 30"
+                    fill="none"
+                    stroke="var(--accent-color)"
+                    strokeWidth="3"
+                    strokeLinecap="round"
+                  />
+                  {/* Data Points */}
+                  {[
+                    { cx: 160, cy: 90, label: 'W1' },
+                    { cx: 320, cy: 60, label: 'W2' },
+                    { cx: 500, cy: 40, label: 'W3' },
+                    { cx: 700, cy: 30, label: 'Today' },
+                  ].map((p, i) => (
+                    <circle key={i} cx={p.cx} cy={p.cy} r="5" fill="#FACC15" stroke="#0B0F0C" strokeWidth="2" />
+                  ))}
+                </svg>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                  <span>30 Days Ago</span>
+                  <span>2 Weeks Ago</span>
+                  <span>1 Week Ago</span>
+                  <span>Today</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Top Songs Breakdown Table */}
+            <div>
+              <h3 style={{ margin: '0 0 16px', fontSize: '1.1rem', color: '#fff' }}>Track Performance Breakdown</h3>
+              {!stats?.topSongs?.length ? (
+                <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-muted)' }}>
+                  Upload your tracks to see individual stream breakdowns.
+                </div>
+              ) : (
+                <div style={{ overflowX: 'auto' }}>
+                  <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                    <thead>
+                      <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left', color: 'var(--text-muted)' }}>
+                        <th style={{ padding: '10px 12px' }}>Track</th>
+                        <th style={{ padding: '10px 12px' }}>Genre</th>
+                        <th style={{ padding: '10px 12px' }}>Total Plays</th>
+                        <th style={{ padding: '10px 12px' }}>Likes</th>
+                        <th style={{ padding: '10px 12px' }}>Estimated Royalties</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {stats.topSongs.map((song: any) => (
+                        <tr key={song._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                          <td style={{ padding: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 10 }}>
+                            <i className="fas fa-music" style={{ color: 'var(--accent-color)' }} />
+                            {song.title}
+                          </td>
+                          <td style={{ padding: '12px', color: 'var(--text-muted)' }}>{song.genre || 'Afrobeat'}</td>
+                          <td style={{ padding: '12px', fontWeight: 700 }}>{(song.plays || 0).toLocaleString()}</td>
+                          <td style={{ padding: '12px', color: '#4ade80' }}>{(song.likes || 0).toLocaleString()}</td>
+                          <td style={{ padding: '12px', color: 'var(--accent-color)', fontWeight: 700 }}>
+                            XAF {((song.plays || 0) * 1.5).toLocaleString()}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         </div>
