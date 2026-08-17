@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import QuickStatsAccordion from './QuickStatsAccordion';
 import { useAuth } from '../context/AuthContext';
 import { useAudio } from '../context/AudioContext';
 import { useNavigate } from 'react-router-dom';
@@ -13,9 +14,8 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => void }> = ({
-  navItems, activeView, onNavClick, onLogout, totalPlays, totalLikes, isOpen, onClose
+  navItems, activeView, onNavClick, onLogout, isOpen, onClose
 }) => {
-  const [statsOpen, setStatsOpen] = useState(false);
 
   return (
     <>
@@ -53,33 +53,7 @@ export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => 
           </div>
         </nav>
 
-        {/* Quick Stats Toggle */}
-        <div style={{ borderTop: '1px solid var(--border-color)' }}>
-          <button
-            className="sidebar-nav-btn"
-            onClick={() => setStatsOpen(o => !o)}
-            style={{ width: '100%', justifyContent: 'space-between' }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <i className="fas fa-chart-bar" />
-              <span>Quick Stats</span>
-            </div>
-            <i className={`fas fa-chevron-${statsOpen ? 'up' : 'down'}`} style={{ fontSize: '0.75rem', marginLeft: 'auto' }} />
-          </button>
-
-          {statsOpen && (
-            <div className="quick-stats-area">
-              <div className="stat-item">
-                <div className="stat-icon-sm"><i className="fas fa-headphones" /></div>
-                <div className="stat-info"><h4>{totalPlays ?? 0}</h4><p>Total Plays</p></div>
-              </div>
-              <div className="stat-item">
-                <div className="stat-icon-sm"><i className="fas fa-heart" /></div>
-                <div className="stat-info"><h4>{totalLikes ?? 0}</h4><p>Songs Liked</p></div>
-              </div>
-            </div>
-          )}
-        </div>
+        <QuickStatsAccordion />
       </div>
     </>
   );
@@ -306,3 +280,5 @@ const Layout: React.FC<LayoutProps> = ({
 };
 
 export default Layout;
+
+

@@ -4,6 +4,7 @@ import Artist from '../models/Artist';
 import User from '../models/User';
 import Payment from '../models/Payment';
 import ListeningHistory from '../models/ListeningHistory';
+import UserLike from '../models/UserLike';
 
 export const getGlobalStats = async (req: Request, res: Response) => {
     try {
@@ -92,6 +93,51 @@ export const getArtistStats = async (req: Request, res: Response) => {
                 followers: artist.followers,
                 topSongs,
                 playTrend,
+            },
+        });
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};
+
+export const getFanStats = async (req: Request, res: Response) => {
+    try {
+        // Get fan's listening history and likes statistics
+        const userId = req.user?.id;
+        if (!userId) return res.status(401).json({ success: false, message: 'Unauthorized' });
+
+        // Total listens (listening history count)
+        const totalListens = await ListeningHistory.countDocuments({ userId });
+
+        // Total likes
+        const totalLikes = await UserLike.countDocuments({ userId });
+
+        // Calculate total hours listened
+        // Get all songs listened to and sum their durations (assuming duration is in "mm:ss" format)
+        const listeningData = await ListeningHistory.find({ userId }).populate('songId', 'duration');
+        let totalMinutes = 0;
+        listeningData.forEach((entry: any) => {
+            if (entry.songId && entry.songId.duration) {
+                const [mins, secs] = entry.songId.duration.split(':').map(Number);
+                totalMinutes += mins || 0;
+                totalMinutes += (secs || 0) / 60;
+            }
+        });
+        const totalHours = Math.round((totalMinutes / 60) * 10) / 10; // Round to 1 decimal
+
+        // Recently played songs (top 5)
+        const recentlyPlayed = await ListeningHistory.find({ userId })
+            .populate('songId', 'title artist coverArt plays')
+            .sort({ playedAt: -1 })
+            .limit(5);
+
+        res.json({
+            success: true,
+            data: {
+                totalListens,
+                totalLikes,
+                totalHours,
+                recentlyPlayed: recentlyPlayed.map(h => h.songId),
             },
         });
     } catch (error: any) {

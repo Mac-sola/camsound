@@ -5,7 +5,7 @@ export const getNotificationSettings = async (req: Request, res: Response) => {
     try {
         const settings = await NotificationSetting.findOne({ userId: req.user?.id });
         if (!settings) {
-            const defaultSettings = await NotificationSetting.create({ userId: req.user?.id, emailNotifications: true, smsNotifications: false, pushNotifications: true });
+            const defaultSettings = await NotificationSetting.create({ userId: req.user?.id, emailNotifications: true, smsNotifications: false, pushNotifications: true, newReleaseNotifications: true });
             return res.json({ success: true, data: defaultSettings });
         }
         res.json({ success: true, data: settings });
@@ -27,3 +27,4 @@ export const updateNotificationSettings = async (req: Request, res: Response) =>
         res.status(500).json({ success: false, message: error.message });
     }
 };
+

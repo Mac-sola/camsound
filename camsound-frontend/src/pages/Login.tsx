@@ -34,7 +34,7 @@ const Login: React.FC = () => {
         const u = res.data.user;
         if (u.type === 'admin') navigate('/admin');
         else if (u.type === 'artist') navigate('/artist');
-        else navigate('/dashboard');
+        else navigate('/fan');
       } else {
         setError(res.data.message || 'Login failed');
       }
@@ -198,3 +198,4 @@ const Login: React.FC = () => {
 };
 
 export default Login;
+

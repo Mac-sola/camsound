@@ -15,6 +15,7 @@ const Signup: React.FC = () => {
   const [showPass, setShowPass] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showConfirmPass, setShowConfirmPass] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
@@ -41,13 +42,18 @@ const Signup: React.FC = () => {
       return;
     }
 
+    if (!acceptedTerms) {
+      setError('Please accept the Terms of Service and Privacy Policy.');
+      return;
+    }
+
     setLoading(true);
     try {
       const res = await authService.signup({ name: name.trim(), email: email.trim(), password, type, country: country.trim() });
       if (res.data.success) {
         login(res.data.token, res.data.user, res.data.csrfToken);
         if (type === 'artist') navigate('/artist');
-        else navigate('/dashboard');
+        else navigate('/fan');
       }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Sign up failed. Please try again.');
@@ -241,13 +247,22 @@ const Signup: React.FC = () => {
               </div>
             </div>
 
-            <div style={{ margin: '16px 0', fontSize: '0.83rem', color: 'var(--text-muted)' }}>
-              By creating an account, you agree to our{' '}
-              <a href="#" onClick={e => e.preventDefault()} style={{ color: 'var(--secondary-color)' }}>Terms of Service</a> and{' '}
-              <a href="#" onClick={e => e.preventDefault()} style={{ color: 'var(--secondary-color)' }}>Privacy Policy</a>.
-            </div>
+            <label style={{ margin: '16px 0', fontSize: '0.83rem', color: 'var(--text-muted)', display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={e => setAcceptedTerms(e.target.checked)}
+                required
+                style={{ marginTop: 3 }}
+              />
+              <span>
+                By creating an account, you agree to our{' '}
+                <a href="#" onClick={e => e.preventDefault()} style={{ color: 'var(--secondary-color)' }}>Terms of Service</a> and{' '}
+                <a href="#" onClick={e => e.preventDefault()} style={{ color: 'var(--secondary-color)' }}>Privacy Policy</a>.
+              </span>
+            </label>
 
-            <button type="submit" className="btn-auth-submit" disabled={loading}>
+            <button type="submit" className="btn-auth-submit" disabled={loading || !acceptedTerms}>
               {loading
                 ? <><i className="fas fa-spinner fa-spin" /> Creating account...</>
                 : <><i className="fas fa-user-plus" /> Create Account</>}
@@ -265,3 +280,4 @@ const Signup: React.FC = () => {
 };
 
 export default Signup;
+

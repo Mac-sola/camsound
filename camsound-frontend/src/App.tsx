@@ -8,6 +8,7 @@ import Signup from './pages/Signup';
 import Dashboard from './pages/Dashboard';
 import ArtistDashboard from './pages/ArtistDashboard';
 import AdminDashboard from './pages/AdminDashboard';
+import FanDashboard from './pages/FanDashboard';
 
 function App() {
   return (
@@ -42,7 +43,8 @@ function App() {
                 </ProtectedRoute>
               } 
             />
-          </Routes>
+                      <Route path="/fan" element={<ProtectedRoute requiredRole="fan"><FanDashboard /></ProtectedRoute>} />
+            </Routes>
         </Router>
       </AudioProvider>
     </AuthProvider>

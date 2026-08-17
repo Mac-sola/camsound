@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Layout from '../components/Layout';
-import Modal from '../components/Modal';
 import { statsService, songsService, artistsService, notificationsService, subscriptionsService, paymentsService, withdrawalsService, artistsExtendedService, commentsService } from '../services/api';
 import { useSearchParams } from 'react-router-dom';
 
@@ -22,6 +21,8 @@ const ArtistDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
   const [profileForm, setProfileForm] = useState({ name: '', genre: '', bio: '', instagramUrl: '', twitterUrl: '', facebookUrl: '', youtubeUrl: '' });
+  // New state for inline field validation errors
+  const [fieldErrors, setFieldErrors] = useState<{ title?: string; songFile?: string; coverArt?: string }>({});
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMessage, setProfileMessage] = useState('');
   const [plans, setPlans] = useState<any[]>([]);
@@ -29,14 +30,11 @@ const ArtistDashboard: React.FC = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [subscriptionMessage, setSubscriptionMessage] = useState('');
   const [isSubscribing, setIsSubscribing] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<any>(null);
-  const [subscriptionMomoNumber, setSubscriptionMomoNumber] = useState('');
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
   const [withdrawalMomoNumber, setWithdrawalMomoNumber] = useState('');
   const [withdrawalMessage, setWithdrawalMessage] = useState('');
   const [isRequestingWithdrawal, setIsRequestingWithdrawal] = useState(false);
   const [artistComments, setArtistComments] = useState<any[]>([]);
-  const [socialMessage, setSocialMessage] = useState('');
 
   // Upload form
   const [title, setTitle] = useState('');
@@ -46,8 +44,11 @@ const ArtistDashboard: React.FC = () => {
   const [selectedSongLabel, setSelectedSongLabel] = useState('Accepted audio formats: MP3, WAV, OGG, FLAC — max 50MB');
   const [selectedCoverLabel, setSelectedCoverLabel] = useState('Optional cover art: JPG, PNG, WEBP, GIF — max 5MB');
   const [uploading, setUploading] = useState(false);
+  // State for toast notifications
+  const [toastMessage, setToastMessage] = useState<string>('');
+  const [showToast, setShowToast] = useState<boolean>(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error' | 'info'>('idle');
+  const [uploadStatus, setUploadStatus] = useState<'idle' | 'loading' | 'success' | 'error' | 'info'>('idle');
   const [uploadMessage, setUploadMessage] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const coverRef = useRef<HTMLInputElement>(null);
@@ -64,6 +65,8 @@ const ArtistDashboard: React.FC = () => {
       setUploadMessage('');
       setUploadProgress(0);
     }
+    // Clear field errors when user interacts again
+    setFieldErrors({});
   };
 
   const validateAudioFile = (file: File) => {
@@ -291,50 +294,52 @@ const ArtistDashboard: React.FC = () => {
     else if (activeView === 'subscription') fetchPlans();
     else if (activeView === 'revenue') fetchWithdrawals();
     else if (activeView === 'notifications') fetchNotifications();
+    else if (activeView === 'social') fetchArtistComments();
   }, [activeView]);
 
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     const titleTrimmed = title.trim();
 
+    // Reset previous errors and status
+    setFieldErrors({});
+    setUploadStatus('idle');
+    setUploadMessage('');
+    setUploadProgress(0);
+
+    const errors: { title?: string; songFile?: string; coverArt?: string } = {};
+
     if (!titleTrimmed) {
-      setUploadStatus('error');
-      setUploadMessage('Please enter a track title.');
-      return;
+      errors.title = 'Please enter a track title.';
     }
-
     if (!songFile) {
-      setUploadStatus('error');
-      setUploadMessage('Please select an audio file to upload.');
-      return;
+      errors.songFile = 'Please select an audio file to upload.';
+    } else {
+      const audioError = validateAudioFile(songFile);
+      if (audioError) errors.songFile = audioError;
     }
-
-    const audioError = validateAudioFile(songFile);
-    if (audioError) {
-      setUploadStatus('error');
-      setUploadMessage(audioError);
-      return;
-    }
-
     if (coverArt) {
       const coverError = validateCoverArtFile(coverArt);
-      if (coverError) {
-        setUploadStatus('error');
-        setUploadMessage(coverError);
-        return;
-      }
+      if (coverError) errors.coverArt = coverError;
     }
 
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      setUploadStatus('error');
+      setUploadMessage('Please fix the highlighted errors.');
+      return;
+    }
+
+    // All validations passed – start upload
     setUploading(true);
-    setUploadProgress(0);
-    setUploadStatus('info');
+    setUploadStatus('loading');
     setUploadMessage(`Uploading ${titleTrimmed}...`);
 
     const fd = new FormData();
     fd.append('upload_type', 'song');
     fd.append('title', titleTrimmed);
     fd.append('genre', genre);
-    fd.append('song_file', songFile);
+    fd.append('song_file', songFile!);
     if (coverArt) {
       fd.append('cover_art', coverArt);
     }
@@ -361,8 +366,13 @@ const ArtistDashboard: React.FC = () => {
         },
       });
       if (res.data.success) {
-        setUploadStatus('success');
-        setUploadMessage('✅ Track uploaded successfully and is pending moderation.');
+        // Success handling – show toast and reset form
+        setToastMessage('✅ Track uploaded successfully and is pending moderation.');
+        setShowToast(true);
+        // Auto‑dismiss toast after 4 seconds
+        setTimeout(() => setShowToast(false), 4000);
+
+        // Reset form fields
         setTitle('');
         setSongFile(null);
         setCoverArt(null);
@@ -372,9 +382,7 @@ const ArtistDashboard: React.FC = () => {
         if (fileRef.current) fileRef.current.value = '';
         if (coverRef.current) coverRef.current.value = '';
 
-        if (successResetTimer.current) {
-          window.clearTimeout(successResetTimer.current);
-        }
+        // Reset upload UI after short delay
         successResetTimer.current = window.setTimeout(() => {
           setUploadStatus('idle');
           setUploadMessage('');
@@ -486,14 +494,21 @@ const ArtistDashboard: React.FC = () => {
             <i className="fas fa-upload" />Upload New Track
           </div>
 
-          {uploadStatus !== 'idle' && uploadMessage && (
-            <div className={`upload-message ${uploadStatus}`} aria-live="polite">
-              <i className={`fas ${uploadStatus === 'success' ? 'fa-check-circle' : uploadStatus === 'error' ? 'fa-exclamation-circle' : 'fa-circle-notch fa-spin'}`} />
-              <span>{uploadMessage}</span>
+          {/* Inline validation feedback */}
+          {uploadStatus === 'error' && uploadMessage && (
+            <div className="upload-message error" aria-live="polite">
+              <i className="fas fa-exclamation-circle" /> <span>{uploadMessage}</span>
             </div>
           )}
 
-          {(uploading || uploadStatus === 'info') && (
+          {/* Toast notification for success */}
+          {showToast && (
+            <div className="toast" role="alert" aria-live="polite">
+              {toastMessage}
+            </div>
+          )}
+
+          {(uploading || uploadStatus === 'loading') && (
             <div className="upload-progress" aria-hidden="true">
               <div className="upload-progress-track">
                 <div className="upload-progress-bar" style={{ width: `${uploadProgress}%` }} />
@@ -517,6 +532,9 @@ const ArtistDashboard: React.FC = () => {
                   setTitle(e.target.value);
                   resetUploadNotice();
                 }}
+                disabled={uploading}
+                aria-invalid={!!fieldErrors.title}
+                aria-describedby={fieldErrors.title ? 'title-error' : undefined}
                 onFocus={() => console.log('track-title:focus')}
                 onBlur={() => {
                   console.log('track-title:blur');
@@ -528,9 +546,12 @@ const ArtistDashboard: React.FC = () => {
                     }, 10);
                   }
                 }}
-                onKeyDown={(e) => console.log('track-title:keyDown', e.key)}
-                onKeyUp={(e) => console.log('track-title:keyUp', e.key)}
               />
+              {fieldErrors.title && (
+                <div id="title-error" className="field-error" role="alert">
+                  {fieldErrors.title}
+                </div>
+              )}
             </div>
             <div className="form-field">
               <label htmlFor="genre">Genre</label>
@@ -547,9 +568,17 @@ const ArtistDashboard: React.FC = () => {
                 type="file"
                 accept="audio/*,audio/mpeg,audio/wav,audio/ogg,audio/flac"
                 onChange={handleSongFileChange}
+                disabled={uploading}
+                aria-invalid={!!fieldErrors.songFile}
+                aria-describedby={fieldErrors.songFile ? 'songfile-error' : undefined}
                 onFocus={() => console.log('audio-file:focus')}
                 onBlur={() => console.log('audio-file:blur')}
               />
+              {fieldErrors.songFile && (
+                <div id="songfile-error" className="field-error" role="alert">
+                  {fieldErrors.songFile}
+                </div>
+              )}
               <div className="upload-file-hint">{selectedSongLabel}</div>
             </div>
             <div className="form-field">
@@ -561,9 +590,17 @@ const ArtistDashboard: React.FC = () => {
                 type="file"
                 accept="image/*"
                 onChange={handleCoverArtChange}
+                disabled={uploading}
+                aria-invalid={!!fieldErrors.coverArt}
+                aria-describedby={fieldErrors.coverArt ? 'coverart-error' : undefined}
                 onFocus={() => console.log('cover-art:focus')}
                 onBlur={() => console.log('cover-art:blur')}
               />
+              {fieldErrors.coverArt && (
+                <div id="coverart-error" className="field-error" role="alert">
+                  {fieldErrors.coverArt}
+                </div>
+              )}
               <div className="upload-file-hint">{selectedCoverLabel}</div>
             </div>
             <button type="submit" className="btn-camsound-yellow" style={{ width: '100%', marginTop: 8, justifyContent: 'center', borderRadius: 10 }} disabled={uploading}>
@@ -746,9 +783,26 @@ const ArtistDashboard: React.FC = () => {
         <div className="section-card">
           <div className="section-header"><h2>Fan Interaction</h2></div>
           <p style={{ color: 'var(--text-muted)' }}>You have {stats?.followers || 0} followers.</p>
-          <div style={{ marginTop: 24, padding: 32, textAlign: 'center', background: 'var(--bg-tertiary)', borderRadius: 12 }}>
-            <i className="fas fa-comments" style={{ fontSize: '2rem', color: 'var(--text-muted)', marginBottom: 12 }} />
-            <p>Comments and discussions will appear here.</p>
+          <div style={{ marginTop: 24 }}>
+            <h3 style={{ color: 'var(--text-white)', marginBottom: 16 }}>Recent Comments & Feedback</h3>
+            {artistComments.length === 0 ? (
+              <div style={{ padding: 32, textAlign: 'center', background: 'var(--bg-tertiary)', borderRadius: 12 }}>
+                <i className="fas fa-comments" style={{ fontSize: '2rem', color: 'var(--text-muted)', marginBottom: 12 }} />
+                <p>No comments on your songs yet.</p>
+              </div>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                {artistComments.map((c: any) => (
+                  <div key={c._id} style={{ padding: 14, background: 'var(--bg-tertiary)', borderRadius: 8 }}>
+                    <div style={{ fontWeight: 600, color: 'var(--text-white)' }}>{c.userId?.name || 'Anonymous Fan'}</div>
+                    <div style={{ fontSize: '0.9rem', marginTop: 4 }}>{c.content}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>
+                      On song: {c.songId?.title || 'Unknown'} • {new Date(c.createdAt).toLocaleDateString()}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -876,3 +930,4 @@ const ArtistDashboard: React.FC = () => {
 };
 
 export default ArtistDashboard;
+

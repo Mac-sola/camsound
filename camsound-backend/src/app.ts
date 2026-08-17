@@ -100,6 +100,7 @@ app.use('/api/admin', adminRoutes);
 
 // Community global routes
 app.get('/api/community/comments', commentsController.getRecentComments);
+app.get('/api/comments/trending', commentsController.getTrendingComments);
 
 // ── Health Check ──────────────────────────────────────────────────────────────
 app.get('/api/health', (_req, res) => {

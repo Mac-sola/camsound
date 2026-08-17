@@ -308,6 +308,7 @@ const Landing: React.FC = () => {
             <div>
               <div className="footer-brand"><i className="fas fa-drum" /> CamSound</div>
               <p className="footer-description">Discover, stream and promote local talent across Cameroon and beyond.</p>
+              <Link to="/admin" className="footer-admin-doorway"><i className="fas fa-lock" /> Admin Portal</Link>
             </div>
             <div className="footer-col">
               <h5>Quick Links</h5>
@@ -346,3 +347,4 @@ const Landing: React.FC = () => {
 };
 
 export default Landing;
+

@@ -1224,9 +1224,20 @@ const Dashboard: React.FC = () => {
                 <button
                   className="btn-camsound-outline"
                   style={{ marginTop: 6 }}
-                  onClick={() => {
-                    setSettingsSaveMsg('✅ Notification preferences saved.');
-                    setTimeout(() => setSettingsSaveMsg(''), 3000);
+                  onClick={async () => {
+                    setSettingsSaveMsg('');
+                    try {
+                      const res = await notificationSettingsService.updateSettings({
+                        emailNotifications: notifPrefs.emailNotifs,
+                        pushNotifications: notifPrefs.pushNotifs,
+                        newReleaseNotifications: notifPrefs.newReleaseNotifs,
+                      });
+                      setSettingsSaveMsg(res.data.success ? 'Preferences saved.' : (res.data.message || 'Could not save preferences.'));
+                    } catch (err: any) {
+                      setSettingsSaveMsg(err.response?.data?.message || 'Could not save preferences.');
+                    } finally {
+                      setTimeout(() => setSettingsSaveMsg(''), 3000);
+                    }
                   }}
                 >
                   Save Preferences
@@ -1370,3 +1381,4 @@ const Dashboard: React.FC = () => {
 };
 
 export default Dashboard;
+

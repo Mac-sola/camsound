@@ -5,6 +5,7 @@ export interface INotificationSetting extends Document {
     emailNotifications: boolean;
     smsNotifications: boolean;
     pushNotifications: boolean;
+    newReleaseNotifications: boolean;
 }
 
 const NotificationSettingSchema = new Schema<INotificationSetting>(
@@ -13,9 +14,11 @@ const NotificationSettingSchema = new Schema<INotificationSetting>(
         emailNotifications: { type: Boolean, default: true },
         smsNotifications: { type: Boolean, default: false },
         pushNotifications: { type: Boolean, default: true },
+        newReleaseNotifications: { type: Boolean, default: true },
     },
     { timestamps: true }
 );
 
 const NotificationSetting = mongoose.model<INotificationSetting>('NotificationSetting', NotificationSettingSchema);
 export default NotificationSetting;
+

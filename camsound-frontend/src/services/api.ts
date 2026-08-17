@@ -139,6 +139,7 @@ export const notificationsService = {
 export const statsService = {
   getGlobalStats: () => api.get('/api/stats/global'),
   getArtistStats: () => api.get('/api/stats/artist'),
+  getFanStats: () => api.get('/api/stats/fan-totals'),
 };
 
 // --- Admin ---
@@ -231,6 +232,7 @@ export const commentsService = {
   deleteComment: (songId: string, commentId: string) => api.delete(`/api/songs/${songId}/comments/${commentId}`),
   pinComment: (songId: string, commentId: string, pin: boolean) => api.put(`/api/songs/${songId}/comments/${commentId}/pin`, { pin }),
   getRecentActivity: () => api.get('/api/community/comments'),
+  getTrendingTopics: () => api.get('/api/comments/trending'),
 };
 
 // --- Artist extended ---

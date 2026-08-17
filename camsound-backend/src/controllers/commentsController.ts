@@ -96,3 +96,38 @@ export const getRecentComments = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+export const getTrendingComments = async (req: Request, res: Response) => {
+    try {
+        // Get trending topics (songs with the most discussion/comments)
+        const trendingTopics = await Comment.aggregate([
+            { $match: { parentId: null } }, // Only top-level comments
+            { $group: {
+                _id: '$songId',
+                discussionVolume: { $sum: 1 }, // Count of comments per song
+                recentActivity: { $max: '$createdAt' }, // Most recent comment on this song
+            }},
+            { $sort: { discussionVolume: -1, recentActivity: -1 } },
+            { $limit: 10 },
+            { $lookup: {
+                from: 'songs',
+                localField: '_id',
+                foreignField: '_id',
+                as: 'song'
+            }},
+            { $unwind: '$song' },
+            { $project: {
+                _id: 0,
+                songId: '$_id',
+                title: '$song.title',
+                coverArt: '$song.coverArt',
+                discussionVolume: 1,
+                recentActivity: 1,
+            }},
+        ]);
+
+        res.json({ success: true, data: trendingTopics });
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};

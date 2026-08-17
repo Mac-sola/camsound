@@ -17,7 +17,8 @@ async function test() {
     });
     
     const token = loginRes.data.token;
-    console.log('✅ Login successful, token:', token.substring(0, 20) + '...');
+    const csrfToken = loginRes.data.csrf_token || loginRes.data.csrfToken;
+    console.log('✅ Login successful, token:', token.substring(0, 20) + '...', 'csrf:', csrfToken ? csrfToken.substring(0, 10) + '...' : 'none');
 
     // Create a minimal WAV file
     const wavBuffer = Buffer.from([
@@ -31,6 +32,7 @@ async function test() {
 
     console.log('\n2. Testing upload API...');
     const form = new FormData();
+    form.append('upload_type', 'song');
     form.append('title', 'Test Track Upload');
     form.append('genre', 'Afrobeat');
     form.append('song_file', fs.createReadStream('temp_test.wav'));
@@ -41,7 +43,8 @@ async function test() {
       {
         headers: {
           ...form.getHeaders(),
-          'Authorization': `Bearer ${token}`
+          'Authorization': `Bearer ${token}`,
+          'X-CSRF-Token': csrfToken
         }
       }
     );
@@ -56,7 +59,7 @@ async function test() {
     fs.unlinkSync('temp_test.wav');
 
   } catch (error) {
-    console.error('❌ Error:', error.response?.data || error.message);
+    console.error('❌ Error details:', error.code || '', error.message || '', error.response?.data || '');
   }
 }
 
