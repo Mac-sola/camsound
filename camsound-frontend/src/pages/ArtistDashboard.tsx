@@ -536,16 +536,6 @@ const ArtistDashboard: React.FC = () => {
                 aria-invalid={!!fieldErrors.title}
                 aria-describedby={fieldErrors.title ? 'title-error' : undefined}
                 onFocus={() => console.log('track-title:focus')}
-                onBlur={() => {
-                  console.log('track-title:blur');
-                  if (import.meta.env.MODE !== 'production') {
-                    // Workaround: restore focus in dev when an external host steals it
-                    window.setTimeout(() => {
-                      const el = document.getElementById('track-title') as HTMLInputElement | null;
-                      if (el) el.focus();
-                    }, 10);
-                  }
-                }}
               />
               {fieldErrors.title && (
                 <div id="title-error" className="field-error" role="alert">
