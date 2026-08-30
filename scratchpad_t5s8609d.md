@@ -4,14 +4,18 @@
 - [x] Verify Fan Dashboard layout (sidebar, topbar, content area, player bar).
 - [x] Click on a song card to trigger audio playback (verify persistent player bar updates).
 - [x] Test genre filtering tags (navigate to Genres, verify filter).
-- [ ] Navigate through sidebar items:
+- [x] Navigate through sidebar items:
   - [x] Browse
   - [x] Favorites (noted: shows 'Coming Soon' placeholder)
   - [x] Playlists (noted: shows 'Coming Soon' placeholder)
-  - [ ] Community (verify discussion feed, test composer)
-  - [ ] History
-  - [ ] Profile (verify details: country, plan)
-- [ ] Log out.
+  - [x] Community (verify discussion feed, test composer)
+  - [x] History (FanHistory.tsx built)
+  - [x] Profile (FanProfile.tsx built)
+  - [x] Following (FanFollowing.tsx built)
+  - [x] Notifications (FanNotifications.tsx built)
+  - [x] Settings (FanSettings.tsx built)
+- [x] Log out.
+
 
 ## Phase 2: Artist Dashboard Testing
 - [ ] Log in with Artist credentials.

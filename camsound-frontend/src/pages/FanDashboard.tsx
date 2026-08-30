@@ -4,24 +4,31 @@ import FanHome from '../components/FanHome';
 import FanBrowse from '../components/FanBrowse';
 import FanGenres from '../components/FanGenres';
 import FanCommunity from '../components/FanCommunity';
+import FanHistory from '../components/FanHistory';
+import FanProfile from '../components/FanProfile';
+import FanFollowing from '../components/FanFollowing';
+import FanNotifications from '../components/FanNotifications';
+import FanSettings from '../components/FanSettings';
+import FanFavorites from '../components/FanFavorites';
+import FanPlaylists from '../components/FanPlaylists';
 
 /** Navigation items per LEGACY_PROJECT_SPEC § 3.3.1 */
 const FAN_NAV = [
   { section: 'DISCOVER' },
-  { label: 'Home',        icon: 'fa-home',         view: 'home' },
-  { label: 'Browse',      icon: 'fa-search',        view: 'browse' },
-  { label: 'Genres',      icon: 'fa-music',         view: 'genres' },
-  { label: 'Community',   icon: 'fa-users',         view: 'community' },
+  { label: 'Home',          icon: 'fa-home',         view: 'home' },
+  { label: 'Browse',        icon: 'fa-search',        view: 'browse' },
+  { label: 'Genres',        icon: 'fa-music',         view: 'genres' },
+  { label: 'Community',     icon: 'fa-users',         view: 'community' },
   { section: 'MY MUSIC' },
-  { label: 'Favorites',   icon: 'fa-heart',         view: 'favorites' },
-  { label: 'Playlists',   icon: 'fa-list',          view: 'playlists' },
-  { label: 'History',     icon: 'fa-history',       view: 'history' },
+  { label: 'Favorites',     icon: 'fa-heart',         view: 'favorites' },
+  { label: 'Playlists',     icon: 'fa-list',          view: 'playlists' },
+  { label: 'History',       icon: 'fa-history',       view: 'history' },
   { section: 'FOLLOWING' },
-  { label: 'Following',   icon: 'fa-user-friends',  view: 'following' },
-  { label: 'Notifications', icon: 'fa-bell',        view: 'notifications' },
+  { label: 'Following',     icon: 'fa-user-friends',  view: 'following' },
+  { label: 'Notifications', icon: 'fa-bell',          view: 'notifications' },
   { section: 'ACCOUNT' },
-  { label: 'Profile',     icon: 'fa-user',          view: 'profile' },
-  { label: 'Settings',    icon: 'fa-cog',           view: 'settings' },
+  { label: 'Profile',       icon: 'fa-user',          view: 'profile' },
+  { label: 'Settings',      icon: 'fa-cog',           view: 'settings' },
 ];
 
 const FanDashboard: React.FC = () => {
@@ -29,10 +36,17 @@ const FanDashboard: React.FC = () => {
 
   const renderView = () => {
     switch (activeView) {
-      case 'home':        return <FanHome />;
-      case 'browse':      return <FanBrowse />;
-      case 'genres':      return <FanGenres />;
-      case 'community':   return <FanCommunity />;
+      case 'home':          return <FanHome />;
+      case 'browse':        return <FanBrowse />;
+      case 'genres':        return <FanGenres />;
+      case 'community':     return <FanCommunity />;
+      case 'favorites':     return <FanFavorites />;
+      case 'playlists':     return <FanPlaylists />;
+      case 'history':       return <FanHistory />;
+      case 'profile':       return <FanProfile />;
+      case 'following':     return <FanFollowing onNavClick={setActiveView} />;
+      case 'notifications': return <FanNotifications />;
+      case 'settings':      return <FanSettings />;
       default:
         return (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 80, color: 'var(--text-muted)', gap: 12 }}>

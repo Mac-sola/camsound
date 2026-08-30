@@ -170,6 +170,24 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const isInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+      
+      if (e.code === 'Space' && !isInput) {
+        e.preventDefault(); // prevent scrolling and default button triggers
+        if (target.tagName === 'BUTTON') {
+          target.blur(); // remove focus from buttons so space doesn't click them
+        }
+        togglePlay();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [togglePlay]);
+
   return (
     <AudioContext.Provider value={{ currentSong, isPlaying, progress, duration, audioError, playSong, togglePlay, seek, skipForward, skipBackward, volume, setVolume, isMuted, toggleMute }}>
       {children}

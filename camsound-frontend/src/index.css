@@ -3639,3 +3639,715 @@ select:disabled {
   padding: 2px 8px;
   border-radius: var(--radius-full);
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   NEW FAN DASHBOARD VIEWS — History, Profile, Following,
+   Notifications, Settings
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── Shared Utility Buttons ─── */
+.fan-primary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: var(--accent-color);
+  color: #000;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  font-family: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+.fan-primary-btn:hover:not(:disabled) {
+  background: var(--accent-dark);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(250,204,21,0.25);
+}
+.fan-primary-btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+.fan-secondary-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  background: transparent;
+  color: var(--text-light);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-family: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+.fan-secondary-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,0.06);
+  border-color: rgba(255,255,255,0.2);
+}
+.fan-secondary-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.fan-danger-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  background: rgba(239,68,68,0.10);
+  color: #ef4444;
+  border: 1px solid rgba(239,68,68,0.25);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-family: inherit;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+.fan-danger-btn:hover:not(:disabled) { background: rgba(239,68,68,0.18); }
+.fan-danger-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+.fan-edit-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  background: rgba(250,204,21,0.08);
+  color: var(--accent-color);
+  border: 1px solid rgba(250,204,21,0.22);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-family: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: var(--transition-fast);
+}
+.fan-edit-btn:hover { background: rgba(250,204,21,0.15); }
+
+.fan-success-msg { color: #4ade80; font-size: 0.88rem; font-weight: 600; }
+.fan-error-msg { color: #ef4444; font-size: 0.85rem; display: flex; align-items: center; gap: 6px; }
+
+.fan-page-title {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-white);
+  margin: 0 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.fan-page-subtitle {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* ─── Shared form fields ─── */
+.fan-field-label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+}
+.fan-field-input,
+.fan-field-textarea {
+  width: 100%;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-white);
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  font-family: inherit;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.fan-field-input:focus,
+.fan-field-textarea:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px rgba(250,204,21,0.10);
+}
+.fan-field-textarea { resize: vertical; }
+.fan-field-value {
+  font-size: 0.92rem;
+  color: var(--text-light);
+  padding: 10px 0;
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.fan-field-readonly { opacity: 0.65; }
+.fan-field-badge {
+  font-size: 0.68rem;
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-color);
+  color: var(--text-muted);
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   HISTORY
+   ═══════════════════════════════════════════════════════════════ */
+.fan-history-container {
+  padding: 28px 32px;
+  max-width: 860px;
+}
+.fan-history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.fan-history-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: background 0.18s;
+}
+.fan-history-row:hover { background: rgba(255,255,255,0.04); }
+.fan-history-row.active { background: rgba(250,204,21,0.07); }
+
+.fan-history-index {
+  width: 24px;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.fan-history-cover {
+  position: relative;
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  background: var(--bg-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  color: var(--text-muted);
+}
+.fan-history-cover img { width: 100%; height: 100%; object-fit: cover; }
+.fan-history-play-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.18s;
+  color: #fff;
+  font-size: 0.9rem;
+}
+.fan-history-row:hover .fan-history-play-overlay,
+.fan-history-row.active .fan-history-play-overlay { opacity: 1; }
+
+.fan-history-info { flex: 1; min-width: 0; }
+.fan-history-title {
+  font-weight: 700;
+  font-size: 0.92rem;
+  color: var(--text-white);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fan-history-artist {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+.fan-history-genre {
+  font-size: 0.72rem;
+  background: rgba(250,204,21,0.10);
+  color: var(--accent-color);
+  border-radius: var(--radius-full);
+  padding: 2px 10px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+.fan-history-time {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PROFILE
+   ═══════════════════════════════════════════════════════════════ */
+.fan-profile-container {
+  padding: 28px 32px;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.fan-profile-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 32px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  text-align: center;
+  box-shadow: var(--shadow-medium);
+  position: relative;
+  overflow: hidden;
+}
+.fan-profile-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent-color), #22d3ee, var(--accent-color));
+  background-size: 200% 100%;
+  animation: shimmer-bar 3s ease infinite;
+}
+@keyframes shimmer-bar {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+.fan-profile-avatar-wrap { position: relative; }
+.fan-profile-avatar {
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2.4rem;
+  font-weight: 800;
+  color: var(--accent-color);
+  border: 3px solid rgba(250,204,21,0.25);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  overflow: hidden;
+}
+.fan-profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.fan-profile-plan-badge {
+  margin-top: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  letter-spacing: 0.03em;
+}
+.fan-profile-name {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-white);
+  margin: 0;
+}
+.fan-profile-email,
+.fan-profile-country {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin: 2px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.fan-profile-stats {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  border-top: 1px solid var(--border-color);
+  width: 100%;
+  padding-top: 20px;
+  margin-top: 4px;
+}
+.fan-profile-stat {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+.fan-profile-stat-value {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text-white);
+}
+.fan-profile-stat-label {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+.fan-profile-stat-divider {
+  width: 1px;
+  height: 36px;
+  background: var(--border-color);
+}
+
+.fan-profile-form-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  padding: 28px 32px;
+  box-shadow: var(--shadow-medium);
+}
+.fan-profile-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.fan-profile-field { display: flex; flex-direction: column; }
+.fan-profile-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+  flex-wrap: wrap;
+}
+.fan-pw-wrap { position: relative; }
+.fan-pw-wrap .fan-field-input { padding-right: 44px; }
+.fan-pw-toggle {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px;
+  font-size: 0.9rem;
+}
+.fan-pw-toggle:hover { color: var(--text-light); }
+
+/* ═══════════════════════════════════════════════════════════════
+   FOLLOWING
+   ═══════════════════════════════════════════════════════════════ */
+.fan-following-container {
+  padding: 28px 32px;
+}
+.fan-following-count {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--accent-color);
+  background: rgba(250,204,21,0.08);
+  border: 1px solid rgba(250,204,21,0.18);
+  padding: 4px 14px;
+  border-radius: var(--radius-full);
+}
+.fan-following-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.fan-following-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-lg);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  transition: border-color 0.2s, background 0.2s;
+}
+.fan-following-card:hover {
+  border-color: rgba(250,204,21,0.18);
+  background: rgba(255,255,255,0.025);
+}
+.fan-following-avatar {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--gradient-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--accent-color);
+  flex-shrink: 0;
+  overflow: hidden;
+  border: 2px solid rgba(250,204,21,0.15);
+}
+.fan-following-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.fan-following-info { flex: 1; min-width: 0; }
+.fan-following-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: var(--text-white);
+  margin-bottom: 4px;
+}
+.fan-following-genre,
+.fan-following-followers {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.fan-following-bio {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.fan-unfollow-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  background: rgba(239,68,68,0.08);
+  color: #ef4444;
+  border: 1px solid rgba(239,68,68,0.2);
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: var(--transition-fast);
+  flex-shrink: 0;
+}
+.fan-unfollow-btn:hover:not(:disabled) { background: rgba(239,68,68,0.16); }
+.fan-unfollow-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ═══════════════════════════════════════════════════════════════
+   NOTIFICATIONS
+   ═══════════════════════════════════════════════════════════════ */
+.fan-notifs-container {
+  padding: 28px 32px;
+  max-width: 760px;
+}
+.fan-notif-count-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--accent-color);
+  color: #000;
+  font-size: 0.72rem;
+  font-weight: 800;
+  min-width: 22px;
+  height: 22px;
+  border-radius: var(--radius-full);
+  padding: 0 6px;
+  margin-left: 4px;
+  vertical-align: middle;
+}
+.fan-notifs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.fan-notif-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 16px 18px;
+  border-radius: var(--radius-lg);
+  border: 1px solid transparent;
+  transition: background 0.18s, border-color 0.18s;
+  cursor: pointer;
+  position: relative;
+}
+.fan-notif-row.unread {
+  background: rgba(255,255,255,0.03);
+  border-color: var(--border-color);
+}
+.fan-notif-row.unread:hover {
+  background: rgba(255,255,255,0.055);
+  border-color: rgba(250,204,21,0.12);
+}
+.fan-notif-row.read { opacity: 0.65; }
+.fan-notif-row.read:hover { opacity: 0.85; background: rgba(255,255,255,0.02); }
+
+.fan-notif-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+.fan-notif-body { flex: 1; min-width: 0; }
+.fan-notif-title {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--text-white);
+  margin-bottom: 3px;
+}
+.fan-notif-message {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  line-height: 1.45;
+}
+.fan-notif-time {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 5px;
+}
+.fan-notif-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--accent-color);
+  flex-shrink: 0;
+  margin-top: 6px;
+  box-shadow: 0 0 6px rgba(250,204,21,0.5);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SETTINGS
+   ═══════════════════════════════════════════════════════════════ */
+.fan-settings-container {
+  padding: 28px 32px;
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+.fan-settings-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-xl);
+  overflow: hidden;
+  box-shadow: var(--shadow-medium);
+}
+.fan-settings-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 18px 24px;
+  border-bottom: 1px solid var(--border-color);
+  background: rgba(255,255,255,0.02);
+}
+.fan-settings-card-header i {
+  color: var(--accent-color);
+  font-size: 1rem;
+}
+.fan-settings-card-header h3 {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-white);
+  margin: 0;
+}
+.fan-settings-items {
+  padding: 8px 0;
+}
+.fan-settings-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 24px;
+  transition: background 0.15s;
+}
+.fan-settings-row:hover { background: rgba(255,255,255,0.025); }
+.fan-settings-row-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.06);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.fan-settings-row-info { flex: 1; }
+.fan-settings-row-label {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-white);
+  margin-bottom: 2px;
+}
+.fan-settings-row-desc {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  line-height: 1.4;
+}
+.fan-settings-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 14px 24px;
+  border-top: 1px solid var(--border-color);
+  background: rgba(255,255,255,0.015);
+  flex-wrap: wrap;
+}
+
+/* Toggle Switch */
+.fan-toggle {
+  position: relative;
+  width: 48px;
+  height: 26px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.25s;
+  flex-shrink: 0;
+  padding: 0;
+}
+.fan-toggle.on  { background: var(--accent-color); }
+.fan-toggle.off { background: rgba(255,255,255,0.15); }
+.fan-toggle-thumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+}
+.fan-toggle.on  .fan-toggle-thumb { transform: translateX(22px); }
+.fan-toggle.off .fan-toggle-thumb { transform: translateX(0); }
+
+/* ─── Profile fields inside Settings (password section) ─── */
+.fan-settings-items .fan-profile-field {
+  padding: 0 24px;
+}
+
+/* ─── Responsive ─── */
+@media (max-width: 768px) {
+  .fan-history-container,
+  .fan-profile-container,
+  .fan-following-container,
+  .fan-notifs-container,
+  .fan-settings-container { padding: 20px 16px; }
+
+  .fan-profile-card,
+  .fan-profile-form-card { padding: 20px 16px; }
+
+  .fan-following-card { flex-wrap: wrap; }
+
+  .fan-profile-stats { gap: 0; }
+
+  .fan-settings-card-footer { justify-content: center; }
+
+  .fan-history-genre { display: none; }
+}
+
