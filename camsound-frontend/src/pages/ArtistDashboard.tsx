@@ -20,6 +20,7 @@ const ArtistDashboard: React.FC = () => {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
+  const [profileError, setProfileError] = useState('');
   const [profileForm, setProfileForm] = useState({ name: '', genre: '', bio: '', instagramUrl: '', twitterUrl: '', facebookUrl: '', youtubeUrl: '' });
   // New state for inline field validation errors
   const [fieldErrors, setFieldErrors] = useState<{ title?: string; songFile?: string; coverArt?: string }>({});
@@ -153,6 +154,7 @@ const ArtistDashboard: React.FC = () => {
     }
   }, [searchParams]);
   const fetchProfile = async () => {
+    setProfileError('');
     try {
       const res = await artistsService.getArtistMe();
       if (res.data.success) {
@@ -167,7 +169,9 @@ const ArtistDashboard: React.FC = () => {
           youtubeUrl: res.data.data.youtubeUrl || '',
         });
       }
-    } catch {}
+    } catch (error: any) {
+      setProfileError(error.response?.data?.message || 'Unable to load your artist profile.');
+    }
   };
 
   useEffect(() => {
@@ -218,10 +222,9 @@ const ArtistDashboard: React.FC = () => {
 
   const handleSubscribe = async (plan: any) => {
     if (!plan) return;
-    setSubscriptionMessage(`Simulating payment for ${plan.name}...`);
+    setSubscriptionMessage(`Processing payment for ${plan.name}...`);
     setIsSubscribing(true);
 
-    const transactionId = `TXN-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
     const startDate = new Date();
     const endDate = new Date(startDate);
     endDate.setMonth(endDate.getMonth() + 1);
@@ -231,12 +234,10 @@ const ArtistDashboard: React.FC = () => {
         amount: plan.price,
         currency: 'XAF',
         paymentMethod: 'MoMo',
-        transactionId,
-        status: 'pending',
       });
 
       if (!paymentRes.data.success) {
-        throw new Error(paymentRes.data.message || 'Payment simulation failed');
+        throw new Error(paymentRes.data.message || 'Payment initiation failed');
       }
 
       const subRes = await subscriptionsService.createSubscription({
@@ -342,15 +343,6 @@ const ArtistDashboard: React.FC = () => {
     fd.append('song_file', songFile!);
     if (coverArt) {
       fd.append('cover_art', coverArt);
-    }
-
-    // Debug FormData before submission
-    if (import.meta.env.MODE !== 'production') {
-      const debugEntries: Array<[string, FormDataEntryValue]> = [];
-      for (const entry of fd.entries()) {
-        debugEntries.push(entry);
-      }
-      console.debug('Uploading track', { title: titleTrimmed, genre, songFile, coverArt, formDataEntries: debugEntries });
     }
 
     try {
@@ -479,7 +471,7 @@ const ArtistDashboard: React.FC = () => {
     </div>
   );
 
-  const UploadView = () => (
+  const renderUploadView = () => (
     <div>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
         <div className="upload-form-card">
@@ -637,8 +629,15 @@ const ArtistDashboard: React.FC = () => {
       }}
     >
       {activeView === 'dashboard' && <DashOverview />}
-      {activeView === 'music' && <UploadView />}
+      {activeView === 'music' && renderUploadView()}
       {/* Profile Management */}
+      {activeView === 'profile' && !profile && (
+        <div className="section-card">
+          <div className="section-header"><h2>Profile Management</h2></div>
+          <p style={{ color: 'var(--text-muted)' }}>{profileError || 'Loading artist profile...'}</p>
+          {profileError && <button className="btn-camsound-outline" onClick={fetchProfile}>Try Again</button>}
+        </div>
+      )}
       {activeView === 'profile' && profile && (
         <div className="section-card">
           <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>

@@ -7,17 +7,6 @@ const api = axios.create({
   withCredentials: true,
 });
 
-const normalizeOfflineMedia = (value: unknown): unknown => {
-  if (typeof value === 'string' && import.meta.env.VITE_OFFLINE_MODE !== 'false') {
-    if (value.startsWith('https://mock-cdn.example.com/image/')) return '/media-placeholder.svg';
-  }
-  if (Array.isArray(value)) return value.map(normalizeOfflineMedia);
-  if (value && typeof value === 'object') {
-    return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, normalizeOfflineMedia(item)]));
-  }
-  return value;
-};
-
 // Add a request interceptor to inject the token and CSRF header
 api.interceptors.request.use(
   (config) => {
@@ -40,15 +29,13 @@ api.interceptors.request.use(
 // Add a response interceptor to handle auth errors and network issues
 let isRedirecting = false;
 api.interceptors.response.use(
-  (response) => {
-    response.data = normalizeOfflineMedia(response.data);
-    return response;
-  },
+  (response) => response,
   (error) => {
     // Handle 401 - token invalid or expired
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');
+      localStorage.removeItem('csrfToken');
       window.dispatchEvent(new CustomEvent('camsound:unauthorized'));
       if (window.location.pathname !== '/login' && !isRedirecting) {
         isRedirecting = true;

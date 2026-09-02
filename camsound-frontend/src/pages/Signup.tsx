@@ -37,6 +37,17 @@ const Signup: React.FC = () => {
       return;
     }
 
+    const normalizedEmail = email.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+      setError('Please enter a valid email address.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError('Passwords do not match.');
       return;
@@ -49,11 +60,13 @@ const Signup: React.FC = () => {
 
     setLoading(true);
     try {
-      const res = await authService.signup({ name: name.trim(), email: email.trim(), password, type, country: country.trim() });
+      const res = await authService.signup({ name: name.trim(), email: normalizedEmail, password, type, country: country.trim() });
       if (res.data.success) {
         login(res.data.token, res.data.user, res.data.csrfToken);
         if (type === 'artist') navigate('/artist');
         else navigate('/fan');
+      } else {
+        setError(res.data.message || 'Sign up failed. Please try again.');
       }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Sign up failed. Please try again.');
@@ -89,6 +102,10 @@ const Signup: React.FC = () => {
                 <div
                   className={`role-option ${type === 'fan' ? 'selected' : ''}`}
                   onClick={() => setType('fan')}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setType('fan'); } }}
+                  role="radio"
+                  tabIndex={0}
+                  aria-checked={type === 'fan'}
                 >
                   <div className="role-icon-circle"><i className="fas fa-headphones" /></div>
                   <div className="role-info">
@@ -100,6 +117,10 @@ const Signup: React.FC = () => {
                 <div
                   className={`role-option ${type === 'artist' ? 'selected' : ''}`}
                   onClick={() => setType('artist')}
+                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setType('artist'); } }}
+                  role="radio"
+                  tabIndex={0}
+                  aria-checked={type === 'artist'}
                 >
                   <div className="role-icon-circle"><i className="fas fa-microphone" /></div>
                   <div className="role-info">
@@ -190,6 +211,8 @@ const Signup: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowPass(p => !p)}
+                    aria-label={showPass ? 'Hide password' : 'Show password'}
+                    title={showPass ? 'Hide password' : 'Show password'}
                     style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#666', cursor: 'pointer', padding: 4 }}
                   >
                     <i className={`far ${showPass ? 'fa-eye-slash' : 'fa-eye'}`} />
@@ -239,6 +262,8 @@ const Signup: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setShowConfirmPass(p => !p)}
+                    aria-label={showConfirmPass ? 'Hide confirmation password' : 'Show confirmation password'}
+                    title={showConfirmPass ? 'Hide confirmation password' : 'Show confirmation password'}
                     style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#666', cursor: 'pointer', padding: 4 }}
                   >
                     <i className={`far ${showConfirmPass ? 'fa-eye-slash' : 'fa-eye'}`} />

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { authService } from '../services/api';
 
 
 export interface User {
@@ -20,7 +21,7 @@ interface AuthContextType {
   csrfToken: string | null;
   login: (token: string, user: User, csrfToken?: string) => void;
   updateUser: (user: User) => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   isAuthenticated: boolean;
   isLoading: boolean;
   setNavigate: (callback: (path: string) => void) => void;
@@ -63,26 +64,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
                 setCsrfToken(data.data.csrfToken);
                 localStorage.setItem('csrfToken', data.data.csrfToken);
               }
-            }
-          } else if (response.status === 401) {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            setToken(null);
-            setUser(null);
-            if (navigateRef.current) navigateRef.current('/login');
-          } else {
-            const storedUser = localStorage.getItem('user');
-            if (storedUser) setUser(JSON.parse(storedUser));
-          }
-        } catch {
-          const storedUser = localStorage.getItem('user');
-          if (storedUser) {
-            try {
-              setUser(JSON.parse(storedUser));
-            } catch {
+            } else {
+              localStorage.removeItem('token');
+              localStorage.removeItem('user');
+              localStorage.removeItem('csrfToken');
+              setToken(null);
+              setCsrfToken(null);
               setUser(null);
             }
+          } else {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('csrfToken');
+            setToken(null);
+            setCsrfToken(null);
+            setUser(null);
+            if (navigateRef.current) navigateRef.current('/login');
           }
+        } catch {
+          localStorage.removeItem('token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('csrfToken');
+          setToken(null);
+          setCsrfToken(null);
+          setUser(null);
         }
       }
       setIsLoading(false);
@@ -107,13 +112,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(updatedUser);
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    localStorage.removeItem('csrfToken');
-    setToken(null);
-    setCsrfToken(null);
-    setUser(null);
+  const logout = async () => {
+    try {
+      if (token) await authService.logout();
+    } catch {
+      // Clear local state even if the server is unavailable.
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      localStorage.removeItem('csrfToken');
+      setToken(null);
+      setCsrfToken(null);
+      setUser(null);
+    }
   };
 
   return (

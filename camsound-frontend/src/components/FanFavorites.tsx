@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { songsService } from '../services/api';
+import { favoritesService } from '../services/api';
 import { useAudio } from '../context/AudioContext';
 
 const FanFavorites: React.FC = () => {
@@ -10,7 +10,7 @@ const FanFavorites: React.FC = () => {
   useEffect(() => {
     const fetchFavorites = async () => {
       try {
-        const res = await songsService.getSongs({ limit: 12 }); // Fetch a few to act as mock favorites
+        const res = await favoritesService.getFavorites();
         const data = res.data?.data ?? res.data ?? [];
         setFavorites(data);
       } catch {

@@ -45,15 +45,7 @@ const FanBrowse: React.FC<FanBrowseProps> = ({ initialQuery = '' }) => {
       const res = await songsService.getSongs(params);
       setSongs(res.data?.data ?? res.data ?? []);
     } catch {
-      // Mock fallback
-      const mock: Song[] = Array.from({ length: 12 }, (_, i) => ({
-        _id: String(i),
-        title: `Track ${i + 1}`,
-        artistId: { name: `Artist ${i + 1}` },
-        genre: GENRES[(i % (GENRES.length - 1)) + 1],
-        plays: Math.floor(Math.random() * 20000),
-      }));
-      setSongs(mock);
+      setSongs([]);
     } finally {
       setLoading(false);
     }

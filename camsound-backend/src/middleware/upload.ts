@@ -10,30 +10,15 @@ const fileFilter = (
     file: Express.Multer.File,
     cb: multer.FileFilterCallback
 ) => {
-    const allowedMimeTypes = [
-        // Audio
-        'audio/mpeg',
-        'audio/mp3',
-        'audio/wav',
-        'audio/wave',
-        'audio/x-wav',
-        'audio/ogg',
-        'application/ogg',
-        'audio/aac',
-        'audio/flac',
-        'application/octet-stream',
-        // Images
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-        'image/webp',
-    ];
-
     const allowedAudioExtensions = ['.mp3', '.wav', '.ogg', '.m4a', '.flac', '.aac'];
     const extension = path.extname(file.originalname).toLowerCase();
-    const isFallbackAudio = file.mimetype === 'application/octet-stream' && allowedAudioExtensions.includes(extension);
+    const isAudio = file.fieldname === 'song_file';
+    const isCoverArt = file.fieldname === 'cover_art' || file.fieldname === 'profile_image';
+    const isFallbackAudio = isAudio && file.mimetype === 'application/octet-stream' && allowedAudioExtensions.includes(extension);
+    const isValidAudio = isAudio && (file.mimetype.startsWith('audio/') || isFallbackAudio);
+    const isValidImage = isCoverArt && file.mimetype.startsWith('image/');
 
-    if (allowedMimeTypes.includes(file.mimetype) || isFallbackAudio) {
+    if (isValidAudio || isValidImage) {
         cb(null, true);
     } else {
         cb(new Error(`Unsupported file type: ${file.mimetype}`));

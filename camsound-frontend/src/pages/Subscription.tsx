@@ -35,58 +35,10 @@ interface Plan {
   isPopular?: boolean;
 }
 
-const DEFAULT_PLANS: Plan[] = [
-  {
-    name: 'Free Fan',
-    price: 0,
-    currency: 'FCFA',
-    period: '/forever',
-    description: 'Enjoy unlimited streaming with occasional audio ads.',
-    features: [
-      'Standard audio quality (128 kbps)',
-      'Discover Cameroonian & African tracks',
-      'Create up to 3 custom playlists',
-      'Community discussion access',
-    ],
-    isPopular: false,
-  },
-  {
-    name: 'CamSound Premium',
-    price: 1500,
-    currency: 'FCFA',
-    period: '/month',
-    description: 'Uninterrupted music in high-definition fidelity with zero ads.',
-    features: [
-      'Ad-free uninterrupted streaming',
-      'High-definition audio (320 kbps)',
-      'Unlimited custom playlists',
-      'Offline caching & downloads',
-      'Exclusive artist release access',
-      'Direct artist tipping & badges',
-    ],
-    isPopular: true,
-  },
-  {
-    name: 'Annual VIP Pass',
-    price: 15000,
-    currency: 'FCFA',
-    period: '/year',
-    description: 'Get 2 months free with full VIP privileges all year long.',
-    features: [
-      'Everything in CamSound Premium',
-      '2 months free discount applied',
-      'VIP Golden Crown profile badge',
-      'Early access to concert tickets & merch',
-      'Priority customer support',
-    ],
-    isPopular: false,
-  },
-];
-
 const Subscription: React.FC = () => {
   const { user, updateUser } = useAuth();
   const navigate = useNavigate();
-  const [plans, setPlans] = useState<Plan[]>(DEFAULT_PLANS);
+  const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isMoMoModalOpen, setIsMoMoModalOpen] = useState(false);
   const [momoPhone, setMomoPhone] = useState('');
@@ -107,7 +59,7 @@ const Subscription: React.FC = () => {
           setPlans(apiPlans);
         }
       } catch {
-        // Fallback to DEFAULT_PLANS
+        setPlans([]);
       }
     };
     fetchPlans();
@@ -134,16 +86,21 @@ const Subscription: React.FC = () => {
     setIsProcessing(true);
     setPaymentError('');
     try {
-      // Try calling paymentsService
-      await paymentsService.createPayment({
+      const response = await paymentsService.createPayment({
         amount: selectedPlan?.price,
         phone: momoPhone,
         planName: selectedPlan?.name,
         carrier: momoCarrier,
         currency: selectedPlan?.currency || 'XAF',
       });
-    } catch {
-      // Mock flow continues
+      if (!response.data?.success) {
+        throw new Error(response.data?.message || 'Payment initiation failed.');
+      }
+    } catch (error: any) {
+      setPaymentError(error.response?.data?.message || error.message || 'Payment initiation failed.');
+      setPaymentStep('error');
+      setIsProcessing(false);
+      return;
     }
 
     setIsProcessing(false);

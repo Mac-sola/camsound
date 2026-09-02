@@ -21,6 +21,10 @@ const Login: React.FC = () => {
       setError('Please enter your email');
       return;
     }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) {
+      setError('Please enter a valid email address');
+      return;
+    }
     if (!password) {
       setError('Please enter your password');
       return;
@@ -109,6 +113,8 @@ const Login: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setShowPass(p => !p)}
+                aria-label={showPass ? 'Hide password' : 'Show password'}
+                title={showPass ? 'Hide password' : 'Show password'}
                 style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', color: '#666', cursor: 'pointer', padding: 4 }}
               >
                 <i className={`far ${showPass ? 'fa-eye-slash' : 'fa-eye'}`} />

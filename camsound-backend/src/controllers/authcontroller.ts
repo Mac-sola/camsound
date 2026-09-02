@@ -41,10 +41,16 @@ export const signup = async (req: Request, res: Response) => {
     try {
         const { name, email, password, phone, country, type = 'fan' } = req.body;
         const normalizedEmail = typeof email === 'string' ? email.trim().toLowerCase() : '';
-        const normalizedName = typeof name === 'string' ? name.trim() : name;
+        const normalizedName = typeof name === 'string' ? name.trim() : '';
         const normalizedCountry = typeof country === 'string' ? country.trim() : undefined;
-        if (!name || !email || !password) {
+        if (!normalizedName || !normalizedEmail || typeof password !== 'string') {
             return res.status(400).json({ success: false, message: 'Name, email and password are required' });
+        }
+        if (normalizedName.length < 2) {
+            return res.status(400).json({ success: false, message: 'Name must be at least 2 characters long' });
+        }
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalizedEmail)) {
+            return res.status(400).json({ success: false, message: 'Please provide a valid email address' });
         }
         if (password.length < 6) {
             return res.status(400).json({ success: false, message: 'Password must be at least 6 characters' });
@@ -78,7 +84,8 @@ export const signup = async (req: Request, res: Response) => {
         setAuthCookie(res, token);
         res.status(201).json(buildAuthResponse(user, token, csrfToken));
     } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
+        console.error('Signup error:', error);
+        res.status(error?.code === 11000 ? 409 : 500).json({ success: false, message: error?.code === 11000 ? 'Email already registered' : 'Unable to create account' });
     }
 };
 
@@ -108,7 +115,8 @@ export const login = async (req: Request, res: Response) => {
         setAuthCookie(res, token);
         res.json(buildAuthResponse(user, token, csrfToken));
     } catch (error: any) {
-        res.status(500).json({ success: false, message: error.message });
+        console.error('Login error:', error);
+        res.status(500).json({ success: false, message: 'Unable to log in. Please try again.' });
     }
 };
 

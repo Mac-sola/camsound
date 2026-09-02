@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { followsService } from '../services/api';
+import ArtistSocialLinks from './ArtistSocialLinks';
 
 interface Artist {
   _id: string;
@@ -8,6 +9,10 @@ interface Artist {
   followers?: number;
   image?: string;
   bio?: string;
+  instagramUrl?: string;
+  twitterUrl?: string;
+  facebookUrl?: string;
+  youtubeUrl?: string;
   artistId?: { _id: string; name: string; genre?: string; followers?: number; image?: string };
 }
 
@@ -100,6 +105,7 @@ const FanFollowing: React.FC<{ onNavClick?: (view: string) => void }> = ({ onNav
                 {artist.bio && (
                   <div className="fan-following-bio">{artist.bio}</div>
                 )}
+                <ArtistSocialLinks artist={artist} />
               </div>
               <button
                 className="fan-unfollow-btn"

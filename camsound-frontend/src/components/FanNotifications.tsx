@@ -20,13 +20,6 @@ const TYPE_META: Record<string, { icon: string; color: string }> = {
   default:       { icon: 'fa-bell',          color: 'var(--text-muted)' },
 };
 
-const MOCK_NOTIFS: Notification[] = [
-  { _id: '1', title: 'New Release!', message: 'Alpha X just dropped a new track: "Makossa Summer"', type: 'new_release', isRead: false, createdAt: new Date(Date.now() - 300000).toISOString() },
-  { _id: '2', title: 'Someone liked your comment', message: 'Your comment on "Douala Nights" got 5 new likes 🎉', type: 'like', isRead: false, createdAt: new Date(Date.now() - 3600000).toISOString() },
-  { _id: '3', title: 'New follower', message: 'Amina started following your playlist activity', type: 'follow', isRead: true, createdAt: new Date(Date.now() - 86400000).toISOString() },
-  { _id: '4', title: 'Weekly Digest', message: 'This week: 12 new tracks from artists you follow. Check them out!', type: 'system', isRead: true, createdAt: new Date(Date.now() - 172800000).toISOString() },
-];
-
 const FanNotifications: React.FC = () => {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(false);
@@ -38,12 +31,11 @@ const FanNotifications: React.FC = () => {
     try {
       const res = await notificationsService.getNotifications();
       const data: Notification[] = res.data?.data ?? res.data ?? [];
-      const list = data.length > 0 ? data : MOCK_NOTIFS;
-      setNotifications(list);
-      setReadSet(new Set(list.filter(n => n.isRead || n.read).map(n => n._id)));
+      setNotifications(data);
+      setReadSet(new Set(data.filter(n => n.isRead || n.read).map(n => n._id)));
     } catch {
-      setNotifications(MOCK_NOTIFS);
-      setReadSet(new Set(MOCK_NOTIFS.filter(n => n.isRead).map(n => n._id)));
+      setNotifications([]);
+      setReadSet(new Set());
     } finally {
       setLoading(false);
     }

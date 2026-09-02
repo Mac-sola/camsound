@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { upload } from '../middleware/upload';
 import { uploadAudio, uploadImage, deleteFile } from '../utils/cloudinary';
 import Song from '../models/Song';
@@ -8,9 +8,18 @@ import { randomBytes } from 'crypto';
 
 const genId = () => randomBytes(8).toString('hex');
 
+const uploadSongFiles = (req: Request, res: Response, next: NextFunction) => {
+    upload.fields([{ name: 'song_file', maxCount: 1 }, { name: 'cover_art', maxCount: 1 }])(req, res, (error) => {
+        if (error) {
+            return res.status(400).json({ success: false, message: error.message || 'Invalid upload' });
+        }
+        next();
+    });
+};
+
 // POST /api/upload/song — multipart: song_file + optional cover_art
 export const uploadSong = [
-    upload.fields([{ name: 'song_file', maxCount: 1 }, { name: 'cover_art', maxCount: 1 }]),
+    uploadSongFiles,
     async (req: Request, res: Response) => {
         try {
             // Check user type
@@ -41,7 +50,10 @@ export const uploadSong = [
 
             // Validate audio file type
             const audioFile = files.song_file[0];
-            const acceptedAudioTypes = ['audio/', 'application/octet-stream'];
+            if (audioFile.size > 50 * 1024 * 1024) {
+                return res.status(400).json({ success: false, message: 'Audio file must be smaller than 50MB' });
+            }
+            const acceptedAudioTypes = ['audio/'];
             const audioExtensions = ['.mp3', '.wav', '.ogg', '.m4a', '.flac', '.aac'];
             const audioExt = audioFile.originalname ? audioFile.originalname.toLowerCase().split('.').pop() : '';
             const isValidAudio = acceptedAudioTypes.some((type) => audioFile.mimetype.startsWith(type))
@@ -71,7 +83,7 @@ export const uploadSong = [
                     message: 'Track title is required' 
                 });
             }
-            if (!genre) {
+            if (!genre || !genre.trim()) {
                 return res.status(400).json({ 
                     success: false, 
                     message: 'Genre is required' 
@@ -89,6 +101,9 @@ export const uploadSong = [
             let coverArtId: string | undefined;
             if (files?.cover_art?.[0]) {
                 const coverFile = files.cover_art[0];
+                if (coverFile.size > 5 * 1024 * 1024) {
+                    return res.status(400).json({ success: false, message: 'Cover art must be smaller than 5MB' });
+                }
                 if (!coverFile.mimetype.startsWith('image/')) {
                     return res.status(400).json({ 
                         success: false, 
@@ -109,7 +124,7 @@ export const uploadSong = [
             const song = await Song.create({
                 title: title.trim(),
                 artistId: artist._id,
-                genre,
+                genre: genre.trim(),
                 duration,
                 filePath: audioResult.secure_url,
                 coverArt: coverArtUrl,
@@ -155,6 +170,9 @@ export const uploadAvatar = [
             if (!req.file) {
                 return res.status(400).json({ success: false, message: 'Image file is required' });
             }
+            if (req.file.size > 5 * 1024 * 1024) {
+                return res.status(400).json({ success: false, message: 'Image file must be smaller than 5MB' });
+            }
             if (!req.file.mimetype.startsWith('image/')) {
                 return res.status(400).json({ success: false, message: 'Only image files are allowed' });
             }
@@ -185,6 +203,9 @@ export const uploadArtwork = [
         try {
             if (!req.file) {
                 return res.status(400).json({ success: false, message: 'Cover art file is required' });
+            }
+            if (req.file.size > 5 * 1024 * 1024) {
+                return res.status(400).json({ success: false, message: 'Cover art must be smaller than 5MB' });
             }
             if (!req.file.mimetype.startsWith('image/')) {
                 return res.status(400).json({ success: false, message: 'Only image files are allowed' });

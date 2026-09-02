@@ -2,6 +2,8 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { songsService, artistsService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useAudio } from '../context/AudioContext';
+import ArtistSocialLinks from './ArtistSocialLinks';
+import ArtistDetailsModal from './ArtistDetailsModal';
 
 interface Song {
   _id: string;
@@ -19,11 +21,15 @@ interface Artist {
   genre?: string;
   followers?: number;
   image?: string;
+  instagramUrl?: string;
+  twitterUrl?: string;
+  facebookUrl?: string;
+  youtubeUrl?: string;
 }
 
 const GENRES = ['Afrobeat', 'Hip Hop', 'Makossa', 'Bikutsi', 'Assiko', 'R&B', 'Jazz', 'Gospel'];
 
-const SongCard: React.FC<{ song: Song; onPlay: (song: Song) => void }> = ({ song, onPlay }) => (
+const SongCard: React.FC<{ song: Song; onPlay: (song: Song) => void; onArtistClick: (artist: Artist) => void }> = ({ song, onPlay, onArtistClick }) => (
   <div className="fan-song-card" onClick={() => onPlay(song)}>
     <div className="fan-song-cover">
       {song.coverArt
@@ -35,7 +41,11 @@ const SongCard: React.FC<{ song: Song; onPlay: (song: Song) => void }> = ({ song
     </div>
     <div className="fan-song-info">
       <div className="fan-song-title">{song.title}</div>
-      <div className="fan-song-artist">{song.artistId?.name ?? 'Unknown Artist'}</div>
+      {song.artistId?._id ? (
+        <button className="fan-song-artist" onClick={event => { event.stopPropagation(); onArtistClick({ _id: song.artistId!._id!, name: song.artistId!.name || 'Artist' }); }}>
+          {song.artistId.name ?? 'Unknown Artist'}
+        </button>
+      ) : <div className="fan-song-artist">Unknown Artist</div>}
       {song.genre && <div className="fan-song-genre">{song.genre}</div>}
     </div>
   </div>
@@ -49,32 +59,26 @@ const FanHome: React.FC = () => {
   const [artists, setArtists] = useState<Artist[]>([]);
   const [activeGenre, setActiveGenre] = useState<string>('');
   const [loading, setLoading] = useState(true);
+  const [selectedArtist, setSelectedArtist] = useState<Artist | null>(null);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     try {
-      const [songsRes, artistsRes] = await Promise.all([
-        songsService.getSongs({ limit: 12, sort: '-uploadedAt' }),
+      const [songsResult, artistsResult] = await Promise.allSettled([
+        songsService.getSongs({ limit: 12, sort: 'date' }),
         artistsService.getArtists({ limit: 6 }),
       ]);
-      const songs: Song[] = songsRes.data?.data ?? songsRes.data ?? [];
-      const artistList: Artist[] = artistsRes.data?.data ?? artistsRes.data ?? [];
+      const songs: Song[] = songsResult.status === 'fulfilled' ? songsResult.value.data?.data ?? songsResult.value.data ?? [] : [];
+      const artistList: Artist[] = artistsResult.status === 'fulfilled' ? artistsResult.value.data?.data ?? artistsResult.value.data ?? [] : [];
       setNewReleases(songs.slice(0, 6));
       // "Trending" = sort by plays
       const byPlays = [...songs].sort((a, b) => (b.plays ?? 0) - (a.plays ?? 0));
       setTrending(byPlays.slice(0, 6));
       setArtists(artistList);
-    } catch (e) {
-      console.warn('Fan home data fetch failed, using mocks');
-      const mock: Song[] = Array.from({ length: 6 }, (_, i) => ({
-        _id: String(i),
-        title: ['Biya Groove', 'Makossa Night', 'Camer Vibes', 'Douala Nights', 'Yaoundé Flow', 'Beti Love'][i],
-        artistId: { name: ['Alpha X', 'Biya B', 'Camer C', 'Delta D', 'Echo E', 'Foxtrot F'][i] },
-        genre: GENRES[i % GENRES.length],
-        plays: Math.floor(Math.random() * 50000),
-      }));
-      setNewReleases(mock);
-      setTrending([...mock].reverse());
+    } catch {
+      setNewReleases([]);
+      setTrending([]);
+      setArtists([]);
     } finally {
       setLoading(false);
     }
@@ -137,7 +141,7 @@ const FanHome: React.FC = () => {
             <div className="fan-songs-grid">
               {newReleases
                 .filter(s => !activeGenre || s.genre === activeGenre)
-                .map(song => <SongCard key={song._id} song={song} onPlay={handlePlay} />)}
+                .map(song => <SongCard key={song._id} song={song} onPlay={handlePlay} onArtistClick={setSelectedArtist} />)}
             </div>
           </section>
 
@@ -150,7 +154,7 @@ const FanHome: React.FC = () => {
             <div className="fan-songs-grid">
               {trending
                 .filter(s => !activeGenre || s.genre === activeGenre)
-                .map(song => <SongCard key={song._id} song={song} onPlay={handlePlay} />)}
+                .map(song => <SongCard key={song._id} song={song} onPlay={handlePlay} onArtistClick={setSelectedArtist} />)}
             </div>
           </section>
 
@@ -163,7 +167,7 @@ const FanHome: React.FC = () => {
               </div>
               <div className="fan-artists-grid">
                 {artists.map(artist => (
-                  <div key={artist._id} className="fan-artist-card">
+                  <div key={artist._id} className="fan-artist-card" onClick={() => setSelectedArtist(artist)} role="button" tabIndex={0} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') setSelectedArtist(artist); }}>
                     <div className="fan-artist-avatar">
                       {artist.image
                         ? <img src={artist.image} alt={artist.name} />
@@ -176,6 +180,7 @@ const FanHome: React.FC = () => {
                         <i className="fas fa-users" /> {artist.followers.toLocaleString()}
                       </div>
                     )}
+                    <ArtistSocialLinks artist={artist} />
                   </div>
                 ))}
               </div>
@@ -183,6 +188,7 @@ const FanHome: React.FC = () => {
           )}
         </>
       )}
+      <ArtistDetailsModal artist={selectedArtist} onClose={() => setSelectedArtist(null)} />
     </div>
   );
 };

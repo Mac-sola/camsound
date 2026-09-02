@@ -76,12 +76,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, []);
 
   const getAudioSource = (url: string) => {
-    if (!url) return '';
-    const offlineMode = import.meta.env.VITE_OFFLINE_MODE !== 'false';
-    if (offlineMode && !url.startsWith('/') && !url.startsWith(window.location.origin)) {
-      return '/test-tone.wav';
-    }
-    return url;
+    return url || '';
   };
 
   const playSong = async (song: Song) => {

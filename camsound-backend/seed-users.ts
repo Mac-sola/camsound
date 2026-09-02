@@ -6,6 +6,12 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 async function seedUsers() {
+  if (process.env.ALLOW_TEST_SEED !== 'true') {
+    console.error('Refusing to seed test users. Set ALLOW_TEST_SEED=true explicitly for local QA.');
+    process.exitCode = 1;
+    return;
+  }
+
   try {
     await mongoose.connect(process.env.MONGODB_URI!);
     console.log('MongoDB connected\n');

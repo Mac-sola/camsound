@@ -12,18 +12,11 @@ interface HistoryEntry {
     genre?: string;
     artistId?: { name?: string; _id?: string };
   };
+  songId?: HistoryEntry['song'];
   song_id?: string;
   playedAt?: string;
   createdAt?: string;
 }
-
-const MOCK_HISTORY: HistoryEntry[] = [
-  { _id: '1', song: { _id: 's1', title: 'Biya Groove', genre: 'Makossa', artistId: { name: 'Alpha X' } }, playedAt: new Date(Date.now() - 600000).toISOString() },
-  { _id: '2', song: { _id: 's2', title: 'Makossa Night', genre: 'Afrobeat', artistId: { name: 'Biya B' } }, playedAt: new Date(Date.now() - 3600000).toISOString() },
-  { _id: '3', song: { _id: 's3', title: 'Douala Nights', genre: 'R&B', artistId: { name: 'Camer C' } }, playedAt: new Date(Date.now() - 86400000).toISOString() },
-  { _id: '4', song: { _id: 's4', title: 'Yaoundé Flow', genre: 'Hip Hop', artistId: { name: 'Delta D' } }, playedAt: new Date(Date.now() - 172800000).toISOString() },
-  { _id: '5', song: { _id: 's5', title: 'Camer Vibes', genre: 'Bikutsi', artistId: { name: 'Echo E' } }, playedAt: new Date(Date.now() - 259200000).toISOString() },
-];
 
 const FanHistory: React.FC = () => {
   const { playSong, currentSong, isPlaying } = useAudio();
@@ -37,9 +30,9 @@ const FanHistory: React.FC = () => {
     try {
       const res = await historyService.getHistory({ limit: 50 });
       const data: HistoryEntry[] = res.data?.data ?? res.data ?? [];
-      setHistory(data.length > 0 ? data : MOCK_HISTORY);
+      setHistory(data.map(entry => ({ ...entry, song: entry.song ?? entry.songId })));
     } catch {
-      setHistory(MOCK_HISTORY);
+      setHistory([]);
     } finally {
       setLoading(false);
     }

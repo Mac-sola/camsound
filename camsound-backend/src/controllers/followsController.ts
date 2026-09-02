@@ -80,7 +80,7 @@ export const getFollowing = async (req: Request, res: Response) => {
                 return res.status(403).json({ success: false, message: 'Forbidden' });
             }
             const follows = await Follow.find({ userId: user_id })
-                .populate('artistId', 'name image genre followers')
+                .populate('artistId', 'name image genre followers bio instagramUrl twitterUrl facebookUrl youtubeUrl')
                 .sort({ createdAt: -1 });
             return res.json({ success: true, data: follows.map(f => f.artistId) });
         }
@@ -91,7 +91,7 @@ export const getFollowing = async (req: Request, res: Response) => {
         }
 
         const follows = await Follow.find({ userId: currentUserId })
-            .populate('artistId', 'name image genre followers')
+            .populate('artistId', 'name image genre followers bio instagramUrl twitterUrl facebookUrl youtubeUrl')
             .sort({ createdAt: -1 });
         res.json({ success: true, data: follows.map(f => f.artistId) });
     } catch (error: any) {

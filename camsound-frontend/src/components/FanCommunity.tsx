@@ -49,11 +49,7 @@ const FanCommunity: React.FC = () => {
         const res = await commentsService.getRecentActivity();
         setPosts(res.data?.data ?? res.data ?? []);
       } catch {
-        setPosts([
-          { _id: '1', content: 'Just discovered this new Makossa track — absolutely fire! 🔥', userId: { name: 'Jean-Pierre' }, createdAt: new Date(Date.now() - 120000).toISOString() },
-          { _id: '2', content: 'Who else is streaming the new Afrobeat releases? The summer vibes are real!', userId: { name: 'Amina' }, createdAt: new Date(Date.now() - 300000).toISOString() },
-          { _id: '3', content: 'Top 5 Cameroonian artists to follow in 2026 — my personal list:', userId: { name: 'Nkuvo' }, createdAt: new Date(Date.now() - 900000).toISOString() },
-        ]);
+        setPosts([]);
       } finally {
         setLoading(false);
       }

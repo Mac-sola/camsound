@@ -22,10 +22,7 @@ const QuickStatsAccordion: React.FC = () => {
           totalHours: d.totalHours ?? d.hours ?? 0,
         });
       })
-      .catch(() => {
-        // Fallback mock values so sidebar always looks populated
-        setStats({ totalPlays: 1_245, totalLikes: 312, totalHours: 58 });
-      })
+      .catch(() => setStats({ totalPlays: 0, totalLikes: 0, totalHours: 0 }))
       .finally(() => setLoading(false));
   }, []);
 
