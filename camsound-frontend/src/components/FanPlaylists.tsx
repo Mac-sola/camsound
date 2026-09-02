@@ -1,13 +1,37 @@
-import React, { useState } from 'react';
-
-const MOCK_PLAYLISTS = [
-  { _id: 'p1', name: 'Weekend Vibes', trackCount: 15, coverUrl: '' },
-  { _id: 'p2', name: 'Workout Mix', trackCount: 22, coverUrl: '' },
-  { _id: 'p3', name: 'Late Night Afrobeats', trackCount: 10, coverUrl: '' },
-];
+import React, { useEffect, useState } from 'react';
+import Modal from './Modal';
+import { playlistsService } from '../services/api';
 
 const FanPlaylists: React.FC = () => {
-  const [playlists] = useState(MOCK_PLAYLISTS);
+  const [playlists, setPlaylists] = useState<any[]>([]);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
+
+  useEffect(() => {
+    playlistsService.getPlaylists()
+      .then(res => setPlaylists(res.data?.data ?? res.data ?? []))
+      .catch(() => setMessage('Unable to load playlists.'));
+  }, []);
+
+  const handleCreate = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!name.trim()) return;
+    setSaving(true);
+    setMessage('');
+    try {
+      const res = await playlistsService.createPlaylist({ name: name.trim(), description: '', isPublic: false });
+      const created = res.data?.data ?? res.data;
+      setPlaylists(current => [created, ...current]);
+      setName('');
+      setIsCreateOpen(false);
+    } catch {
+      setMessage('Unable to create playlist. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
 
   return (
     <div className="fan-history-container">
@@ -16,10 +40,12 @@ const FanPlaylists: React.FC = () => {
           <h2 className="fan-page-title">🎧 My Playlists</h2>
           <p className="fan-page-subtitle">Your personal collections</p>
         </div>
-        <button className="fan-primary-btn" style={{ fontSize: '0.8rem', padding: '8px 16px' }}>
+        <button className="fan-primary-btn" style={{ fontSize: '0.8rem', padding: '8px 16px' }} onClick={() => setIsCreateOpen(true)}>
           <i className="fas fa-plus" /> Create Playlist
         </button>
       </div>
+
+      {message && <div className="fan-submit-msg" role="alert">{message}</div>}
 
       {playlists.length === 0 ? (
         <div className="fan-empty-state">
@@ -53,6 +79,23 @@ const FanPlaylists: React.FC = () => {
           ))}
         </div>
       )}
+
+      <Modal isOpen={isCreateOpen} title="Create Playlist" onClose={() => !saving && setIsCreateOpen(false)} size="sm">
+        <form onSubmit={handleCreate}>
+          <label htmlFor="playlist-name">Playlist name</label>
+          <input
+            id="playlist-name"
+            value={name}
+            onChange={event => setName(event.target.value)}
+            placeholder="e.g. Sunday Chill"
+            required
+            autoFocus
+          />
+          <button type="submit" className="fan-primary-btn" disabled={saving || !name.trim()}>
+            {saving ? 'Creating...' : 'Create Playlist'}
+          </button>
+        </form>
+      </Modal>
     </div>
   );
 };

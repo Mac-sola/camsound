@@ -685,7 +685,7 @@ const Dashboard: React.FC = () => {
       {activeView === 'community' && (
         <div>
           {/* Hero Banner */}
-          <div style={{ background: 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))', borderRadius: 16, padding: '32px 40px', marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
+          <div style={{ background: 'var(--primary-color)', border: '1px solid var(--border-color)', borderRadius: 16, padding: '32px 40px', marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', right: -60, top: -60, width: 250, height: 250, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', zIndex: 0 }} />
             <div style={{ position: 'relative', zIndex: 1 }}>
               <h1 style={{ fontSize: '1.8rem', marginBottom: 8, margin: '0 0 8px 0' }}>🌐 Community Hub</h1>
@@ -777,7 +777,7 @@ const Dashboard: React.FC = () => {
                       borderBottom: idx < arr.length - 1 ? '1px solid var(--border-color)' : 'none',
                     }}
                   >
-                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'linear-gradient(135deg, var(--primary-color), var(--secondary-color))', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '1.1rem', flexShrink: 0 }}>
+                    <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'var(--primary-color)', border: '1px solid var(--border-color)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '1.1rem', flexShrink: 0 }}>
                       {post.userId?.name?.charAt(0) || 'U'}
                     </div>
                     <div style={{ flex: 1 }}>

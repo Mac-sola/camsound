@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { commentsService, songsService } from '../services/api';
+import { commentsService, favoritesService, songsService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 
 interface Post {
@@ -7,7 +7,7 @@ interface Post {
   content: string;
   userId?: { name?: string; avatar?: string };
   createdAt?: string;
-  song?: { title?: string };
+  songId?: { _id?: string; title?: string };
 }
 
 interface Song {
@@ -37,6 +37,9 @@ const FanCommunity: React.FC = () => {
   const [songs, setSongs] = useState<Song[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [submitMsg, setSubmitMsg] = useState('');
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyContent, setReplyContent] = useState('');
+  const [likedSongIds, setLikedSongIds] = useState<Set<string>>(new Set());
 
   // Load recent community activity
   useEffect(() => {
@@ -71,12 +74,11 @@ const FanCommunity: React.FC = () => {
     setSubmitting(true);
     setSubmitMsg('');
     try {
-      if (selectedSongId) {
-        await commentsService.postComment(selectedSongId, postContent.trim());
-      } else {
-        // Global community post – attempt generic comment
-        await commentsService.postComment('community', postContent.trim());
+      if (!selectedSongId) {
+        setSubmitMsg('Select a song before posting.');
+        return;
       }
+      await commentsService.postComment(selectedSongId, postContent.trim());
       setPostContent('');
       setSelectedSongId('');
       setSubmitMsg('Post shared! ✅');
@@ -84,15 +86,7 @@ const FanCommunity: React.FC = () => {
       const res = await commentsService.getRecentActivity();
       setPosts(res.data?.data ?? res.data ?? []);
     } catch {
-      setSubmitMsg('Post shared! ✅'); // Optimistic UX even if backend not wired
-      setPosts(prev => [{
-        _id: Date.now().toString(),
-        content: postContent.trim(),
-        userId: { name: user?.name ?? 'You' },
-        createdAt: new Date().toISOString(),
-      }, ...prev]);
-      setPostContent('');
-      setSelectedSongId('');
+      setSubmitMsg('Unable to share post. Please try again.');
     } finally {
       setSubmitting(false);
       setTimeout(() => setSubmitMsg(''), 3000);
@@ -106,6 +100,39 @@ const FanCommunity: React.FC = () => {
     if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
     if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
     return new Date(iso).toLocaleDateString();
+  };
+
+  const getSongId = (post: Post) => post.songId?._id;
+
+  const handleLike = async (post: Post) => {
+    const songId = getSongId(post);
+    if (!songId) return;
+    const isLiked = likedSongIds.has(songId);
+    try {
+      if (isLiked) await favoritesService.unlikeSong(songId);
+      else await favoritesService.likeSong(songId);
+      setLikedSongIds(current => {
+        const next = new Set(current);
+        if (isLiked) next.delete(songId); else next.add(songId);
+        return next;
+      });
+    } catch {
+      setSubmitMsg('Unable to update favorite. Please try again.');
+    }
+  };
+
+  const handleReply = async (post: Post) => {
+    const songId = getSongId(post);
+    if (!songId || !replyContent.trim()) return;
+    try {
+      await commentsService.postComment(songId, replyContent.trim(), post._id);
+      setReplyContent('');
+      setReplyingTo(null);
+      const res = await commentsService.getRecentActivity();
+      setPosts(res.data?.data ?? res.data ?? []);
+    } catch {
+      setSubmitMsg('Unable to post reply. Please try again.');
+    }
   };
 
   return (
@@ -133,7 +160,7 @@ const FanCommunity: React.FC = () => {
                 value={selectedSongId}
                 onChange={e => setSelectedSongId(e.target.value)}
               >
-                <option value="">— Discuss a song (optional) —</option>
+                <option value="">— Select a song to discuss —</option>
                 {songs.map(s => (
                   <option key={s._id} value={s._id}>
                     {s.title}{s.artistId?.name ? ` — ${s.artistId.name}` : ''}
@@ -195,13 +222,28 @@ const FanCommunity: React.FC = () => {
                   </div>
                   <div className="fan-post-body">{post.content}</div>
                   <div className="fan-post-actions">
-                    <button className="fan-post-action-btn">
-                      <i className="far fa-heart" /> Like
+                    <button className="fan-post-action-btn" onClick={() => handleLike(post)} disabled={!getSongId(post)}>
+                      <i className="far fa-heart" /> {getSongId(post) && likedSongIds.has(getSongId(post)!) ? 'Unlike song' : 'Like song'}
                     </button>
-                    <button className="fan-post-action-btn">
+                    <button className="fan-post-action-btn" onClick={() => setReplyingTo(replyingTo === post._id ? null : post._id)} disabled={!getSongId(post)}>
                       <i className="far fa-comment" /> Reply
                     </button>
                   </div>
+                  {replyingTo === post._id && (
+                    <form
+                      onSubmit={event => { event.preventDefault(); void handleReply(post); }}
+                      style={{ display: 'flex', gap: 8, marginTop: 10 }}
+                    >
+                      <input
+                        value={replyContent}
+                        onChange={event => setReplyContent(event.target.value)}
+                        placeholder="Write a reply..."
+                        aria-label="Reply content"
+                        required
+                      />
+                      <button type="submit" className="fan-post-action-btn" disabled={!replyContent.trim()}>Send</button>
+                    </form>
+                  )}
                 </div>
               ))}
               {posts.length === 0 && (

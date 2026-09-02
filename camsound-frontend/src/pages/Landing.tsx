@@ -242,7 +242,7 @@ const Landing: React.FC = () => {
               <Link to="/signup" className="btn-camsound-outline" style={{ justifyContent: 'center' }}>Get Started Free</Link>
             </div>
 
-            <div style={{ background: 'linear-gradient(135deg, var(--bg-green-section), var(--bg-tertiary))', borderRadius: 16, padding: 32, border: '2px solid var(--accent-color)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+            <div style={{ background: 'var(--bg-green-section)', borderRadius: 16, padding: 32, border: '2px solid var(--accent-color)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
               <div style={{ position: 'absolute', top: -12, right: 24, background: 'var(--accent-color)', color: '#000', fontWeight: 700, fontSize: '0.75rem', padding: '3px 12px', borderRadius: 999 }}>POPULAR</div>
               <h3>Artist Pro</h3>
               <div style={{ fontSize: '2.2rem', fontWeight: 800, margin: '16px 0', color: 'var(--accent-color)' }}>XAF 5,000 <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 400 }}>/month</span></div>

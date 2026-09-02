@@ -77,8 +77,9 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const getAudioSource = (url: string) => {
     if (!url) return '';
-    if (url.includes('mock-cdn.example.com/audio/')) {
-      return 'https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3';
+    const offlineMode = import.meta.env.VITE_OFFLINE_MODE !== 'false';
+    if (offlineMode && !url.startsWith('/') && !url.startsWith(window.location.origin)) {
+      return '/test-tone.wav';
     }
     return url;
   };

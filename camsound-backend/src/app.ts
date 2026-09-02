@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import path from 'path';
 
 // Routes
 import authRoutes from './routes/auth';
@@ -60,6 +61,7 @@ app.use(cors({
 // ── Body Parsers ──────────────────────────────────────────────────────────────
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use('/media', express.static(path.resolve(__dirname, '../public/uploads')));
 
 // ── Rate Limiting (general) ───────────────────────────────────────────────────
 app.use('/api', apiLimiter);

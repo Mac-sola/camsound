@@ -79,7 +79,7 @@ export const uploadSong = [
             }
 
             // Upload audio to Cloudinary (or mock)
-            const audioResult = await uploadAudio(audioFile.buffer, `song_${genId()}`);
+            const audioResult = await uploadAudio(audioFile.buffer, `song_${genId()}`, audioExt || 'mp3');
             const duration = audioResult.duration 
                 ? `${Math.floor(audioResult.duration / 60)}:${String(Math.floor(audioResult.duration % 60)).padStart(2, '0')}`
                 : '3:00';
@@ -98,7 +98,8 @@ export const uploadSong = [
                 const imageResult = await uploadImage(
                     coverFile.buffer, 
                     `cover_${genId()}`, 
-                    'camsound/artwork'
+                    'camsound/artwork',
+                    coverFile.originalname?.toLowerCase().split('.').pop() || 'jpg'
                 );
                 coverArtUrl = imageResult.secure_url;
                 coverArtId = imageResult.public_id;
@@ -157,7 +158,12 @@ export const uploadAvatar = [
             if (!req.file.mimetype.startsWith('image/')) {
                 return res.status(400).json({ success: false, message: 'Only image files are allowed' });
             }
-            const result = await uploadImage(req.file.buffer, `avatar_${genId()}`, 'camsound/avatars');
+            const result = await uploadImage(
+                req.file.buffer,
+                `avatar_${genId()}`,
+                'camsound/avatars',
+                req.file.originalname?.toLowerCase().split('.').pop() || 'jpg'
+            );
 
             await User.findByIdAndUpdate(req.user?.id, { avatar: result.secure_url });
 
@@ -183,7 +189,12 @@ export const uploadArtwork = [
             if (!req.file.mimetype.startsWith('image/')) {
                 return res.status(400).json({ success: false, message: 'Only image files are allowed' });
             }
-            const result = await uploadImage(req.file.buffer, `cover_${genId()}`, 'camsound/artwork');
+            const result = await uploadImage(
+                req.file.buffer,
+                `cover_${genId()}`,
+                'camsound/artwork',
+                req.file.originalname?.toLowerCase().split('.').pop() || 'jpg'
+            );
             res.json({ success: true, message: 'Cover art uploaded', data: { file_path: result.secure_url } });
         } catch (error: any) {
             res.status(500).json({ success: false, message: error.message });

@@ -481,13 +481,6 @@ const ArtistDashboard: React.FC = () => {
 
   const UploadView = () => (
     <div>
-      {import.meta.env.MODE !== 'production' && (
-        <div style={{ marginBottom: 12, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.06)', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-          <strong>Debug:</strong>
-          <div>token: {typeof window !== 'undefined' ? localStorage.getItem('token')?.slice(0, 40) : 'n/a'}...</div>
-          <div>csrfToken: {typeof window !== 'undefined' ? localStorage.getItem('csrfToken') : 'n/a'}</div>
-        </div>
-      )}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
         <div className="upload-form-card">
           <div className="upload-form-title">

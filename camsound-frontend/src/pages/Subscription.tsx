@@ -174,7 +174,7 @@ const Subscription: React.FC = () => {
         {/* Hero Section */}
         <div
           style={{
-            background: 'linear-gradient(135deg, rgba(15,61,46,0.9), rgba(20,83,45,0.7))',
+            background: 'var(--bg-green-section)',
             border: '1px solid var(--border-gold-subtle)',
             borderRadius: 16,
             padding: '36px 32px',
@@ -233,7 +233,7 @@ const Subscription: React.FC = () => {
                 flexDirection: 'column',
                 border: plan.isPopular ? '2px solid var(--accent-color)' : '1px solid var(--border-color)',
                 boxShadow: plan.isPopular ? '0 0 25px rgba(250,204,21,0.2)' : 'var(--shadow-small)',
-                background: plan.isPopular ? 'linear-gradient(180deg, rgba(250,204,21,0.06), rgba(15,61,46,0.3))' : 'var(--bg-secondary)',
+                background: plan.isPopular ? 'rgba(15,61,46,0.3)' : 'var(--bg-secondary)',
               }}
             >
               {plan.isPopular && (
@@ -299,7 +299,7 @@ const Subscription: React.FC = () => {
                   cursor: 'pointer',
                   border: 'none',
                   background: plan.isPopular
-                    ? 'linear-gradient(135deg, #FACC15, #EAB308)'
+                    ? '#FACC15'
                     : plan.price === 0
                     ? 'rgba(255,255,255,0.08)'
                     : 'var(--primary-color)',

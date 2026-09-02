@@ -33,11 +33,17 @@ const FAN_NAV = [
 
 const FanDashboard: React.FC = () => {
   const [activeView, setActiveView] = useState('home');
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    if (value.trim()) setActiveView('browse');
+  };
 
   const renderView = () => {
     switch (activeView) {
       case 'home':          return <FanHome />;
-      case 'browse':        return <FanBrowse />;
+      case 'browse':        return <FanBrowse initialQuery={searchQuery} />;
       case 'genres':        return <FanGenres />;
       case 'community':     return <FanCommunity />;
       case 'favorites':     return <FanFavorites />;
@@ -63,6 +69,8 @@ const FanDashboard: React.FC = () => {
       navItems={FAN_NAV}
       activeView={activeView}
       onNavClick={setActiveView}
+      searchValue={searchQuery}
+      onSearchChange={handleSearchChange}
     >
       {renderView()}
     </Layout>

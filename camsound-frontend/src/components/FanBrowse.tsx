@@ -14,13 +14,21 @@ interface Song {
 
 const GENRES = ['All', 'Afrobeat', 'Hip Hop', 'Makossa', 'Bikutsi', 'Assiko', 'R&B', 'Jazz', 'Gospel'];
 
-const FanBrowse: React.FC = () => {
+interface FanBrowseProps {
+  initialQuery?: string;
+}
+
+const FanBrowse: React.FC<FanBrowseProps> = ({ initialQuery = '' }) => {
   const { playSong } = useAudio();
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState(initialQuery);
   const [songs, setSongs] = useState<Song[]>([]);
   const [loading, setLoading] = useState(false);
   const [genreFilter, setGenreFilter] = useState('All');
   const [debouncedQuery, setDebouncedQuery] = useState('');
+
+  useEffect(() => {
+    setQuery(initialQuery);
+  }, [initialQuery]);
 
   // Debounce input
   useEffect(() => {

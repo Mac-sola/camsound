@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" role="img" aria-label="CamSound media placeholder">
+  <rect width="640" height="640" fill="#123b2b"/>
+  <circle cx="320" cy="320" r="150" fill="#facc15" opacity=".9"/>
+  <circle cx="320" cy="320" r="48" fill="#123b2b"/>
+  <path d="M320 170v300M170 320h300" stroke="#123b2b" stroke-width="12" opacity=".45"/>
+</svg>
