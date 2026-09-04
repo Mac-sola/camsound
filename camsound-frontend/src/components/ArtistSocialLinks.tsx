@@ -1,4 +1,6 @@
 import React from 'react';
+import { FaFacebookF, FaInstagram, FaXTwitter, FaYoutube } from 'react-icons/fa6';
+import type { IconType } from 'react-icons';
 
 interface ArtistSocialLinksProps {
   artist: {
@@ -10,10 +12,10 @@ interface ArtistSocialLinksProps {
 }
 
 const SOCIAL_LINKS = [
-  { field: 'instagramUrl', label: 'Instagram', icon: 'fa-instagram', color: '#e1306c' },
-  { field: 'twitterUrl', label: 'Twitter', icon: 'fa-twitter', color: '#1da1f2' },
-  { field: 'facebookUrl', label: 'Facebook', icon: 'fa-facebook', color: '#4267b2' },
-  { field: 'youtubeUrl', label: 'YouTube', icon: 'fa-youtube', color: '#ff0000' },
+  { field: 'instagramUrl', label: 'Instagram', icon: FaInstagram, color: '#e1306c' },
+  { field: 'twitterUrl', label: 'X', icon: FaXTwitter, color: '#ffffff' },
+  { field: 'facebookUrl', label: 'Facebook', icon: FaFacebookF, color: '#4267b2' },
+  { field: 'youtubeUrl', label: 'YouTube', icon: FaYoutube, color: '#ff0000' },
 ] as const;
 
 const ArtistSocialLinks: React.FC<ArtistSocialLinksProps> = ({ artist }) => {
@@ -26,6 +28,9 @@ const ArtistSocialLinks: React.FC<ArtistSocialLinksProps> = ({ artist }) => {
   return (
     <div className="artist-social-links" aria-label="Artist social links">
       {links.map(link => (
+        (() => {
+          const Icon = link.icon as IconType;
+          return (
         <a
           key={link.label}
           href={link.url}
@@ -35,8 +40,10 @@ const ArtistSocialLinks: React.FC<ArtistSocialLinksProps> = ({ artist }) => {
           title={`Visit ${link.label}`}
           onClick={event => event.stopPropagation()}
         >
-          <i className={`fab ${link.icon}`} style={{ color: link.color }} />
+          <Icon aria-hidden="true" style={{ color: link.color }} />
         </a>
+          );
+        })()
       ))}
     </div>
   );

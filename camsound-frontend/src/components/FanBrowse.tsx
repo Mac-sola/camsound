@@ -92,34 +92,40 @@ const FanBrowse: React.FC<FanBrowseProps> = ({ initialQuery = '' }) => {
       {loading ? (
         <div className="fan-loading">
           <i className="fas fa-spinner fa-spin" />
-          <span>Searching...</span>
+          <span>Searching tracks...</span>
         </div>
       ) : (
         <>
-          <div className="fan-browse-count">
-            {songs.length} {songs.length === 1 ? 'track' : 'tracks'} found
-            {debouncedQuery && <> for "<strong>{debouncedQuery}</strong>"</>}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
+            <div className="glass-badge" style={{ fontSize: '0.82rem', padding: '6px 14px' }}>
+              <i className="fas fa-music" /> {songs.length} {songs.length === 1 ? 'track' : 'tracks'} found
+              {debouncedQuery && <> for "{debouncedQuery}"</>}
+            </div>
           </div>
-          <div className="fan-songs-grid">
+          <div className="fan-songs-grid-premium">
             {songs.map(song => (
-              <div key={song._id} className="fan-song-card" onClick={() => handlePlay(song)}>
-                <div className="fan-song-cover">
+              <div key={song._id} className="music-card" onClick={() => handlePlay(song)} style={{ cursor: 'pointer' }}>
+                <div className="music-card-cover-wrapper">
                   {song.coverArt
-                    ? <img src={song.coverArt} alt={song.title} />
-                    : <i className="fas fa-music" />}
-                  <div className="fan-song-play-overlay">
-                    <i className="fas fa-play" />
+                    ? <img src={song.coverArt} alt={song.title} className="music-card-cover" />
+                    : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-color)', fontSize: '2rem' }}><i className="fas fa-music" /></div>}
+                  <div className="music-card-play-overlay">
+                    <div className="play-btn-circle">
+                      <i className="fas fa-play" style={{ marginLeft: 2 }} />
+                    </div>
                   </div>
                 </div>
-                <div className="fan-song-info">
-                  <div className="fan-song-title">{song.title}</div>
-                  <div className="fan-song-artist">{song.artistId?.name ?? 'Unknown'}</div>
-                  {song.genre && <div className="fan-song-genre">{song.genre}</div>}
-                  {song.plays != null && (
-                    <div className="fan-song-plays">
-                      <i className="fas fa-headphones" /> {song.plays.toLocaleString()}
-                    </div>
-                  )}
+                <div className="fan-song-info-premium">
+                  <div className="fan-song-title-premium" style={{ fontWeight: 700, color: '#fff' }}>{song.title}</div>
+                  <div className="fan-song-artist-premium" style={{ color: 'var(--accent-color)', fontSize: '0.82rem' }}>{song.artistId?.name ?? 'Unknown Artist'}</div>
+                  <div className="fan-song-meta-row" style={{ marginTop: 6 }}>
+                    {song.genre && <span className="fan-song-genre-badge">{song.genre}</span>}
+                    {song.plays != null && (
+                      <span className="fan-song-plays-count">
+                        <i className="fas fa-headphones" /> {song.plays.toLocaleString()}
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             ))}

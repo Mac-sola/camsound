@@ -398,70 +398,104 @@ const ArtistDashboard: React.FC = () => {
   const DashOverview = () => (
     <div>
       {/* Artist Profile Header */}
-      <div style={{ background: 'var(--bg-green-section)', borderRadius: 16, padding: '28px 32px', display: 'flex', alignItems: 'center', gap: 24, marginBottom: 24, position: 'relative', overflow: 'hidden' }}>
-        <div style={{ width: 80, height: 80, borderRadius: '50%', background: '#333', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '2rem', border: '3px solid var(--accent-color)', zIndex: 2 }}>
-          <i className="fas fa-user" style={{ color: '#555' }} />
+      <div className="hero-welcome">
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 20 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            <div className="hero-avatar-ring">
+              {profile?.image ? (
+                <img src={profile.image} alt={profile.name} />
+              ) : (
+                <div className="avatar-placeholder" style={{ background: 'var(--accent-color)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '1.8rem' }}>
+                  {profile?.name?.charAt(0) ?? 'A'}
+                </div>
+              )}
+            </div>
+            <div>
+              <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', background: 'rgba(250, 204, 21, 0.15)', border: '1px solid rgba(250, 204, 21, 0.3)', borderRadius: 20, color: 'var(--accent-color)', fontSize: '0.78rem', fontWeight: 700, marginBottom: 8 }}>
+                <i className="fas fa-check-circle" /> VERIFIED ARTIST HUB
+              </div>
+              <h2 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 800, color: '#fff' }}>
+                {profile?.name || 'Artist Portal'}
+              </h2>
+              <p style={{ margin: '6px 0 0 0', color: 'rgba(255, 255, 255, 0.75)', fontSize: '0.95rem' }}>
+                Manage your music releases, track analytics, and connect with your fanbase
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => setActiveView('profile')}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8, padding: '10px 20px',
+              background: 'var(--accent-color)', color: '#000', borderRadius: 20, fontWeight: 700,
+              fontSize: '0.88rem', border: 'none', cursor: 'pointer', boxShadow: '0 4px 15px rgba(250, 204, 21, 0.35)'
+            }}
+          >
+            <i className="fas fa-edit" /> Edit Profile
+          </button>
         </div>
-        <div style={{ zIndex: 2 }}>
-          <h2 style={{ margin: '0 0 4px', fontSize: '1.5rem' }}>Artist Dashboard</h2>
-          <p style={{ color: 'var(--text-muted)', margin: 0 }}>Manage your music and connect with fans</p>
-        </div>
-        <button className="btn-camsound-yellow" style={{ marginLeft: 'auto', zIndex: 2 }} onClick={() => setActiveView('profile')}>
-          <i className="fas fa-edit" style={{ marginRight: 8 }} />Edit Profile
-        </button>
-        <div style={{ position: 'absolute', right: -80, top: -80, width: 300, height: 300, borderRadius: '50%', background: 'rgba(250,204,21,0.05)' }} />
       </div>
 
-      {/* Stats Cards */}
-      <div className="stats-cards-grid">
+      {/* Stats Cards Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 20, marginBottom: 28 }}>
         {[
-          { label: 'Total Plays', value: loading ? '...' : stats?.totalPlays?.toLocaleString() ?? 0, icon: 'fa-headphones', color: '' },
-          { label: 'Total Tracks', value: loading ? '...' : stats?.totalSongs ?? 0, icon: 'fa-music', color: '' },
-          { label: 'Followers', value: loading ? '...' : stats?.followers ?? 0, icon: 'fa-users', color: 'green' },
-          { label: 'Pending Revenue', value: 'XAF 0', icon: 'fa-dollar-sign', color: 'blue' },
+          { label: 'Total Plays', value: loading ? '...' : stats?.totalPlays?.toLocaleString() ?? 0, icon: 'fa-headphones', color: 'var(--accent-color)' },
+          { label: 'Total Tracks', value: loading ? '...' : stats?.totalSongs ?? 0, icon: 'fa-compact-disc', color: '#10b981' },
+          { label: 'Followers', value: loading ? '...' : stats?.followers ?? 0, icon: 'fa-users', color: '#c084fc' },
+          { label: 'Pending Revenue', value: 'XAF 0', icon: 'fa-wallet', color: '#60a5fa' },
         ].map(s => (
-          <div key={s.label} className="stat-dash-card">
-            <div className={`stat-dash-icon ${s.color}`}><i className={`fas ${s.icon}`} /></div>
+          <div key={s.label} className="stat-card-premium">
+            <div className="stat-card-icon" style={{ color: s.color, borderColor: `${s.color}35`, background: `${s.color}15` }}>
+              <i className={`fas ${s.icon}`} />
+            </div>
             <div>
-              <div className="stat-dash-label">{s.label}</div>
-              <div className="stat-dash-value">{s.value}</div>
+              <div style={{ fontSize: '1.4rem', fontWeight: 800, color: '#fff' }}>{s.value}</div>
+              <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)', fontWeight: 600 }}>{s.label}</div>
             </div>
           </div>
         ))}
       </div>
 
       {/* Top Tracks */}
-      <div className="section-card">
-        <div className="section-header">
-          <h2><i className="fas fa-chart-bar" style={{ color: 'var(--accent-color)', marginRight: 10 }} />Your Top Tracks</h2>
-          <button className="view-all-btn" onClick={() => setActiveView('music')}>
+      <div className="stat-card-premium" style={{ padding: 28, flexDirection: 'column', alignItems: 'stretch' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: 16 }}>
+          <h2 style={{ margin: 0, fontSize: '1.25rem', fontWeight: 800, color: '#fff', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <i className="fas fa-chart-line" style={{ color: 'var(--accent-color)' }} /> Your Top Performing Tracks
+          </h2>
+          <button
+            onClick={() => setActiveView('music')}
+            style={{ background: 'none', border: 'none', color: 'var(--accent-color)', fontWeight: 700, cursor: 'pointer', fontSize: '0.88rem', display: 'flex', alignItems: 'center', gap: 6 }}
+          >
             All Tracks <i className="fas fa-arrow-right" />
           </button>
         </div>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-muted)' }}>
-            <i className="fas fa-spinner fa-spin" style={{ fontSize: '1.5rem' }} />
+          <div style={{ textAlign: 'center', padding: '32px 0', color: 'rgba(255,255,255,0.5)' }}>
+            <i className="fas fa-spinner fa-spin" style={{ fontSize: '1.5rem', color: 'var(--accent-color)' }} />
           </div>
         ) : !stats?.topSongs?.length ? (
-          <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
-            <i className="fas fa-music" style={{ fontSize: '2.5rem', display: 'block', marginBottom: 12, opacity: 0.4 }} />
+          <div style={{ textAlign: 'center', padding: '40px 0', color: 'rgba(255,255,255,0.5)' }}>
+            <i className="fas fa-music" style={{ fontSize: '2.5rem', display: 'block', marginBottom: 12, opacity: 0.4, color: 'var(--accent-color)' }} />
             <p>You haven't uploaded any tracks yet.</p>
-            <button className="btn-camsound-yellow" style={{ marginTop: 16 }} onClick={() => setActiveView('music')}>
-              <i className="fas fa-upload" style={{ marginRight: 8 }} />Upload Your First Track
+            <button
+              onClick={() => setActiveView('music')}
+              style={{ marginTop: 16, padding: '10px 24px', background: 'var(--accent-color)', color: '#000', border: 'none', borderRadius: 20, fontWeight: 700, cursor: 'pointer' }}
+            >
+              <i className="fas fa-upload" style={{ marginRight: 8 }} /> Upload Your First Track
             </button>
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {stats.topSongs.map((song: any, idx: number) => (
-              <div key={song._id} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '12px 16px', background: 'var(--bg-tertiary)', borderRadius: 12 }}>
-                <span style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-muted)', width: 24 }}>{idx + 1}</span>
-                <div style={{ width: 44, height: 44, borderRadius: 8, background: 'var(--bg-secondary)', overflow: 'hidden', flexShrink: 0 }}>
+              <div key={song._id} style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 18px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.06)', borderRadius: 14 }}>
+                <span style={{ fontSize: '1rem', fontWeight: 800, color: 'var(--accent-color)', width: 24, textAlign: 'center' }}>{idx + 1}</span>
+                <div style={{ width: 48, height: 48, borderRadius: 10, background: '#121814', overflow: 'hidden', flexShrink: 0 }}>
                   {song.coverArt ? <img src={song.coverArt} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><i className="fas fa-music" style={{ color: 'var(--text-muted)' }} /></div>}
+                    : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--accent-color)' }}><i className="fas fa-music" /></div>}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 600, fontSize: '0.9rem' }}>{song.title}</div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{song.plays?.toLocaleString()} plays</div>
+                  <div style={{ fontWeight: 700, fontSize: '0.95rem', color: '#fff' }}>{song.title}</div>
+                  <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>{song.plays?.toLocaleString()} plays</div>
                 </div>
               </div>
             ))}
@@ -628,8 +662,9 @@ const ArtistDashboard: React.FC = () => {
         setSearchParams({ tab: view });
       }}
     >
-      {activeView === 'dashboard' && <DashOverview />}
-      {activeView === 'music' && renderUploadView()}
+      <div key={activeView} className="view-fade-in">
+        {activeView === 'dashboard' && <DashOverview />}
+        {activeView === 'music' && renderUploadView()}
       {/* Profile Management */}
       {activeView === 'profile' && !profile && (
         <div className="section-card">
@@ -1031,6 +1066,7 @@ const ArtistDashboard: React.FC = () => {
           )}
         </div>
       )}
+      </div>
     </Layout>
   );
 };

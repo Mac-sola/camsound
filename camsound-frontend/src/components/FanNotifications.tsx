@@ -77,21 +77,32 @@ const FanNotifications: React.FC = () => {
 
   return (
     <div className="fan-notifs-container">
-      <div className="fan-section-header" style={{ marginBottom: 24 }}>
+      <div style={{ marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
         <div>
-          <h2 className="fan-page-title">
-            🔔 Notifications
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', background: 'rgba(250, 204, 21, 0.15)', border: '1px solid rgba(250, 204, 21, 0.3)', borderRadius: 20, color: 'var(--accent-color)', fontSize: '0.78rem', fontWeight: 700, marginBottom: 8 }}>
+            <i className="fas fa-bell" /> UPDATES & ALERTS
+          </div>
+          <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 12 }}>
+            Notifications
             {unreadCount > 0 && (
-              <span className="fan-notif-count-badge">{unreadCount}</span>
+              <span style={{ background: '#ef4444', color: '#fff', fontSize: '0.8rem', fontWeight: 800, padding: '2px 10px', borderRadius: 20, boxShadow: '0 0 10px rgba(239, 68, 68, 0.5)' }}>
+                {unreadCount} new
+              </span>
             )}
           </h2>
-          <p className="fan-page-subtitle">Stay up to date with what's happening</p>
+          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', margin: '4px 0 0 0' }}>
+            Stay up to date with new track releases, social activity, and platform alerts
+          </p>
         </div>
         {unreadCount > 0 && (
           <button
-            className="fan-secondary-btn"
             onClick={handleMarkAllRead}
             disabled={markingAll}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px',
+              background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)',
+              color: '#fff', borderRadius: 20, fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer'
+            }}
           >
             <i className={`fas ${markingAll ? 'fa-spinner fa-spin' : 'fa-check-double'}`} />
             {markingAll ? 'Marking...' : 'Mark All Read'}
@@ -105,31 +116,43 @@ const FanNotifications: React.FC = () => {
           <span>Loading notifications...</span>
         </div>
       ) : notifications.length === 0 ? (
-        <div className="fan-empty-state">
-          <i className="fas fa-bell-slash" />
-          <h4>You're all caught up!</h4>
-          <p>No notifications at the moment.</p>
+        <div className="fan-empty-state" style={{ background: 'rgba(18, 26, 22, 0.6)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.06)' }}>
+          <i className="fas fa-bell-slash" style={{ color: 'var(--accent-color)', opacity: 0.4 }} />
+          <h4 style={{ color: '#fff' }}>You're all caught up!</h4>
+          <p>No new notifications at the moment.</p>
         </div>
       ) : (
-        <div className="fan-notifs-list">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
           {notifications.map(notif => {
             const isRead = readSet.has(notif._id);
             const meta = getMeta(notif.type);
             return (
               <div
                 key={notif._id}
-                className={`fan-notif-row ${isRead ? 'read' : 'unread'}`}
                 onClick={() => !isRead && handleMarkRead(notif._id)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 16, padding: '16px 20px',
+                  background: isRead ? 'rgba(18, 26, 22, 0.5)' : 'rgba(24, 34, 28, 0.85)',
+                  border: `1px solid ${isRead ? 'rgba(255, 255, 255, 0.06)' : 'rgba(250, 204, 21, 0.3)'}`,
+                  borderRadius: 16, backdropFilter: 'blur(10px)', cursor: isRead ? 'default' : 'pointer',
+                  transition: 'all 0.2s ease', position: 'relative'
+                }}
               >
-                <div className="fan-notif-icon" style={{ color: meta.color }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: 12, background: `${meta.color}18`,
+                  border: `1px solid ${meta.color}35`, color: meta.color,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', flexShrink: 0
+                }}>
                   <i className={`fas ${meta.icon}`} />
                 </div>
-                <div className="fan-notif-body">
-                  {notif.title && <div className="fan-notif-title">{notif.title}</div>}
-                  <div className="fan-notif-message">{notif.message ?? notif.title}</div>
-                  <div className="fan-notif-time">{formatTime(notif.createdAt)}</div>
+                <div style={{ flex: 1 }}>
+                  {notif.title && <div style={{ fontWeight: 700, color: '#fff', fontSize: '0.95rem', marginBottom: 2 }}>{notif.title}</div>}
+                  <div style={{ color: isRead ? 'rgba(255,255,255,0.7)' : '#fff', fontSize: '0.88rem', lineHeight: 1.4 }}>{notif.message ?? notif.title}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)', marginTop: 4 }}>{formatTime(notif.createdAt)}</div>
                 </div>
-                {!isRead && <div className="fan-notif-dot" />}
+                {!isRead && (
+                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--accent-color)', boxShadow: '0 0 10px rgba(250, 204, 21, 0.8)', flexShrink: 0 }} />
+                )}
               </div>
             );
           })}
@@ -140,3 +163,4 @@ const FanNotifications: React.FC = () => {
 };
 
 export default FanNotifications;
+

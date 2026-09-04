@@ -72,7 +72,9 @@ const FanDashboard: React.FC = () => {
       searchValue={searchQuery}
       onSearchChange={handleSearchChange}
     >
-      {renderView()}
+      <div key={activeView} className="view-fade-in">
+        {renderView()}
+      </div>
     </Layout>
   );
 };
