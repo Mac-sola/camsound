@@ -201,7 +201,8 @@ const AdminDashboard: React.FC = () => {
       activeView={activeView}
       onNavClick={setActiveView}
     >
-      {activeView === 'overview' && <OverviewView />}
+      <div key={activeView} className="view-fade-in">
+        {activeView === 'overview' && <OverviewView />}
       {/* Users View */}
       {activeView === 'users' && (
         <div className="section-card">
@@ -758,6 +759,7 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
       )}
+      </div>
     </Layout>
   );
 };

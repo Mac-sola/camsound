@@ -29,14 +29,14 @@ export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
               width: 42, height: 42, borderRadius: '50%',
-              background: 'linear-gradient(135deg, #facc15 0%, #10b981 100%)',
+              background: '#facc15',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               boxShadow: '0 0 16px rgba(250, 204, 21, 0.4)'
             }}>
               <i className={`fas fa-compact-disc ${isPlaying ? 'fa-spin' : ''}`} style={{ color: '#0b0f0c', fontSize: '1.3rem' }} />
             </div>
             <div>
-              <h1 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 800, background: 'linear-gradient(135deg, #ffffff 0%, #facc15 100%)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>
+              <h1 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 800, color: '#facc15' }}>
                 CamSound
               </h1>
               <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--accent-color)', fontWeight: 600, letterSpacing: 0.5 }}>
@@ -301,7 +301,7 @@ export const PlayerBar: React.FC = () => {
               seek(((e.clientX - rect.left) / rect.width) * 100);
             }}
           >
-            <div className="progress-bar-fill" style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, #10b981 0%, #facc15 100%)', borderRadius: 3 }} />
+            <div className="progress-bar-fill" style={{ width: `${pct}%`, height: '100%', background: '#facc15', borderRadius: 3 }} />
           </div>
           <span>{fmt(duration)}</span>
         </div>

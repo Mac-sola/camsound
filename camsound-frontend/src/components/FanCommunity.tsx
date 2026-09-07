@@ -223,7 +223,7 @@ const FanCommunity: React.FC = () => {
               {posts.map(post => (
                 <div key={post._id} className="stat-card-premium" style={{ padding: 20, flexDirection: 'column', alignItems: 'stretch' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 10 }}>
-                    <div style={{ width: 38, height: 38, borderRadius: '50%', background: 'linear-gradient(135deg, #10b981, #facc15)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>
+                    <div style={{ width: 38, height: 38, borderRadius: '50%', background: '#facc15', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800 }}>
                       {post.userId?.name?.charAt(0) ?? 'U'}
                     </div>
                     <div>

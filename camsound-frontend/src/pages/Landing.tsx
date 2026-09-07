@@ -77,14 +77,7 @@ const Landing: React.FC = () => {
               <div className="hero-stacked-cards">
                 <div className="stacked-card">
                   <svg className="vinyl-record" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                    <defs>
-                      <radialGradient id="vinyl" cx="50%" cy="50%" r="50%">
-                        <stop offset="0%" style={{stopColor: '#FACC15', stopOpacity: 1}} />
-                        <stop offset="50%" style={{stopColor: '#F59E0B', stopOpacity: 1}} />
-                        <stop offset="100%" style={{stopColor: '#1e1e1e', stopOpacity: 1}} />
-                      </radialGradient>
-                    </defs>
-                    <circle cx="100" cy="100" r="95" fill="url(#vinyl)" />
+                    <circle cx="100" cy="100" r="95" fill="#FACC15" />
                     <circle cx="100" cy="100" r="70" fill="#1a1a1a" opacity="0.8" />
                     <circle cx="100" cy="100" r="55" fill="#0F3D2E" />
                     <circle cx="100" cy="100" r="45" fill="#1a1a1a" opacity="0.6" />
