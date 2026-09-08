@@ -24,6 +24,21 @@ const buildAuthResponse = (user: any, token: string, csrfToken: string) => ({
     message: 'Authentication successful',
     token,
     csrfToken,
+    data: {
+        user: {
+            _id: user._id,
+            name: user.name,
+            email: user.email,
+            type: user.type,
+            status: user.status,
+            country: user.country,
+            subscriptionStatus: user.subscriptionStatus,
+            avatar: user.avatar,
+            bio: user.bio,
+        },
+        token,
+        csrfToken,
+    },
     user: {
         _id: user._id,
         name: user.name,
@@ -100,8 +115,8 @@ export const login = async (req: Request, res: Response) => {
         if (!user) {
             return res.status(401).json({ success: false, message: 'Invalid credentials' });
         }
-        if (user.status === 'blocked') {
-            return res.status(403).json({ success: false, message: 'Your account has been suspended' });
+        if (user.status !== 'active') {
+            return res.status(403).json({ success: false, message: 'Account is not active' });
         }
         const isValid = await user.comparePassword(password);
         if (!isValid) {
@@ -153,6 +168,7 @@ export const session = async (req: Request, res: Response) => {
     try {
         const user = await User.findById(req.user?.id).select('-password');
         if (!user) return res.status(404).json({ success: false, message: 'User not found' });
+        if (user.status !== 'active') return res.status(403).json({ success: false, message: 'Account is not active' });
         res.json({ success: true, data: { user, csrfToken: req.csrfToken } });
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });

@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AfroRhythm - Fan Dashboard</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="assets/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="assets/lib/fontawesome/all.min.css">
+    <link rel="stylesheet" href="assets/lib/fonts/fonts.css">
+    <!-- Modern Dark Theme CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/premium-theme.css">
+    <link rel="stylesheet" href="css/theme-components.css">
+    <link rel="stylesheet" href="css/mobile.css">
+    <link rel="stylesheet" href="css/camsound-dashboard.css">
+    <link rel="stylesheet" href="css/camsound-reference.css">
+    <link rel="stylesheet" href="css/dashboard-layout.css">
+    <link rel="stylesheet" href="css/fan-dashboard.css">
+    <link rel="stylesheet" href="css/camsound-dark-theme.css">
+</head>
+
+<body class="camsound-ref dashboard-page">
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+    <input type="file" id="profileImageInput" hidden accept="image/*">
+    <div class="app d-flex" id="wrapper">
+        <!-- Sidebar -->
+        <div id="sidebar-wrapper">
+            <button class="hamburger-btn d-lg-none" id="sidebarClose"
+                style="position: absolute; right: 10px; top: 10px;">
+                <i class="fas fa-times"></i>
+            </button>
+
+            <div class="sidebar-header">
+                <h1><i class="fas fa-drum"></i> <span class="platform-name"></span></h1>
+                <p class="platform-description"></p>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section">
+                    <div class="nav-section-title">DISCOVER</div>
+                    <button class="nav-item active" data-view="discover">
+                        <i class="fas fa-home"></i>
+                        <span>Home</span>
+                    </button>
+                    <button class="nav-item" data-view="browse">
+                        <i class="fas fa-search"></i>
+                        <span>Browse</span>
+                    </button>
+                    <button class="nav-item" data-view="genres">
+                        <i class="fas fa-tags"></i>
+                        <span>Genres</span>
+                    </button>
+                    <button class="nav-item" data-view="community">
+                        <i class="fas fa-users"></i>
+                        <span>Community</span>
+                    </button>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">MY MUSIC</div>
+                    <button class="nav-item" data-view="mymusic">
+                        <i class="fas fa-music"></i>
+                        <span>My Music</span>
+                        <span class="nav-badge" id="favoriteCount">0</span>
+                    </button>
+                    <button class="nav-item" data-view="playlists">
+                        <i class="fas fa-list"></i>
+                        <span>Playlists</span>
+                        <span class="nav-badge" id="playlistCount">2</span>
+                    </button>
+                    <button class="nav-item" data-view="history">
+                        <i class="fas fa-history"></i>
+                        <span>History</span>
+                    </button>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">FOLLOWING</div>
+                    <button class="nav-item" data-view="following">
+                        <i class="fas fa-user-friends"></i>
+                        <span>Following</span>
+                        <span class="nav-badge" id="followingCount">0</span>
+                    </button>
+                    <button class="nav-item" data-view="notifications">
+                        <i class="fas fa-bell"></i>
+                        <span>Notifications</span>
+                        <span class="nav-badge" id="notificationCount">2</span>
+                    </button>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">ACCOUNT</div>
+                    <button class="nav-item" data-view="profile">
+                        <i class="fas fa-user"></i>
+                        <span>Profile</span>
+                    </button>
+                    <button class="nav-item" data-view="settings">
+                        <i class="fas fa-cog"></i>
+                        <span>Settings</span>
+                    </button>
+                    <button class="nav-item" id="logoutBtn">
+                        <i class="fas fa-sign-out-alt"></i>
+                        <span>Logout</span>
+                    </button>
+                </div>
+            </nav>
+
+            <!-- Stats Toggle (Collapsible) -->
+            <button class="nav-item" id="statsToggleBtn"
+                style="margin-top: auto; border-top: 1px solid rgba(255,255,255,0.1); border-radius: 0;">
+                <div style="display:flex; align-items:center;">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Quick Stats</span>
+                </div>
+                <i class="fas fa-chevron-up" id="statsToggleIcon"
+                    style="margin-left: auto; font-size: 12px; transition: transform 0.3s;"></i>
+            </button>
+
+            <div class="quick-stats" id="quickStatsContent" style="display: none; border-top: none;">
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-headphones"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4 id="totalPlays">0</h4>
+                        <p>Total Plays</p>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4 id="totalLikes">0</h4>
+                        <p>Songs Liked</p>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <h4 id="totalHours">0</h4>
+                        <p>Hours Listened</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar">
+                <div class="top-bar-left">
+                    <button class="btn btn-outline-secondary d-lg-none me-3" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="search-container">
+                        <i class="fas fa-search search-icon"></i>
+                        <input type="text" class="search-input" id="searchInput"
+                            placeholder="Search songs, artists, playlists...">
+                    </div>
+                </div>
+
+                <div class="top-bar-right">
+                    <button class="notification-btn" id="notificationBtn">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notificationBadge">2</span>
+                    </button>
+
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center"
+                            type="button" data-bs-toggle="dropdown">
+                            <img src="https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?ixlib=rb-4.0.3&auto=format&fit=crop&w=40&q=80"
+                                alt="User" class="rounded-circle me-2" width="36" height="36"
+                                id="topBarProfileImage" loading="lazy">
+                            <span class="d-none d-md-inline" id="topBarUserName">Fan User</span>
+                            <i class="fas fa-chevron-down ms-2"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" data-view="profile"><i class="fas fa-user me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item" href="#" data-view="settings"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" id="topLogoutBtn"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area" id="contentArea">
+                <!-- Discover View (Default) -->
+                <div id="discover-view" class="dashboard-view active">
+                    <!-- Hero Welcome Section -->
+                    <div class="hero-welcome">
+                        <div class="hero-content">
+                            <h1 id="welcomeMessage">Welcome back!</h1>
+                            <p>Discover the best of Cameroonian music - from traditional rhythms to modern beats.</p>
+                            <div class="hero-stats">
+                                <div class="hero-stat">
+                                    <span class="hero-stat-value" id="heroDailyPlays">0</span>
+                                    <span class="hero-stat-label">Plays Today</span>
+                                </div>
+                                <div class="hero-stat">
+                                    <span class="hero-stat-value" id="heroNewReleases">0</span>
+                                    <span class="hero-stat-label">New Releases</span>
+                                </div>
+                                <div class="hero-stat">
+                                    <span class="hero-stat-value" id="heroTrendingArtists">0</span>
+                                    <span class="hero-stat-label">Trending Artists</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Featured Music Zone (Side-by-Side) -->
+                    <div class="row">
+                        <div class="col-lg-6 col-12 mb-4">
+                            <!-- New Releases Section -->
+                            <div class="section h-100">
+                                <div class="section-header">
+                                    <h2>🔥 New Releases</h2>
+                                    <button class="view-all" data-view="browse">View All <i
+                                            class="fas fa-chevron-right"></i></button>
+                                </div>
+                                <div class="cards-grid" id="newReleases">
+                                    <!-- New releases will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-12 mb-4">
+                            <!-- Trending Songs Section -->
+                            <section class="section h-100">
+                                <div class="section-header">
+                                    <h2>📈 Trending Songs</h2>
+                                    <button class="view-all" data-view="browse">View All <i
+                                            class="fas fa-chevron-right"></i></button>
+                                </div>
+                                <div class="cards-grid" id="trendingSongs">
+                                    <!-- Trending songs will be loaded here -->
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <!-- Quick Access Zone (Genre Navigation) -->
+                    <div class="section mb-4">
+                        <div class="section-header">
+                            <h2>🎵 Browse by Genre</h2>
+                        </div>
+                        <div class="genre-chips" id="genreChips">
+                            <!-- Genre chips will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Recently Played (Continue Listening - Conditionally Hidden) -->
+                    <div class="section mb-4" id="continueListeningSection">
+                        <div class="section-header">
+                            <h2>🕒 Continue Listening</h2>
+                            <button class="view-all" data-view="history">
+                                View All <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                        <div class="recently-played" id="recentlyPlayed">
+                            <!-- Recently played songs will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Recommended Zone (Playlists + Artists Side-by-Side) -->
+                    <div class="row">
+                        <div class="col-lg-6 col-12 mb-4">
+                            <!-- Recommended Playlists -->
+                            <div class="section h-100">
+                                <div class="section-header">
+                                    <h2>🎧 Made For You</h2>
+                                    <button class="view-all" data-view="playlists">
+                                        View All <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                                <div class="cards-grid" id="recommendedPlaylists">
+                                    <!-- Recommended playlists will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6 col-12 mb-4">
+                            <!-- Trending Artists -->
+                            <div class="section h-100">
+                                <div class="section-header">
+                                    <h2>🔥 Trending Artists</h2>
+                                    <button class="view-all" data-view="browse">
+                                        Discover All <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                                <div class="cards-grid" id="trendingArtistsList">
+                                    <!-- Trending artists will be loaded here -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Favorite Artists (Conditionally Hidden) -->
+                    <div class="section mb-4" id="favoriteArtistsSection">
+                        <div class="section-header">
+                            <h2>⭐ Your Favorite Artists</h2>
+                            <button class="view-all" data-view="following">
+                                View All <i class="fas fa-arrow-right"></i>
+                            </button>
+                        </div>
+                        <div class="cards-grid" id="favoriteArtists">
+                            <!-- Favorite artists will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Browse View -->
+                <div id="browse-view" class="dashboard-view">
+                    <!-- Featured Artists Section -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>Discover Artists</h2>
+                        </div>
+                        <div class="cards-grid mb-5" id="browseArtists">
+                            <!-- All artists will be loaded here -->
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>Browse All Music</h2>
+                            <div class="search-container" style="width: 300px;">
+                                <i class="fas fa-search search-icon"></i>
+                                <input type="text" class="search-input" id="browseSearch" placeholder="Filter songs...">
+                            </div>
+                        </div>
+                        <div class="cards-grid" id="browseSongs">
+                            <!-- All songs will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Community View -->
+                <div id="community-view" class="dashboard-view">
+                    <!-- Community Hero Header -->
+                    <div class="community-hero">
+                        <div class="community-hero-inner">
+                            <div class="community-hero-text">
+                                <h1>🌐 Community Hub</h1>
+                                <p>Connect with artists and fans across Cameroon. Share your love for music.</p>
+                            </div>
+                            <div class="community-hero-stats" id="communityHeroStats">
+                                <div class="comm-stat">
+                                    <span class="comm-stat-value" id="communityStatDiscussions">—</span>
+                                    <span class="comm-stat-label">Discussions</span>
+                                </div>
+                                <div class="comm-stat">
+                                    <span class="comm-stat-value" id="communityStatFans">—</span>
+                                    <span class="comm-stat-label">Active Fans</span>
+                                </div>
+                                <div class="comm-stat">
+                                    <span class="comm-stat-value" id="communityStatArtists">—</span>
+                                    <span class="comm-stat-label">Artists</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Post Composer -->
+                    <div class="community-composer" id="communityComposer">
+                        <div class="composer-avatar" id="composerAvatar">?</div>
+                        <div class="composer-body">
+                            <div class="composer-song-picker mb-2">
+                                <select id="composerSongSelect" class="composer-select">
+                                    <option value="">🎵 Choose a song to discuss…</option>
+                                </select>
+                            </div>
+                            <textarea id="communityPostText" class="composer-textarea" placeholder="Share your thoughts about a track, an artist, or Cameroonian music…" rows="2"></textarea>
+                            <div class="composer-footer">
+                                <span class="composer-hint"><i class="fas fa-info-circle"></i> Comments are linked to a song.</span>
+                                <button class="composer-submit" id="communityPostBtn">
+                                    <i class="fas fa-paper-plane"></i> Post
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tab Bar -->
+                    <div class="community-tabs" id="communityTabs">
+                        <button class="comm-tab active" data-tab="all">
+                            <i class="fas fa-fire"></i> All Activity
+                        </button>
+                        <button class="comm-tab" data-tab="discussions">
+                            <i class="fas fa-comments"></i> Discussions
+                        </button>
+                        <button class="comm-tab" data-tab="artists">
+                            <i class="fas fa-star"></i> Artist Spotlight
+                        </button>
+                    </div>
+
+                    <!-- Main Content Area -->
+                    <div class="row g-4 mt-1">
+                        <!-- Feed Column -->
+                        <div class="col-lg-8">
+                            <!-- All Activity Tab -->
+                            <div class="comm-tab-content active" id="tab-all">
+                                <div id="communityPageFeed" class="community-feed-list"></div>
+                            </div>
+                            <!-- Discussions Tab -->
+                            <div class="comm-tab-content" id="tab-discussions">
+                                <div id="communityDiscussionsFeed" class="community-feed-list"></div>
+                            </div>
+                            <!-- Artist Spotlight Tab -->
+                            <div class="comm-tab-content" id="tab-artists">
+                                <div id="communityArtistsFeed" class="community-feed-list"></div>
+                            </div>
+                        </div>
+
+                        <!-- Sidebar Column -->
+                        <div class="col-lg-4">
+                            <!-- Trending Tracks -->
+                            <div class="community-sidebar-card mb-4">
+                                <div class="sidebar-card-header">
+                                    <i class="fas fa-chart-line"></i> Trending Discussions
+                                </div>
+                                <div id="communityTrendingTracks" class="trending-track-list">
+                                    <div class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div></div>
+                                </div>
+                            </div>
+
+                            <!-- Active Fans -->
+                            <div class="community-sidebar-card">
+                                <div class="sidebar-card-header">
+                                    <i class="fas fa-users"></i> Top Contributors
+                                </div>
+                                <div id="communityTopFans" class="top-fans-list">
+                                    <div class="text-center py-3"><div class="spinner-border spinner-border-sm text-primary"></div></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Genres View -->
+                <div id="genres-view" class="dashboard-view">
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>Music Genres</h2>
+                        </div>
+                        <div class="cards-grid" id="genresGrid">
+                            <!-- Genre cards will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- My Music View -->
+                <div id="mymusic-view" class="dashboard-view">
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>My Music Library</h2>
+                        </div>
+
+                        <!-- Favorites -->
+                        <div class="section">
+                            <div class="section-header">
+                                <h3>❤️ Favorite Songs</h3>
+                                <button class="view-all" data-action="play-all-favorites">
+                                    Play All <i class="fas fa-play"></i>
+                                </button>
+                            </div>
+                            <div class="cards-grid" id="myFavoriteSongs">
+                                <!-- Favorite songs will be loaded here -->
+                            </div>
+                        </div>
+
+                        <!-- My Playlists -->
+                        <div class="section">
+                            <div class="section-header">
+                                <h3>📂 My Playlists</h3>
+                                <button class="view-all" id="createPlaylistBtn">
+                                    <i class="fas fa-plus"></i> Create New
+                                </button>
+                            </div>
+                            <div class="cards-grid" id="myPlaylists">
+                                <!-- User's playlists will be loaded here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Playlists View -->
+                <div id="playlists-view" class="dashboard-view">
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>All Playlists</h2>
+                            <button class="view-all" id="createPlaylistBtn2">
+                                <i class="fas fa-plus"></i> Create Playlist
+                            </button>
+                        </div>
+                        <div class="cards-grid" id="allPlaylists">
+                            <!-- All playlists will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History View -->
+                <div id="history-view" class="dashboard-view">
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>Listening History</h2>
+                            <button class="view-all" id="clearHistoryBtn">
+                                <i class="fas fa-trash"></i> Clear History
+                            </button>
+                        </div>
+                        <div class="cards-grid" id="listeningHistory">
+                            <!-- History items will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Following View -->
+                <div id="following-view" class="dashboard-view">
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>Artists You Follow</h2>
+                        </div>
+                        <div class="cards-grid" id="followingArtists">
+                            <!-- Followed artists will be loaded here -->
+                        </div>
+                    </div>
+
+                    <!-- Artist Activity -->
+                    <div class="section">
+                        <div class="section-header">
+                            <h3>Latest from Artists</h3>
+                        </div>
+                        <div class="activity-feed" id="artistActivity">
+                            <!-- Artist activity will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notifications View -->
+                <div id="notifications-view" class="dashboard-view">
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>All Notifications</h2>
+                            <button class="view-all" id="markAllNotificationsRead">
+                                Mark All as Read
+                            </button>
+                        </div>
+                        <div class="activity-feed" id="allNotifications">
+                            <!-- All notifications will be loaded here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Profile View -->
+                <div id="profile-view" class="dashboard-view">
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>My Profile</h2>
+                            <button class="view-all" id="editProfileBtn">
+                                <i class="fas fa-edit"></i> Edit Profile
+                            </button>
+                        </div>
+
+                        <!-- Profile Info -->
+                        <div class="hero-welcome" style="background: var(--bg-secondary);">
+                            <div class="hero-content">
+                                <div style="display: flex; align-items: center; gap: var(--spacing-xl);">
+                                    <div class="user-avatar" style="width: 100px; height: 100px; font-size: 36px;"
+                                        id="profileAvatar">JD</div>
+                                    <div>
+                                        <h1 id="profileName">John Doe</h1>
+                                        <p id="profileEmail">john@example.com</p>
+                                        <p><i class="fas fa-calendar"></i> Member since <span
+                                                id="memberSince">2023</span></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Stats -->
+                        <div class="section">
+                            <div class="section-header">
+                                <h3>Your Stats</h3>
+                            </div>
+                            <div class="cards-grid">
+                                <div class="song-card">
+                                    <div class="song-cover" style="background: var(--primary-color);">
+                                        <i class="fas fa-headphones"></i>
+                                    </div>
+                                    <h4>Total Plays</h4>
+                                    <p id="profileTotalPlays">0 plays</p>
+                                </div>
+                                <div class="song-card">
+                                    <div class="song-cover" style="background: var(--secondary-color);">
+                                        <i class="fas fa-heart"></i>
+                                    </div>
+                                    <h4>Songs Liked</h4>
+                                    <p id="profileSongsLiked">0 songs</p>
+                                </div>
+                                <div class="song-card">
+                                    <div class="song-cover" style="background: #4A6CF7;">
+                                        <i class="fas fa-user-friends"></i>
+                                    </div>
+                                    <h4>Artists Followed</h4>
+                                    <p id="profileArtistsFollowed">0 artists</p>
+                                </div>
+                                <div class="song-card">
+                                    <div class="song-cover" style="background: #FFA726;">
+                                        <i class="fas fa-clock"></i>
+                                    </div>
+                                    <h4>Hours Listened</h4>
+                                    <p id="profileHoursListened">0 hours</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Settings View -->
+                <div id="settings-view" class="dashboard-view">
+                    <div class="section">
+                        <div class="section-header">
+                            <h2>Settings</h2>
+                        </div>
+
+                        <!-- Settings Cards -->
+                        <div class="cards-grid">
+                            <div class="song-card">
+                                <div class="song-cover" style="background: var(--primary-color);">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <h4>Account Settings</h4>
+                                <p>Update profile information</p>
+                            </div>
+                            <div class="song-card">
+                                <div class="song-cover" style="background: var(--secondary-color);">
+                                    <i class="fas fa-bell"></i>
+                                </div>
+                                <h4>Notifications</h4>
+                                <p>Manage notification preferences</p>
+                            </div>
+                            <div class="song-card">
+                                <div class="song-cover" style="background: #4A6CF7;">
+                                    <i class="fas fa-music"></i>
+                                </div>
+                                <h4>Playback</h4>
+                                <p>Audio quality and playback settings</p>
+                            </div>
+                            <div class="song-card">
+                                <div class="song-cover" style="background: #FFA726;">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <h4>Privacy & Security</h4>
+                                <p>Manage privacy settings</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Song Detail View (Engagement) -->
+                <div id="song-detail-view" class="dashboard-view">
+                    <button class="view-all mb-4" onclick="switchDashboardView('discover')">
+                        <i class="fas fa-arrow-left"></i> Back to Discover
+                    </button>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div id="detailSongCover" class="song-cover mb-4" style="height: 300px; font-size: 100px;">
+                                <i class="fas fa-music"></i>
+                            </div>
+                            <div class="d-grid gap-2">
+                                <button id="detailPlayBtn" class="btn btn-primary btn-lg" style="background: linear-gradient(135deg, var(--primary-color), var(--secondary-color)); border: none;">
+                                    <i class="fas fa-play me-2"></i> Play Now
+                                </button>
+                                <button id="detailFavoriteBtn" class="btn btn-outline-light">
+                                    <i class="far fa-heart me-2"></i> Favorite
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <h1 id="detailSongTitle" style="font-size: 3rem; font-weight: 800; margin-bottom: 0.5rem;">Song Title</h1>
+                            <h3 id="detailSongArtist" class="text-secondary mb-4" style="cursor: pointer;">Artist Name</h3>
+                            
+                            <div class="metadata-grid d-flex gap-4 mb-5 pb-4 border-bottom" style="border-color: rgba(255,255,255,0.1) !important;">
+                                <div>
+                                    <small class="text-muted d-block text-uppercase" style="letter-spacing: 1px; font-size: 0.7rem;">Genre</small>
+                                    <span id="detailSongGenre" class="fw-bold">Afrobeats</span>
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block text-uppercase" style="letter-spacing: 1px; font-size: 0.7rem;">Plays</small>
+                                    <span id="detailSongPlays" class="fw-bold">0</span>
+                                </div>
+                                <div>
+                                    <small class="text-muted d-block text-uppercase" style="letter-spacing: 1px; font-size: 0.7rem;">Duration</small>
+                                    <span id="detailSongDuration" class="fw-bold">0:00</span>
+                                </div>
+                            </div>
+
+                            <!-- Comments Section -->
+                            <div class="comments-section">
+                                <h4 class="mb-4"><i class="fas fa-comments me-2"></i> Discussion</h4>
+                                
+                                <!-- Comment Form -->
+                                <div class="comment-form mb-5 p-3 rounded" style="background: rgba(255,255,255,0.05);">
+                                    <div class="d-flex gap-3">
+                                        <div class="user-avatar" style="width: 40px; height: 40px; flex-shrink: 0;" id="commentUserAvatar">JD</div>
+                                        <div class="flex-grow-1">
+                                            <textarea id="commentInput" class="form-control mb-2" rows="2" placeholder="What do you think of this track?" style="background: var(--bg-tertiary); border: 1px solid rgba(255,255,255,0.1); color: white;"></textarea>
+                                            <div class="text-end">
+                                                <button id="postCommentBtn" class="btn btn-sm btn-primary" style="background: var(--primary-color); border: none;">Post Comment</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Comments List -->
+                                <div id="commentsList" class="d-flex flex-column gap-3">
+                                    <!-- Comments will be loaded here -->
+                                    <div class="text-center py-4 text-muted">
+                                        <i class="fas fa-spinner fa-spin mb-2"></i>
+                                        <p>Loading comments...</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+    <!-- Artist Detail Modal -->
+    <div class="modal fade" id="artistDetailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content"
+                style="background: #1a1a2e; color: #f8f9fa; border: 1px solid rgba(255,255,255,0.1);">
+                <div class="modal-header" style="border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <h5 class="modal-title">Artist Profile</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <div class="row align-items-center mb-4">
+                        <div class="col-md-4 text-center">
+                            <div id="modalArtistAvatar" class="artist-avatar mb-3"
+                                style="width: 150px; height: 150px; font-size: 64px; border: 4px solid var(--primary-color); line-height: 150px; margin: 0 auto; box-shadow: 0 10px 30px rgba(0,0,0,0.5); background-color: #2a2a3e; background-size: cover; background-position: center; border-radius: 50%; display: flex; align-items: center; justify-content: center;">
+                                M</div>
+                        </div>
+                        <div class="col-md-8">
+                            <h2 id="modalArtistName" class="mb-2"
+                                style="font-weight: 800; color: #fff; letter-spacing: -0.5px;">Artist Name</h2>
+                            <p id="modalArtistGenre" class="mb-2" style="font-weight: 500; color: #b3b3b3;">Genre • 0
+                                followers</p>
+
+                            <div class="metadata-grid d-flex flex-wrap gap-3 mb-3">
+                                <p id="modalArtistLocation" class="mb-0"
+                                    style="display: none; font-size: 0.9rem; color: #b3b3b3;">
+                                    <i class="fas fa-map-marker-alt me-2" style="color: var(--primary-color);"></i>
+                                    Location
+                                </p>
+                                <p id="modalArtistWebsite" class="mb-0" style="display: none; font-size: 0.9rem;">
+                                    <i class="fas fa-globe me-2"></i> Website
+                                </p>
+                            </div>
+
+                            <div id="modalArtistSocial" class="d-flex gap-3 mb-4">
+                                <!-- Social links populated here -->
+                            </div>
+
+                            <div class="d-flex align-items-center gap-3">
+                                <button id="modalFollowBtn" class="follow-btn"
+                                    style="width: auto; padding: 10px 30px; border-radius: 30px;">Follow</button>
+
+                                <!-- Mini Stats -->
+                                <div class="artist-mini-stats d-flex gap-4 ms-3 border-start ps-4"
+                                    style="border-color: rgba(255,255,255,0.1) !important;">
+                                    <div class="text-center">
+                                        <div id="modalArtistPlays" class="h5 mb-0"
+                                            style="color: #fff; font-weight: 700; background: transparent;">0</div>
+                                        <small
+                                            style="color: #b3b3b3; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8; font-weight: 500;">Plays</small>
+                                    </div>
+                                    <div class="text-center">
+                                        <div id="modalArtistLikes" class="h5 mb-0"
+                                            style="color: #fff; font-weight: 700; background: transparent;">0</div>
+                                        <small
+                                            style="color: #b3b3b3; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8; font-weight: 500;">Likes</small>
+                                    </div>
+                                    <div class="text-center">
+                                        <div id="modalArtistDownloads" class="h5 mb-0"
+                                            style="color: #fff; font-weight: 700; background: transparent;">0</div>
+                                        <small
+                                            style="color: #b3b3b3; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1.5px; opacity: 0.8; font-weight: 500;">Downloads</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bio-section p-3 rounded"
+                        style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05);">
+                        <h6 class="mb-3"
+                            style="color: var(--primary-color); text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1.5px; font-weight: 700;">
+                            About the Artist</h6>
+                        <p id="modalArtistBio" class="mb-0"
+                            style="color: #f8f9fa; line-height: 1.7; font-size: 0.95rem; opacity: 0.9;">No biography
+                            available.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="assets/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <!-- Utility JS -->
+    <script src="Js/utils.js"></script>
+    <script src="Js/dashboard-ui.js?v=1"></script>
+    <!-- Custom JS -->
+    <script src="Js/session.js"></script>
+    <script src="Js/platform-settings.js"></script>
+    <script src="Js/modal-player.js"></script>
+    <script src="Js/fan.js?v=1.1.2"></script>
+</body>
+
+</html>

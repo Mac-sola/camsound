@@ -17,7 +17,7 @@ const QuickStatsAccordion: React.FC = () => {
       .then(res => {
         const d = res.data?.data ?? res.data ?? {};
         setStats({
-          totalPlays: d.totalPlays ?? d.plays ?? 0,
+          totalPlays: d.totalPlays ?? d.totalListens ?? d.plays ?? 0,
           totalLikes: d.totalLikes ?? d.likes ?? 0,
           totalHours: d.totalHours ?? d.hours ?? 0,
         });

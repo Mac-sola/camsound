@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { notificationSettingsService, authService } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 interface NotifSettings {
   newReleases?: boolean;
@@ -21,6 +22,34 @@ const ToggleSwitch: React.FC<{ checked: boolean; onChange: (v: boolean) => void;
 );
 
 const FanSettings: React.FC = () => {
+  const { user, updateUser } = useAuth();
+  const [accountForm, setAccountForm] = useState({ name: '', phone: '', country: '', bio: '', avatar: '' });
+  const [accountMsg, setAccountMsg] = useState('');
+  const [savingAccount, setSavingAccount] = useState(false);
+  const [audioQuality, setAudioQuality] = useState(() => localStorage.getItem('camsound:audioQuality') || 'high');
+  const [autoplay, setAutoplay] = useState(() => localStorage.getItem('camsound:autoplay') === 'true');
+  const [crossfade, setCrossfade] = useState(() => localStorage.getItem('camsound:crossfade') === 'true');
+  const [accountVisible, setAccountVisible] = useState(() => localStorage.getItem('camsound:accountVisible') !== 'false');
+
+  useEffect(() => {
+    authService.getProfile().then(res => {
+      const data = res.data?.data ?? res.data;
+      if (data) setAccountForm({ name: data.name || '', phone: data.phone || '', country: data.country || '', bio: data.bio || '', avatar: data.avatar || '' });
+    }).catch(() => {});
+  }, []);
+
+  const saveAccount = async () => {
+    setSavingAccount(true);
+    try {
+      const res = await authService.updateProfile(accountForm);
+      const data = res.data?.user ?? res.data?.data ?? accountForm;
+      updateUser({ ...user, ...data });
+      setAccountMsg('Account settings saved.');
+    } catch { setAccountMsg('Unable to save account settings.'); }
+    finally { setSavingAccount(false); setTimeout(() => setAccountMsg(''), 3000); }
+  };
+
+  const savePlayback = (key: string, value: string | boolean) => localStorage.setItem(`camsound:${key}`, String(value));
   // ── Notification Prefs ──────────────────────────────────────────────────
   const [notifSettings, setNotifSettings] = useState<NotifSettings>({
     newReleases: true,
@@ -114,6 +143,15 @@ const FanSettings: React.FC = () => {
         </p>
       </div>
 
+      <div className="stat-card-premium" style={{ padding: 28, flexDirection: 'column', alignItems: 'stretch' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}><i className="fas fa-user" style={{ color: 'var(--accent-color)' }} /><h3 style={{ margin: 0, color: '#fff' }}>Account Settings</h3></div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 14 }}>
+          {(['name', 'phone', 'country', 'avatar'] as const).map(key => <label key={key} style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem' }}>{key[0].toUpperCase() + key.slice(1)}<input className="search-input-db" value={accountForm[key]} onChange={e => setAccountForm(prev => ({ ...prev, [key]: e.target.value }))} /></label>)}
+        </div>
+        <label style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginTop: 14 }}>Bio<textarea className="search-input-db" rows={3} value={accountForm.bio} onChange={e => setAccountForm(prev => ({ ...prev, bio: e.target.value }))} /></label>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 14 }}><button className="btn-camsound-yellow" onClick={saveAccount} disabled={savingAccount}>{savingAccount ? 'Saving...' : 'Save Account'}</button>{accountMsg && <span style={{ color: 'var(--accent-color)' }}>{accountMsg}</span>}</div>
+      </div>
+
       {/* ── Notification Preferences ── */}
       <div className="stat-card-premium" style={{ padding: 28, flexDirection: 'column', alignItems: 'stretch' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: 16 }}>
@@ -153,6 +191,20 @@ const FanSettings: React.FC = () => {
             {savingNotifs ? 'Saving...' : 'Save Preferences'}
           </button>
         </div>
+      </div>
+
+      <div className="stat-card-premium" style={{ padding: 28, flexDirection: 'column', alignItems: 'stretch' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}><i className="fas fa-sliders-h" style={{ color: '#60a5fa' }} /><h3 style={{ margin: 0, color: '#fff' }}>Playback</h3></div>
+        <label style={{ color: 'rgba(255,255,255,0.75)', fontSize: '0.9rem' }}>Audio quality<select className="search-input-db" value={audioQuality} onChange={e => { setAudioQuality(e.target.value); savePlayback('audioQuality', e.target.value); }}><option value="low">Low</option><option value="medium">Medium</option><option value="high">High</option></select></label>
+        <div style={{ display: 'grid', gap: 12, marginTop: 14 }}>
+          {[['autoplay', 'Autoplay next track', autoplay, setAutoplay], ['crossfade', 'Crossfade tracks', crossfade, setCrossfade]].map(([key, label, checked, setter]) => <label key={key as string} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#fff' }}>{label as string}<ToggleSwitch id={`playback-${key}`} checked={checked as boolean} onChange={value => { (setter as (value: boolean) => void)(value); savePlayback(key as string, value); }} /></label>)}
+        </div>
+      </div>
+
+      <div className="stat-card-premium" style={{ padding: 28, flexDirection: 'column', alignItems: 'stretch' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}><i className="fas fa-user-shield" style={{ color: '#f97316' }} /><h3 style={{ margin: 0, color: '#fff' }}>Privacy & Security</h3></div>
+        <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', color: '#fff', marginBottom: 16 }}>Account visibility<ToggleSwitch id="account-visible" checked={accountVisible} onChange={value => { setAccountVisible(value); savePlayback('accountVisible', value); }} /></label>
+        <button className="btn-camsound-outline" style={{ alignSelf: 'flex-start', borderColor: '#ef4444', color: '#ef4444' }} onClick={() => window.alert('Account deletion requests are handled by CamSound support.')}>Delete Account</button>
       </div>
 
       {/* ── Appearance ── */}

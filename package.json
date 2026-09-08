@@ -1,0 +1,21 @@
+{
+  "name": "deep_seek",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MAC-TECH7/Music_app.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/MAC-TECH7/Music_app/issues"
+  },
+  "homepage": "https://github.com/MAC-TECH7/Music_app#readme"
+}

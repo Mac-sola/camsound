@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
+import User from '../models/User';
 
 declare global {
     namespace Express {
@@ -18,7 +19,7 @@ const getTokenFromCookie = (req: Request) => {
     return tokenCookie?.split('=')[1];
 };
 
-export const protect = (req: Request, res: Response, next: NextFunction) => {
+export const protect = async (req: Request, res: Response, next: NextFunction) => {
     try {
         const authHeaderToken = req.headers.authorization?.split(' ')[1];
         const token = authHeaderToken || getTokenFromCookie(req);
@@ -28,7 +29,11 @@ export const protect = (req: Request, res: Response, next: NextFunction) => {
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-        req.user = decoded;
+        const user = await User.findById((decoded as any).id).select('-password');
+        if (!user || user.status !== 'active') {
+            return res.status(401).json({ success: false, message: 'Account is not active' });
+        }
+        req.user = user;
         req.csrfToken = (decoded as any).csrfToken;
         next();
     } catch (error) {

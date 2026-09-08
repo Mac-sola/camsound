@@ -357,7 +357,7 @@ const Dashboard: React.FC = () => {
 
   const SongCard = ({ song }: { song: any }) => (
     <div className="music-card">
-      <div className="music-card-cover" onClick={() => playSong(song)}>
+      <div className="music-card-cover" onClick={() => playSong(song, filteredSongs)}>
         {song.coverArt
           ? <img src={song.coverArt} alt={song.title} />
           : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-green-section)' }}>
@@ -366,7 +366,7 @@ const Dashboard: React.FC = () => {
         <div className="play-overlay">
           <button
             className="play-circle-btn"
-            onClick={(e) => { e.stopPropagation(); playSong(song); }}
+            onClick={(e) => { e.stopPropagation(); playSong(song, filteredSongs); }}
             aria-label={`Play ${song.title}`}
           >
             <i className="fas fa-play" />
@@ -415,6 +415,7 @@ const Dashboard: React.FC = () => {
       notifCount={unreadCount}
       totalPlays={history.length}
       totalLikes={favorites.length}
+      showQuickStats
     >
       {/* Discover View */}
       {activeView === 'discover' && (

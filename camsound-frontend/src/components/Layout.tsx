@@ -3,6 +3,7 @@ import QuickStatsAccordion from './QuickStatsAccordion';
 import { useAuth } from '../context/AuthContext';
 import { useAudio } from '../context/AudioContext';
 import { useNavigate } from 'react-router-dom';
+import SongPlayerModal from './SongPlayerModal';
 
 interface SidebarProps {
   navItems: { label?: string; icon?: string; view?: string; section?: string }[];
@@ -11,10 +12,12 @@ interface SidebarProps {
   onLogout: () => void;
   totalPlays?: number;
   totalLikes?: number;
+  notifCount?: number;
+  showQuickStats?: boolean;
 }
 
 export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => void }> = ({
-  navItems, activeView, onNavClick, onLogout, isOpen, onClose
+  navItems, activeView, onNavClick, onLogout, isOpen, onClose, totalLikes = 0, notifCount = 0, showQuickStats = false
 }) => {
   const { user } = useAuth();
   const { isPlaying } = useAudio();
@@ -33,14 +36,14 @@ export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => 
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               boxShadow: '0 0 16px rgba(250, 204, 21, 0.4)'
             }}>
-              <i className={`fas fa-compact-disc ${isPlaying ? 'fa-spin' : ''}`} style={{ color: '#0b0f0c', fontSize: '1.3rem' }} />
+              <i className={`fas fa-drum ${isPlaying ? 'fa-spin' : ''}`} style={{ color: '#0b0f0c', fontSize: '1.3rem' }} />
             </div>
             <div>
               <h1 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 800, color: '#facc15' }}>
                 CamSound
               </h1>
               <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--accent-color)', fontWeight: 600, letterSpacing: 0.5 }}>
-                MUSIC PLATFORM
+                Discover Cameroonian Music
               </p>
             </div>
           </div>
@@ -67,6 +70,8 @@ export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => 
               >
                 <i className={`fas ${item.icon}`} style={{ width: 20, textAlign: 'center' }} />
                 <span>{item.label}</span>
+                {item.label === 'My Music' && totalLikes > 0 && <span className="nav-badge">{totalLikes}</span>}
+                {item.label === 'Notifications' && notifCount > 0 && <span className="nav-badge">{notifCount}</span>}
               </button>
             );
           })}
@@ -105,7 +110,7 @@ export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => 
           </div>
         </nav>
 
-        <QuickStatsAccordion />
+        {showQuickStats && <QuickStatsAccordion />}
       </div>
     </>
   );
@@ -121,10 +126,12 @@ interface TopBarProps {
   userAvatar?: string;
   onLogout: () => void;
   onNavClick?: (view: string) => void;
+  title?: string;
+  showSearch?: boolean;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
-  onMenuToggle, searchValue, onSearchChange, notifCount, userName, userAvatar, onLogout, onNavClick
+  onMenuToggle, searchValue, onSearchChange, notifCount, userName, userAvatar, onLogout, onNavClick, title, showSearch = true
 }) => {
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -138,12 +145,13 @@ export const TopBar: React.FC<TopBarProps> = ({
         >
           <i className="fas fa-bars" />
         </button>
-        <div className="search-wrap" style={{ position: 'relative', width: '100%', maxWidth: 420 }}>
+        {title && <h1 className="top-bar-title">{title}</h1>}
+        {showSearch && <div className="search-wrap" style={{ position: 'relative', width: '100%', maxWidth: 420 }}>
           <i className="fas fa-search" style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)', fontSize: '0.9rem' }} />
           <input
             type="text"
             className="search-input-db"
-            placeholder="Search songs, artists, genres..."
+            placeholder="Search songs, artists, playlists..."
             value={searchValue}
             onChange={e => onSearchChange(e.target.value)}
             style={{
@@ -160,7 +168,7 @@ export const TopBar: React.FC<TopBarProps> = ({
               <i className="fas fa-times" />
             </button>
           )}
-        </div>
+        </div>}
       </div>
 
       <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
@@ -331,10 +339,13 @@ interface LayoutProps {
   notifCount?: number;
   totalPlays?: number;
   totalLikes?: number;
+  showQuickStats?: boolean;
+  topbarTitle?: string;
+  showSearch?: boolean;
 }
 
 const Layout: React.FC<LayoutProps> = ({
-  children, navItems, activeView, onNavClick, searchValue = '', onSearchChange = () => {}, notifCount = 0, totalPlays = 0, totalLikes = 0
+  children, navItems, activeView, onNavClick, searchValue = '', onSearchChange = () => {}, notifCount = 0, totalPlays = 0, totalLikes = 0, showQuickStats = false, topbarTitle, showSearch = true
 }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -356,6 +367,8 @@ const Layout: React.FC<LayoutProps> = ({
         onClose={() => setSidebarOpen(false)}
         totalPlays={totalPlays}
         totalLikes={totalLikes}
+        notifCount={notifCount}
+        showQuickStats={showQuickStats}
       />
 
       <div className="main-col">
@@ -368,6 +381,8 @@ const Layout: React.FC<LayoutProps> = ({
           userAvatar={user?.avatar}
           onLogout={handleLogout}
           onNavClick={onNavClick}
+          title={topbarTitle}
+          showSearch={showSearch}
         />
 
         <div className="content-area">
@@ -375,6 +390,7 @@ const Layout: React.FC<LayoutProps> = ({
         </div>
 
         <PlayerBar />
+        <SongPlayerModal />
       </div>
     </div>
   );

@@ -1,0 +1,114 @@
+/* CamSound Dark Theme - camsound-dark-theme.css
+   Applies a glassmorphism + soft-neumorphism hybrid dark theme
+   Primary: #0F3D2E, Secondary: #14532D, Accent: #FACC15
+*/
+
+:root{
+  --cs-bg: #0B0F0C;
+  --cs-surface: #111827;
+  --cs-surface-2: #1F2937;
+  --cs-primary: #0F3D2E;
+  --cs-secondary: #14532D;
+  --cs-accent: #FACC15;
+  --cs-text: #E5E7EB; /* body text */
+  --cs-muted: #9CA3AF;
+  --cs-border: rgba(255,255,255,0.06);
+  --cs-glow: 0 6px 30px rgba(250,204,21,0.08);
+  --transition-fast: 200ms ease-in-out;
+}
+
+/* Global reset & typography */
+html,body{height:100%;}
+body{
+  background: linear-gradient(180deg, var(--cs-primary) 0%, var(--cs-bg) 50%);
+  color: var(--cs-text);
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  margin:0;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+}
+
+/* Glass surface cards */
+.card, .panel, .widget, .list-group-item, .table thead th{
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius: 14px;
+  border: 1px solid var(--cs-border);
+  box-shadow: 0 6px 18px rgba(2,6,23,0.6);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.card:hover, .panel:hover{ transform: translateY(-4px); box-shadow: var(--cs-glow); }
+
+/* Sidebar */
+.sidebar, #sidebar-wrapper{
+  background: linear-gradient(180deg, rgba(15,61,46,0.95), rgba(10,12,12,0.9));
+  border-right: 1px solid rgba(255,255,255,0.03);
+}
+.sidebar .sidebar-header h1{ color:var(--cs-accent); font-weight:700; }
+.sidebar .nav-item, .sidebar .list-group-item{
+  color: var(--cs-text);
+  border-radius: 10px;
+}
+.sidebar .nav-item.active, .list-group-item.active{
+  background: linear-gradient(90deg, rgba(250,204,21,0.08), rgba(20,83,45,0.06));
+  box-shadow: 0 6px 18px rgba(15,61,46,0.18);
+  border-left: 4px solid var(--cs-accent);
+  color: #fff;
+}
+
+/* Buttons */
+.btn-primary, button.primary, .btn-cs-primary{
+  background: linear-gradient(90deg, var(--cs-accent), #ffd85a);
+  color: #111827;
+  border: none;
+  box-shadow: 0 6px 20px rgba(250,204,21,0.12);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+.btn-primary:hover, .btn-cs-primary:hover{ transform: translateY(-2px); box-shadow: 0 10px 30px rgba(250,204,21,0.18); }
+
+/* Inputs */
+input[type="text"], input[type="search"], textarea, .form-control{
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border: 1px solid var(--cs-border);
+  color: var(--cs-text);
+  border-radius: 12px;
+  padding: .6rem .9rem;
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+input:focus, textarea:focus, .form-control:focus{
+  outline: none; box-shadow: 0 4px 18px rgba(20,83,45,0.14); border-color: var(--cs-secondary);
+}
+
+/* Tables */
+table.table thead th{ color:var(--cs-muted); border-bottom:1px solid rgba(255,255,255,0.04); }
+table.table tbody tr td{ background: transparent; color:var(--cs-text); }
+
+/* Headings & text */
+h1,h2,h3,h4{ color:#fff; font-weight:700; }
+p, .muted{ color:var(--cs-muted); }
+
+/* Player & controls */
+.player-bar{ background: linear-gradient(90deg, rgba(15,61,46,0.9), rgba(10,12,12,0.8)); border-top:1px solid rgba(255,255,255,0.03); }
+
+/* Responsive tweaks */
+@media (max-width: 768px){
+  .sidebar{ position: fixed; z-index: 1050; left:0; top:0; bottom:0; width:260px; transform: translateX(-100%); transition: transform 220ms ease; }
+  .sidebar.open{ transform: translateX(0); }
+}
+
+/* Small UI helpers */
+.badge-cs{ background: rgba(250,204,21,0.14); color:var(--cs-accent); padding:.25rem .5rem; border-radius:999px; font-weight:600; }
+
+/* Make links more visible */
+a{ color: var(--cs-accent); text-decoration: none; }
+a:hover{ text-decoration: underline; }
+
+/* Accessible focus ring for keyboard navigation */
+:focus{ box-shadow: 0 0 0 3px rgba(20,83,45,0.12); }
+
+/* Utility to force high-contrast areas */
+.contrast{ background: var(--cs-surface-2); border: 1px solid rgba(255,255,255,0.04); }
+
+/* small helper for icons */
+.icon-circle{ display:inline-flex; align-items:center; justify-content:center; width:36px; height:36px; border-radius:50%; background: rgba(255,255,255,0.02); }
+
+/* End of theme */

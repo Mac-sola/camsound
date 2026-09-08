@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AfroRhythm - Sign Up</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="../assets/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="../assets/lib/fontawesome/all.min.css">
+    <!-- Google Fonts -->
+    <link href="../assets/lib/fonts/fonts.css" rel="stylesheet">
+    <!-- Modern Dark Theme CSS -->
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/auth.css">
+    <link rel="stylesheet" href="../css/theme-components.css">
+    <style>
+        /* Page-specific styles that override or extend auth.css */
+        .auth-card {
+            max-width: 500px;
+        }
+
+        /* Password toggle button styles */
+        .password-container {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 5px;
+            z-index: 10;
+        }
+
+        .password-toggle:hover {
+            color: #FF6B35;
+        }
+
+        /* Role Selection Styles */
+        .role-selection {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            margin-top: 8px;
+        }
+
+        .role-option {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .role-option:hover {
+            border-color: #FF6B35;
+            background: rgba(255, 107, 53, 0.05);
+        }
+
+        .role-option.selected {
+            border-color: #FF6B35;
+            background: rgba(255, 107, 53, 0.1);
+        }
+
+        .role-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FF6B35, #2E8B57);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+
+        .role-info h5 {
+            margin: 0 0 4px 0;
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .role-info p {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .role-radio {
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+
+        .role-radio input[type="radio"] {
+            display: none;
+        }
+
+        .role-radio label {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e0e0e0;
+            border-radius: 50%;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .role-radio input[type="radio"]:checked+label {
+            border-color: #FF6B35;
+            background: #FF6B35;
+        }
+
+        .role-radio input[type="radio"]:checked+label::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: white;
+        }
+
+        /* Additional signup-specific styles if needed */
+    </style>
+</head>
+
+<body>
+    <!-- Music Notes Background -->
+    <div class="music-note">
+        <i class="fas fa-music"></i>
+    </div>
+    <div class="music-note">
+        <i class="fas fa-headphones"></i>
+    </div>
+    <div class="music-note">
+        <i class="fas fa-drum"></i>
+    </div>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <!-- Logo -->
+            <div class="logo">
+                <h1><i class="fas fa-drum me-2"></i>AfroRhythm</h1>
+                <p>Join our community of music lovers</p>
+            </div>
+
+            <!-- Error/Success Messages -->
+            <div class="error-message" id="errorMessage">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <span id="errorText">Please fill in all required fields</span>
+            </div>
+
+            <div class="success-message" id="successMessage">
+                <i class="fas fa-check-circle me-2"></i>
+                <span id="successText">Account created successfully!</span>
+            </div>
+
+            <!-- Signup Form -->
+            <form id="signupForm">
+                <div class="form-group">
+                    <label class="form-label" for="fullName">Full Name *</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-user"></i>
+                        <input type="text" class="form-control" id="fullName" placeholder="Enter your full name"
+                            required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address *</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password *</label>
+                    <div class="input-with-icon password-container">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" class="form-control" id="password" placeholder="Create a password"
+                            required>
+                        <button type="button" class="password-toggle" id="togglePassword">
+                            <i class="far fa-eye" id="passwordEyeIcon"></i>
+                        </button>
+                    </div>
+                    <div class="password-strength">
+                        <div class="strength-text" id="strengthText">Password strength: None</div>
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="strengthFill"></div>
+                        </div>
+                    </div>
+                </div>
+
+
+                <div class="form-group">
+                    <label class="form-label">I am registering as *</label>
+                    <div class="role-selection">
+                        <div class="role-option" data-role="fan">
+                            <div class="role-icon">
+                                <i class="fas fa-headphones"></i>
+                            </div>
+                            <div class="role-info">
+                                <h5>Fan</h5>
+                                <p>Discover and enjoy music from Cameroonian artists</p>
+                            </div>
+                            <div class="role-radio">
+                                <input type="radio" name="userRole" value="fan" id="roleFan" required>
+                                <label for="roleFan"></label>
+                            </div>
+                        </div>
+                        <div class="role-option" data-role="artist">
+                            <div class="role-icon">
+                                <i class="fas fa-microphone"></i>
+                            </div>
+                            <div class="role-info">
+                                <h5>Artist</h5>
+                                <p>Upload and share your music with the world</p>
+                            </div>
+                            <div class="role-radio">
+                                <input type="radio" name="userRole" value="artist" id="roleArtist" required>
+                                <label for="roleArtist"></label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="terms-check">
+                    <input type="checkbox" class="form-check-input" id="agreeTerms" required>
+                    <label for="agreeTerms">
+                        I agree to the <a href="#" data-bs-toggle="modal" data-bs-target="#termsModal">Terms of
+                            Service</a> and <a href="#" data-bs-toggle="modal" data-bs-target="#privacyModal">Privacy
+                            Policy</a> *
+                    </label>
+                </div>
+
+
+                <button type="submit" class="btn btn-signup" id="signupBtn">
+                    <i class="fas fa-user-plus me-2"></i>Create Account
+                </button>
+            </form>
+
+            <div class="divider">
+                <span>Or sign up with</span>
+            </div>
+
+            <!-- Social Signup -->
+            <div class="social-signup">
+                <button class="social-btn google" id="googleSignup">
+                    <i class="fab fa-google"></i>
+                    <span>Google</span>
+                </button>
+                <button class="social-btn facebook" id="facebookSignup">
+                    <i class="fab fa-facebook-f"></i>
+                    <span>Facebook</span>
+                </button>
+            </div>
+
+            <!-- Login Link -->
+            <div class="auth-footer">
+                <p>Already have an account? <a href="login.html">Login here</a></p>
+                <p class="mt-2"><a href="../index.html"><i class="fas fa-home me-1"></i> Back to Home</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Terms Modal -->
+    <div class="modal fade" id="termsModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Terms of Service</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>1. Acceptance of Terms</h6>
+                    <p>Welcome to AfroRhythm. By accessing or using our services, you agree to be bound by these Terms
+                        of Service.</p>
+
+                    <h6>2. User Accounts</h6>
+                    <p>You must provide accurate and complete information when creating an account. You are responsible
+                        for maintaining the security of your account.</p>
+
+                    <h6>3. Music Content</h6>
+                    <p>All music content is provided for personal, non-commercial use only. You may not distribute,
+                        modify, or create derivative works without permission.</p>
+
+                    <h6>4. User Conduct</h6>
+                    <p>You agree not to use the service for any unlawful purpose or to violate any laws in your
+                        jurisdiction.</p>
+
+                    <h6>5. Termination</h6>
+                    <p>We reserve the right to terminate or suspend your account at our sole discretion, without notice,
+                        for conduct that we believe violates these Terms.</p>
+
+                    <h6>6. Changes to Terms</h6>
+                    <p>We may modify these terms at any time. We will notify users of any material changes.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Privacy Modal -->
+    <div class="modal fade" id="privacyModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Privacy Policy</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <h6>1. Information We Collect</h6>
+                    <p>We collect information you provide directly to us, such as when you create an account, update
+                        your profile, or use our services.</p>
+
+                    <h6>2. How We Use Your Information</h6>
+                    <p>We use the information we collect to provide, maintain, and improve our services, to communicate
+                        with you, and to personalize your experience.</p>
+
+                    <h6>3. Information Sharing</h6>
+                    <p>We do not sell your personal information. We may share information with trusted third-party
+                        service providers who assist us in operating our services.</p>
+
+                    <h6>4. Data Security</h6>
+                    <p>We implement appropriate technical and organizational measures to protect your personal
+                        information against unauthorized access or disclosure.</p>
+
+                    <h6>5. Your Rights</h6>
+                    <p>You have the right to access, correct, or delete your personal information. You can do this
+                        through your account settings or by contacting us.</p>
+
+                    <h6>6. Cookies</h6>
+                    <p>We use cookies and similar technologies to enhance your experience and analyze how our services
+                        are used.</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="../assets/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="signup-logic.js?v=2.0"></script>
+</body>
+
+</html>

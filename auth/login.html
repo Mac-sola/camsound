@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AfroRhythm - Login</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="../assets/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="../assets/lib/fontawesome/all.min.css">
+    <!-- Google Fonts -->
+    <link href="../assets/lib/fonts/fonts.css" rel="stylesheet">
+    <!-- Modern Dark Theme CSS -->
+    <link rel="stylesheet" href="../css/style.css">
+    <link rel="stylesheet" href="../css/auth.css">
+    <link rel="stylesheet" href="../css/theme-components.css">
+    <style>
+        /* Page-specific styles that override or extend auth.css */
+        .auth-card {
+            max-width: 400px;
+        }
+
+        /* Password toggle button styles */
+        .password-container {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #666;
+            cursor: pointer;
+            padding: 5px;
+            z-index: 10;
+        }
+
+        .password-toggle:hover {
+            color: #FF6B35;
+        }
+
+        /* Demo Accounts Styles */
+        .demo-accounts {
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .demo-title {
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            text-align: center;
+            display: block;
+        }
+
+        .demo-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .demo-pill {
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 10px 15px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            gap: 15px;
+        }
+
+        .demo-pill:hover {
+            background: rgba(255, 107, 53, 0.1);
+            border-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+
+        .demo-pill i {
+            font-size: 1.4rem;
+            color: var(--secondary-color);
+            width: 30px;
+            text-align: center;
+        }
+
+        .demo-info {
+            flex: 1;
+        }
+
+        .demo-pill span {
+            display: block;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: white;
+            line-height: 1.2;
+        }
+
+        .demo-pill small {
+            display: block;
+            font-size: 0.7rem;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 2px;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Music Wave Background -->
+    <div class="music-wave">
+        <div class="wave"></div>
+        <div class="wave"></div>
+    </div>
+
+    <div class="auth-container">
+        <div class="auth-card">
+            <!-- Logo -->
+            <div class="logo">
+                <h1><i class="fas fa-drum me-2"></i>AfroRhythm</h1>
+                <p>Amplifying Cameroonian music globally</p>
+            </div>
+
+            <!-- Error/Success Messages -->
+            <div class="error-message" id="errorMessage">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <span id="errorText">Invalid email or password</span>
+            </div>
+
+            <div class="success-message" id="successMessage">
+                <i class="fas fa-check-circle me-2"></i>
+                <span id="successText">Login successful! Redirecting...</span>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm">
+                <div class="form-group">
+                    <label class="form-label" for="email">Email Address</label>
+                    <div class="input-with-icon">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="password">Password</label>
+                    <div class="input-with-icon password-container">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" class="form-control" id="password" placeholder="Enter your password"
+                            required>
+                        <button type="button" class="password-toggle" id="togglePassword">
+                            <i class="far fa-eye" id="passwordEyeIcon"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="forgot-password">
+                    <a href="#" id="forgotPasswordLink">Forgot Password?</a>
+                </div>
+
+                <button type="submit" class="btn btn-login" id="loginBtn">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login to Account
+                </button>
+            </form>
+
+            <div class="divider">
+                <span>Or continue with</span>
+            </div>
+
+            <!-- Social Login -->
+            <div class="social-login">
+                <button class="social-btn google" id="googleLogin">
+                    <i class="fab fa-google"></i>
+                    <span>Google</span>
+                </button>
+                <button class="social-btn facebook" id="facebookLogin">
+                    <i class="fab fa-facebook-f"></i>
+                    <span>Facebook</span>
+                </button>
+            </div>
+
+            <!-- Demo Accounts section removed -->
+
+            <!-- Signup Link -->
+            <div class="auth-footer">
+                <p>Don't have an account? <a href="signup.html">Sign up now</a></p>
+                <p class="mt-2"><a href="../index.html"><i class="fas fa-home me-1"></i> Back to Home</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forgot Password Modal -->
+    <div class="modal fade" id="forgotPasswordModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Reset Password</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Enter your email address and we'll send you a link to reset your password.</p>
+                    <div class="form-group mt-3">
+                        <label class="form-label">Email Address</label>
+                        <input type="email" class="form-control" id="resetEmail" placeholder="Your email address">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="sendResetLink">Send Reset Link</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="../assets/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="../Js/utils.js"></script>
+    <script src="auth-logic.js?v=2.0"></script>
+</body>
+
+</html>

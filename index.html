@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CamSound - Discover, Stream & Promote Cameroonian Music</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="assets/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="assets/lib/fontawesome/all.min.css">
+    <link href="assets/lib/fonts/fonts.css" rel="stylesheet">
+    <!-- CamSound Design System -->
+    <link rel="stylesheet" href="css/camsound-design.css">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/premium-theme.css">
+    <link rel="stylesheet" href="css/theme-components.css">
+    <link rel="stylesheet" href="css/camsound-dark-theme.css">
+</head>
+<body class="camsound-ref">
+
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-camsound fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">
+                <i class="fas fa-drum"></i> CamSound
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon" style="filter: invert(1);"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item"><a class="nav-link active" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="browse.html">Discover</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#artists">Artists</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#pricing">Pricing</a></li>
+                </ul>
+            </div>
+            <div class="d-flex gap-3 align-items-center d-none d-lg-flex" id="auth-buttons">
+                <a href="auth/login.html" class="btn btn-camsound-outline">Login</a>
+                <a href="auth/signup.html" class="btn btn-camsound-yellow">Sign Up</a>
+            </div>
+            <!-- Logged in state placeholders -->
+            <div class="d-flex gap-3 align-items-center d-none" id="user-buttons">
+                <a href="#" id="dashboardLink" class="btn btn-camsound-yellow">Dashboard</a>
+                <a href="#" id="logoutLink" class="btn btn-camsound-outline">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="hero-title">Discover, Stream & Promote Cameroonian Music.</h1>
+                    <p class="hero-subtitle">The premier platform connecting local talent with fans across Cameroon and beyond.</p>
+                    <div class="d-flex flex-wrap gap-3 mt-4">
+                        <a href="auth/signup.html?role=artist" class="btn btn-camsound-yellow">Join as an Artist</a>
+                        <a href="browse.html" class="btn btn-camsound-outline-green">Listen as a Fan</a>
+                    </div>
+                </div>
+                <div class="col-lg-6 mt-5 mt-lg-0">
+                    <div class="hero-stacked-cards">
+                        <div class="stacked-card"></div>
+                        <div class="stacked-card"></div>
+                        <div class="stacked-card"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works">
+        <div class="container">
+            <h2 class="mb-5">How CamSound Works</h2>
+            <div class="row align-items-center">
+                <div class="col-lg-3 col-md-12 mb-4">
+                    <div class="how-it-works-card">
+                        <div class="how-icon-wrapper"><i class="fas fa-upload"></i></div>
+                        <h4>1. Artists Upload</h4>
+                        <p class="text-muted">Register and share your tracks with the community.</p>
+                    </div>
+                </div>
+                <div class="col-lg-1 d-none d-lg-flex">
+                    <div class="arrow-connector"><i class="fas fa-chevron-right"></i></div>
+                </div>
+                <div class="col-lg-4 col-md-12 mb-4">
+                    <div class="how-it-works-card">
+                        <div class="how-icon-wrapper"><i class="fas fa-headphones"></i></div>
+                        <h4>2. Fans Discover</h4>
+                        <p class="text-muted">Explore new genres and stream local favorites.</p>
+                    </div>
+                </div>
+                <div class="col-lg-1 d-none d-lg-flex">
+                    <div class="arrow-connector"><i class="fas fa-chevron-right"></i></div>
+                </div>
+                <div class="col-lg-3 col-md-12 mb-4">
+                    <div class="how-it-works-card">
+                        <div class="how-icon-wrapper"><i class="fas fa-chart-line"></i></div>
+                        <h4>3. Grow Together</h4>
+                        <p class="text-muted">Artists gain visibility and build their fanbase.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us Section -->
+    <section class="why-choose-us">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-5 text-center text-lg-start mb-5 mb-lg-0 d-flex flex-column justify-content-center">
+                    <h2 class="text-white mb-2">Why Choose Us</h2>
+                </div>
+                <div class="col-lg-7">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <div class="feature-icon"><i class="fas fa-map-marker-alt"></i></div>
+                                <div class="feature-text">
+                                    <h4>Local Focus</h4>
+                                    <p>Promoting Cameroonian artists and local music culture.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <div class="feature-icon"><i class="fas fa-eye"></i></div>
+                                <div class="feature-text">
+                                    <h4>Fair Visibility</h4>
+                                    <p>Fair algorithmic visibility for emerging and established artists.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <div class="feature-icon"><i class="fas fa-user-check"></i></div>
+                                <div class="feature-text">
+                                    <h4>Artist Subscriptions</h4>
+                                    <p>Revenue tools and subscription analytics for artists.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="feature-card">
+                                <div class="feature-icon"><i class="fas fa-search"></i></div>
+                                <div class="feature-text">
+                                    <h4>Easy Discovery</h4>
+                                    <p>Explore genres, playlists, and curated Cameroonian music.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Artists Section -->
+    <section class="featured-artists" id="artists">
+        <div class="container">
+            <h2 class="mb-2">Featured Artists - <span class="text-muted fs-4">Trending Cameroonian Talent</span></h2>
+            <div class="row mt-5" id="featuredArtistsContainer">
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="artist-card">
+                        <div class="artist-avatar-placeholder"><i class="fas fa-user"></i></div>
+                        <div class="artist-name">Artist Name Placeholder</div>
+                        <div class="artist-genre">Afrobeat / Makossa</div>
+                        <div class="play-btn-float"><i class="fas fa-play"></i></div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="artist-card">
+                        <div class="artist-avatar-placeholder"><i class="fas fa-user"></i></div>
+                        <div class="artist-name">Artist Name Placeholder</div>
+                        <div class="artist-genre">Afrobeat / Makossa</div>
+                        <div class="play-btn-float"><i class="fas fa-play"></i></div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="artist-card">
+                        <div class="artist-avatar-placeholder"><i class="fas fa-user"></i></div>
+                        <div class="artist-name">Artist Name Placeholder</div>
+                        <div class="artist-genre">Afrobeat / Makossa</div>
+                        <div class="play-btn-float"><i class="fas fa-play"></i></div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="artist-card">
+                        <div class="artist-avatar-placeholder"><i class="fas fa-user"></i></div>
+                        <div class="artist-name">Artist Name Placeholder</div>
+                        <div class="artist-genre">Afrobeat / Makossa</div>
+                        <div class="play-btn-float"><i class="fas fa-play"></i></div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="artist-card">
+                        <div class="artist-avatar-placeholder"><i class="fas fa-user"></i></div>
+                        <div class="artist-name">Artist Name Placeholder</div>
+                        <div class="artist-genre">Afrobeat / Makossa</div>
+                        <div class="play-btn-float"><i class="fas fa-play"></i></div>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4 col-6 mb-4">
+                    <div class="artist-card">
+                        <div class="artist-avatar-placeholder"><i class="fas fa-user"></i></div>
+                        <div class="artist-name">Artist Name Placeholder</div>
+                        <div class="artist-genre">Afrobeat / Makossa</div>
+                        <div class="play-btn-float"><i class="fas fa-play"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Trending Genres Section -->
+    <section class="trending-genres py-5">
+        <div class="container">
+            <h2 class="mb-5 text-center">Trending Genres</h2>
+            <div class="row">
+                <div class="col-md-3 col-6 mb-4">
+                    <div class="feature-card text-center" style="cursor: pointer;" onclick="window.location.href='browse.html'">
+                        <div class="feature-icon mb-3 mx-auto"><i class="fas fa-music"></i></div>
+                        <h4>Makossa</h4>
+                        <p class="text-muted small">Classic rhythms</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-4">
+                    <div class="feature-card text-center" style="cursor: pointer;" onclick="window.location.href='browse.html'">
+                        <div class="feature-icon mb-3 mx-auto"><i class="fas fa-drum"></i></div>
+                        <h4>Afrobeat</h4>
+                        <p class="text-muted small">Modern vibes</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-4">
+                    <div class="feature-card text-center" style="cursor: pointer;" onclick="window.location.href='browse.html'">
+                        <div class="feature-icon mb-3 mx-auto"><i class="fas fa-guitar"></i></div>
+                        <h4>Bikutsi</h4>
+                        <p class="text-muted small">High energy</p>
+                    </div>
+                </div>
+                <div class="col-md-3 col-6 mb-4">
+                    <div class="feature-card text-center" style="cursor: pointer;" onclick="window.location.href='browse.html'">
+                        <div class="feature-icon mb-3 mx-auto"><i class="fas fa-compact-disc"></i></div>
+                        <h4>Assiko</h4>
+                        <p class="text-muted small">Traditional fusion</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Platform Stats Section -->
+    <section class="platform-stats py-5" style="background: var(--bg-secondary); border-top: 1px solid rgba(255, 255, 255, 0.05); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+        <div class="container text-center">
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h2 class="text-gradient display-4 fw-bold">1M+</h2>
+                    <p class="text-muted fs-5">Monthly Streams</p>
+                </div>
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h2 class="text-gradient display-4 fw-bold">500+</h2>
+                    <p class="text-muted fs-5">Active Artists</p>
+                </div>
+                <div class="col-md-4">
+                    <h2 class="text-gradient display-4 fw-bold">10K+</h2>
+                    <p class="text-muted fs-5">Songs Uploaded</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials py-5">
+        <div class="container">
+            <h2 class="mb-5 text-center">What the Community Says</h2>
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="how-it-works-card p-4 text-center h-100">
+                        <div class="mb-3">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                        <p class="text-muted" style="font-style: italic;">"CamSound completely changed how I connect with my fans in Douala. The platform is incredibly intuitive."</p>
+                        <h6 class="mt-4 mb-0 text-white">- Balo K.</h6>
+                        <small class="text-gradient">Independent Artist</small>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="how-it-works-card p-4 text-center h-100">
+                        <div class="mb-3">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                        <p class="text-muted" style="font-style: italic;">"I discover new local talent every single day. The genre playlists are perfectly curated."</p>
+                        <h6 class="mt-4 mb-0 text-white">- Murielle T.</h6>
+                        <small class="text-gradient">Music Enthusiast</small>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="how-it-works-card p-4 text-center h-100">
+                        <div class="mb-3">
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                            <i class="fas fa-star text-warning"></i>
+                        </div>
+                        <p class="text-muted" style="font-style: italic;">"The analytics dashboard helps me understand exactly where my listeners are coming from."</p>
+                        <h6 class="mt-4 mb-0 text-white">- DJ Franck</h6>
+                        <small class="text-gradient">Producer</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2>Start Promoting Your<br>Music Today</h2>
+            <a href="auth/signup.html?role=artist" class="btn btn-camsound-yellow mt-3">GET STARTED</a>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer-camsound">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-3 mb-4">
+                    <h5 class="text-white"><i class="fas fa-drum"></i> CamSound</h5>
+                    <p class="mt-3">Discover, stream and promote local talent across Cameroon and beyond.</p>
+                </div>
+                <div class="col-lg-3 mb-4">
+                    <h5 class="text-white">Quick Links</h5>
+                    <ul class="footer-links">
+                        <li><a href="index.html">About</a></li>
+                        <li><a href="#">Contact</a></li>
+                        <li><a href="#">Terms</a></li>
+                        <li><a href="#">Privacy</a></li>
+                    </ul>
+                </div>
+                <div class="col-lg-3 mb-4">
+                    <h5 class="text-white">Social</h5>
+                    <div class="footer-social mt-2">
+                        <a href="#" class="footer-social-link"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="footer-social-link"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="footer-social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="footer-social-link"><i class="fab fa-youtube"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-3 mb-4">
+                    <h5 class="text-white">Legal</h5>
+                    <ul class="footer-links">
+                        <li><a href="#">Terms of Service</a></li>
+                        <li><a href="#">Privacy Policy</a></li>
+                        <li><a href="#">Cookie Policy</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p class="mb-0">&copy; 2026 CamSound. All rights reserved.</p>
+                <div class="mt-2 text-center">
+                    <a href="auth/login.html?role=admin" class="btn btn-sm btn-outline-secondary" style="font-size: 10px;">Admin Portal</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="assets/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="Js/utils.js"></script>
+    <script src="Js/session.js"></script>
+    <script src="Js/platform-settings.js"></script>
+    <script>
+        // Check login status based on Music_app logic
+        document.addEventListener('DOMContentLoaded', async function () {
+            if(window.afro && window.afro.userPromise) {
+                const user = await window.afro.userPromise;
+                if(user) {
+                    document.getElementById('auth-buttons').classList.add('d-none');
+                    document.getElementById('auth-buttons').classList.remove('d-lg-flex');
+                    document.getElementById('user-buttons').classList.remove('d-none');
+                    
+                    const dashboardLink = document.getElementById('dashboardLink');
+                    if (user.type === 'artist') dashboardLink.href = 'artist.html';
+                    else if (user.type === 'admin') dashboardLink.href = 'admin.html';
+                    else dashboardLink.href = 'fan.html';
+                }
+            }
+            
+            document.getElementById('logoutLink')?.addEventListener('click', async function (e) {
+                e.preventDefault();
+                try {
+                    const res = await fetch('backend/api/logout.php', { method: 'POST' });
+                    const j = await res.json();
+                    if (j.success) {
+                        window.afro.clearUser();
+                        window.location.reload();
+                    }
+                } catch (err) {
+                    window.location.reload();
+                }
+            });
+        });
+    </script>
+</body>
+</html>

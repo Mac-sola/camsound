@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Layout from '../components/Layout';
-import { statsService, songsService, artistsService, notificationsService, subscriptionsService, paymentsService, withdrawalsService, artistsExtendedService, commentsService } from '../services/api';
+import { statsService, songsService, artistsService, notificationsService, subscriptionsService, paymentsService, withdrawalsService, artistsExtendedService, commentsService, notificationSettingsService } from '../services/api';
 import { useSearchParams } from 'react-router-dom';
 import { useAudio } from '../context/AudioContext';
 
@@ -23,7 +23,7 @@ const ArtistDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
   const [profileError, setProfileError] = useState('');
-  const [profileForm, setProfileForm] = useState({ name: '', genre: '', bio: '', instagramUrl: '', twitterUrl: '', facebookUrl: '', youtubeUrl: '' });
+  const [profileForm, setProfileForm] = useState({ name: '', genre: '', bio: '', location: '', website: '', instagramUrl: '', twitterUrl: '', facebookUrl: '', youtubeUrl: '' });
   // New state for inline field validation errors
   const [fieldErrors, setFieldErrors] = useState<{ title?: string; songFile?: string; coverArt?: string }>({});
   const [profileSaving, setProfileSaving] = useState(false);
@@ -38,6 +38,13 @@ const ArtistDashboard: React.FC = () => {
   const [withdrawalMessage, setWithdrawalMessage] = useState('');
   const [isRequestingWithdrawal, setIsRequestingWithdrawal] = useState(false);
   const [artistComments, setArtistComments] = useState<any[]>([]);
+  const [commentSongFilter, setCommentSongFilter] = useState('all');
+  const [replyingTo, setReplyingTo] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [notificationPrefs, setNotificationPrefs] = useState({ notif_new_followers: true, notif_comments: true, notif_stream_milestones: true, notif_revenue_updates: true, notif_marketing: false });
+  const [notificationPrefsMessage, setNotificationPrefsMessage] = useState('');
+  const [billingHistory, setBillingHistory] = useState<any[]>([]);
+  const [showBilling, setShowBilling] = useState(false);
   const [revenueBalance, setRevenueBalance] = useState(0);
   const [streamingTrend, setStreamingTrend] = useState<number[]>([]);
   const [editingSong, setEditingSong] = useState<any>(null);
@@ -170,6 +177,8 @@ const ArtistDashboard: React.FC = () => {
           name: res.data.data.name || '',
           genre: res.data.data.genre || '',
           bio: res.data.data.bio || '',
+          location: res.data.data.location || '',
+          website: res.data.data.website || '',
           instagramUrl: res.data.data.instagramUrl || '',
           twitterUrl: res.data.data.twitterUrl || '',
           facebookUrl: res.data.data.facebookUrl || '',
@@ -207,6 +216,20 @@ const ArtistDashboard: React.FC = () => {
         });
         setArtistComments(filtered);
       }
+    } catch {}
+  };
+
+  const fetchNotificationPrefs = async () => {
+    try {
+      const res = await notificationSettingsService.getSettings();
+      if (res.data.success && res.data.data) setNotificationPrefs(prev => ({ ...prev, ...res.data.data }));
+    } catch {}
+  };
+
+  const fetchBillingHistory = async () => {
+    try {
+      const res = await paymentsService.getPayments();
+      if (res.data.success) setBillingHistory(res.data.data || []);
     } catch {}
   };
 
@@ -272,6 +295,10 @@ const ArtistDashboard: React.FC = () => {
       setWithdrawalMessage('Please enter both an amount and a mobile money number.');
       return;
     }
+    if (Number(withdrawalAmount) < 5000) {
+      setWithdrawalMessage('Minimum withdrawal is 5,000 FCFA.');
+      return;
+    }
 
     setIsRequestingWithdrawal(true);
     setWithdrawalMessage('');
@@ -301,9 +328,28 @@ const ArtistDashboard: React.FC = () => {
     if (activeView === 'profile') fetchProfile();
     else if (activeView === 'subscription') fetchPlans();
     else if (activeView === 'revenue') fetchWithdrawals();
-    else if (activeView === 'notifications') fetchNotifications();
+    else if (activeView === 'notifications') { fetchNotifications(); fetchNotificationPrefs(); }
     else if (activeView === 'social') fetchArtistComments();
   }, [activeView]);
+
+  const handleReply = async (comment: any) => {
+    if (!replyText.trim() || !comment.songId?._id) return;
+    try {
+      await commentsService.postComment(comment.songId._id, replyText.trim(), comment._id);
+      setReplyText('');
+      setReplyingTo(null);
+      await fetchArtistComments();
+    } catch {}
+  };
+
+  const exportArtistStats = () => {
+    const rows = [['Track', 'Genre', 'Plays', 'Likes', 'Estimated Royalties'], ...(stats?.topSongs || []).map((song: any) => [song.title, song.genre || '', song.plays || 0, song.likes || 0, ((song.plays || 0) * 1.5).toFixed(2)])];
+    const csv = rows.map(row => row.map((value: string | number) => `"${String(value).replace(/"/g, '""')}"`).join(',')).join('\n');
+    const link = document.createElement('a');
+    link.href = `data:text/csv;charset=utf-8,${encodeURIComponent(csv)}`;
+    link.download = 'artist-stats.csv';
+    link.click();
+  };
 
   // Calculate revenue balance from stats and withdrawals
   useEffect(() => {
@@ -505,6 +551,9 @@ const ArtistDashboard: React.FC = () => {
             }}
           >
             <i className="fas fa-edit" /> Edit Profile
+          </button>
+          <button className="btn-camsound-outline" onClick={exportArtistStats} title="Export artist statistics">
+            <i className="fas fa-download" /> Export
           </button>
         </div>
       </div>
@@ -750,6 +799,7 @@ const ArtistDashboard: React.FC = () => {
         setActiveView(view);
         setSearchParams({ tab: view });
       }}
+      showSearch={false}
     >
       <div key={activeView} className="view-fade-in">
         {activeView === 'dashboard' && <DashOverview />}
@@ -839,6 +889,16 @@ const ArtistDashboard: React.FC = () => {
                   onChange={e => setProfileForm(prev => ({ ...prev, bio: e.target.value }))}
                   className="search-input-db"
                 />
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div className="form-field">
+                  <label>Location</label>
+                  <input type="text" placeholder="Douala, Cameroon" value={profileForm.location} onChange={e => setProfileForm(p => ({ ...p, location: e.target.value }))} className="search-input-db" />
+                </div>
+                <div className="form-field">
+                  <label>Website</label>
+                  <input type="url" placeholder="https://yourwebsite.com" value={profileForm.website} onChange={e => setProfileForm(p => ({ ...p, website: e.target.value }))} className="search-input-db" />
+                </div>
               </div>
               <h4 style={{ marginTop: 16, marginBottom: 12, color: 'var(--text-white)' }}>Social Media Handles</h4>
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
@@ -1015,6 +1075,10 @@ const ArtistDashboard: React.FC = () => {
           <p style={{ color: 'var(--text-muted)' }}>You have {stats?.followers || 0} followers.</p>
           <div style={{ marginTop: 24 }}>
             <h3 style={{ color: 'var(--text-white)', marginBottom: 16 }}>Recent Comments & Feedback</h3>
+            <select className="search-input-db" value={commentSongFilter} onChange={e => setCommentSongFilter(e.target.value)} style={{ marginBottom: 16 }}>
+              <option value="all">All songs</option>
+              {[...new Map(artistComments.filter(c => c.songId?._id).map(c => [c.songId._id, c.songId])).values()].map((song: any) => <option key={song._id} value={song._id}>{song.title}</option>)}
+            </select>
             {artistComments.length === 0 ? (
               <div style={{ padding: 32, textAlign: 'center', background: 'var(--bg-tertiary)', borderRadius: 12 }}>
                 <i className="fas fa-comments" style={{ fontSize: '2rem', color: 'var(--text-muted)', marginBottom: 12 }} />
@@ -1022,13 +1086,28 @@ const ArtistDashboard: React.FC = () => {
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {artistComments.map((c: any) => (
+                {artistComments.filter((c: any) => commentSongFilter === 'all' || c.songId?._id === commentSongFilter).map((c: any) => (
                   <div key={c._id} style={{ padding: 14, background: 'var(--bg-tertiary)', borderRadius: 8 }}>
                     <div style={{ fontWeight: 600, color: 'var(--text-white)' }}>{c.userId?.name || 'Anonymous Fan'}</div>
                     <div style={{ fontSize: '0.9rem', marginTop: 4 }}>{c.content}</div>
                     <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>
                       On song: {c.songId?.title || 'Unknown'} • {new Date(c.createdAt).toLocaleDateString()}
                     </div>
+                    <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
+                      <button className="btn-camsound-outline" style={{ padding: '4px 10px', fontSize: '0.75rem' }} onClick={async () => { if (c.songId?._id) { await commentsService.pinComment(c.songId._id, c._id, !c.isPinned); fetchArtistComments(); } }}>
+                        <i className="fas fa-thumbtack" /> {c.isPinned ? 'Unpin' : 'Pin'}
+                      </button>
+                      <button className="btn-camsound-outline" style={{ padding: '4px 10px', fontSize: '0.75rem' }} onClick={async () => { if (c.songId?._id) { await commentsService.deleteComment(c.songId._id, c._id); fetchArtistComments(); } }}>
+                        <i className="fas fa-trash" /> Delete
+                      </button>
+                      <button className="btn-camsound-outline" style={{ padding: '4px 10px', fontSize: '0.75rem' }} onClick={() => setReplyingTo(replyingTo === c._id ? null : c._id)}>
+                        <i className="fas fa-reply" /> Reply
+                      </button>
+                    </div>
+                    {replyingTo === c._id && <form onSubmit={e => { e.preventDefault(); void handleReply(c); }} style={{ display: 'flex', gap: 8, marginTop: 10 }}>
+                      <input className="search-input-db" value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="Write a reply..." />
+                      <button className="btn-camsound-yellow" type="submit" disabled={!replyText.trim()}>Send</button>
+                    </form>}
                   </div>
                 ))}
               </div>
@@ -1042,7 +1121,9 @@ const ArtistDashboard: React.FC = () => {
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
           <div className="section-card">
             <div className="section-header"><h2>Available Balance</h2></div>
-            <h1 style={{ color: 'var(--accent-color)', fontSize: '2.5rem', margin: '0 0 24px' }}>XAF {revenueBalance.toLocaleString()}</h1>
+            <h1 style={{ color: 'var(--accent-color)', fontSize: '2.5rem', margin: '0 0 8px' }}>XAF {revenueBalance.toLocaleString()}</h1>
+            <p style={{ color: 'var(--text-muted)', margin: '0 0 20px' }}>Available for withdrawal</p>
+            <div style={{ padding: 12, borderRadius: 10, background: 'rgba(250,204,21,0.08)', color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: 20 }}>Min: 5,000 FCFA • Max: 10,000 FCFA/day • Processed on 15th</div>
             <div className="form-field">
               <label>Withdrawal Amount</label>
               <input
@@ -1096,7 +1177,7 @@ const ArtistDashboard: React.FC = () => {
       {/* Subscription Plan */}
       {activeView === 'subscription' && (
         <div className="section-card">
-          <div className="section-header"><h2>Artist Subscription Plans</h2></div>
+          <div className="section-header"><h2>Artist Subscription Plans</h2><button className="btn-camsound-outline" onClick={() => { setShowBilling(true); fetchBillingHistory(); }}><i className="fas fa-receipt" /> Manage Billing</button></div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: 24 }}>
             {plans.map(p => (
               <div key={p._id} style={{ padding: 24, background: 'var(--bg-tertiary)', borderRadius: 12, border: '1px solid var(--border-color)', textAlign: 'center' }}>
@@ -1153,6 +1234,26 @@ const ArtistDashboard: React.FC = () => {
               ))}
             </div>
           )}
+          <div style={{ marginTop: 24, paddingTop: 20, borderTop: '1px solid var(--border-color)' }}>
+            <h3 style={{ margin: '0 0 14px' }}>Notification Preferences</h3>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10 }}>
+              {[
+                ['notif_new_followers', 'New Followers'], ['notif_comments', 'Comments'], ['notif_stream_milestones', 'Stream Milestones'], ['notif_revenue_updates', 'Revenue Updates'], ['notif_marketing', 'Marketing']
+              ].map(([key, label]) => <label key={key} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: 10, background: 'var(--bg-tertiary)', borderRadius: 8 }}><input type="checkbox" checked={!!(notificationPrefs as any)[key]} onChange={e => setNotificationPrefs(p => ({ ...p, [key]: e.target.checked }))} />{label}</label>)}
+            </div>
+            <button className="btn-camsound-outline" style={{ marginTop: 14 }} onClick={async () => { try { await notificationSettingsService.updateSettings(notificationPrefs); setNotificationPrefsMessage('Preferences saved.'); } catch { setNotificationPrefsMessage('Unable to save preferences.'); } setTimeout(() => setNotificationPrefsMessage(''), 3000); }}>Save Notification Settings</button>
+            {notificationPrefsMessage && <span style={{ marginLeft: 12, color: 'var(--accent-color)', fontSize: '0.85rem' }}>{notificationPrefsMessage}</span>}
+          </div>
+        </div>
+      )}
+
+      {showBilling && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.72)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
+          <div className="section-card" style={{ width: '100%', maxWidth: 620, maxHeight: '85vh', overflow: 'auto' }}>
+            <div className="section-header"><h2>Billing History</h2><button className="btn-camsound-outline" onClick={() => setShowBilling(false)} aria-label="Close billing history"><i className="fas fa-times" /></button></div>
+            <p style={{ color: 'var(--text-muted)' }}>Current payment method: Mobile Money</p>
+            {billingHistory.length === 0 ? <p style={{ color: 'var(--text-muted)' }}>No billing records yet.</p> : <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>{billingHistory.map(payment => <div key={payment._id} style={{ display: 'flex', justifyContent: 'space-between', padding: 12, background: 'var(--bg-tertiary)', borderRadius: 8 }}><span>{payment.createdAt ? new Date(payment.createdAt).toLocaleDateString() : '—'}</span><strong>XAF {payment.amount || 0}</strong><span>{payment.status || 'pending'}</span></div>)}</div>}
+          </div>
         </div>
       )}
 

@@ -1,5 +1,64 @@
 # CamSound MERN Migration Status
 
+## CONTINUATION CHECKPOINT - 2026-09-08
+
+### Suggested Commit Message
+
+`fix: align React migration with PHP feature and session contracts`
+
+### What Was Completed Today
+
+- Audited the PHP/MySQL reference against the React frontend and Node backend.
+- Confirmed PHP is the source of truth for UI, behavior, API contracts, validation, and RBAC.
+- Routed both `/fan` and `/dashboard` to the intended PHP-parity `FanDashboard` component set.
+- Added missing admin API routes for:
+  - Creating users
+  - Resetting user passwords
+  - Updating admin songs
+  - Deleting admin songs
+- Added PHP-aligned admin safeguards for last-admin deletion, demotion, blocking, and self-demotion.
+- Standardized Node auth responses with a PHP-compatible `data.user` envelope while preserving existing frontend fields.
+- Changed React auth startup to always validate the server session, including cookie-only sessions.
+- Changed Node protected middleware to reload the current user and reject inactive accounts.
+- Matched PHP login behavior by rejecting pending and blocked accounts.
+- Allowed public play tracking through CSRF protection.
+- Removed duplicate history writes during playback.
+- Added PHP withdrawal compatibility for `phone_number` and enforced the 5,000 XAF minimum in frontend and backend.
+- Matched PHP upload behavior by storing newly uploaded songs as active/approved.
+- Fixed fan Quick Stats to read Node's `totalListens` field.
+- Replaced the hardcoded fan notification badge with loaded unread notifications.
+- Matched the landing page more closely to PHP, including fonts, hero cards, spacing, section surfaces, placeholder artist cards, and authenticated navbar actions.
+- Added the public React `/browse` page with the PHP-style browse shell.
+
+### Verification Completed
+
+- `camsound-backend`: `npm run build` passes.
+- `camsound-frontend`: `npm run build` passes.
+- Frontend/backend error scan reports no errors.
+- Vite still reports the existing large-bundle warning; this is not a build failure.
+- Starting another backend dev server on port 5000 currently fails with `EADDRINUSE` because an instance is already using that port.
+
+### Important Working-Tree Note
+
+The repository contains many pre-existing untracked PHP/reference files and generated upload assets. Do not include them in a commit unless intentionally staging the complete migration workspace. Review `git status` before committing.
+
+### Continue Here - Ordered Backlog
+
+1. Add the missing PHP-equivalent storage API and download/play download tracking.
+2. Add a real password-reset flow instead of the current simulated UI message.
+3. Reconcile payment completion with subscription activation and MoMo/webhook verification.
+4. Complete MySQL-to-Mongo data migration/import for users, artists, songs, playlists, favorites, follows, history, comments, payments, subscriptions, and settings.
+5. Replace remaining hardcoded landing statistics, featured artists, and community trending data with API-backed data where PHP does so.
+6. Add admin parity for bulk moderation, moderation reasons, comment moderation, and full featured/ad-revenue field contracts.
+7. Complete artist revenue/royalty parity with PHP monthly calculations and available-balance rules.
+8. Audit every mobile breakpoint and replace fixed inline dashboard grids that overflow on small screens.
+9. Run live browser tests with seeded fan, artist, and admin accounts against MongoDB and the running Node server.
+10. Perform a final screenshot comparison of PHP and React landing, fan, artist, and admin pages at desktop, tablet, and mobile sizes.
+
+### Session Entry Point
+
+Start by checking the running process on port 5000, then run both builds. After that, continue with item 1 above. The primary reference files are `index.html`, `browse.html`, `fan.html`, `artist.html`, `admin.html`, `auth/`, `backend/api/`, `Js/`, and `css/`.
+
 ## 🎉 PROJECT STATUS: ALL PRIORITIES COMPLETE ✅ (8/22/2026)
 
 **Session Achievements:**

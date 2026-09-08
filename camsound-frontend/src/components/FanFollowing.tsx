@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { followsService } from '../services/api';
+import { followsService, songsService } from '../services/api';
 import ArtistSocialLinks from './ArtistSocialLinks';
 
 interface Artist {
@@ -16,10 +16,19 @@ interface Artist {
   artistId?: { _id: string; name: string; genre?: string; followers?: number; image?: string };
 }
 
+interface Song {
+  _id: string;
+  title: string;
+  genre?: string;
+  coverArt?: string;
+  artistId?: { name?: string };
+}
+
 const FanFollowing: React.FC<{ onNavClick?: (view: string) => void }> = ({ onNavClick }) => {
   const [following, setFollowing] = useState<Artist[]>([]);
   const [loading, setLoading] = useState(false);
   const [unfollowing, setUnfollowing] = useState<Set<string>>(new Set());
+  const [latestSongs, setLatestSongs] = useState<Song[]>([]);
 
   const fetchFollowing = useCallback(async () => {
     setLoading(true);
@@ -30,6 +39,12 @@ const FanFollowing: React.FC<{ onNavClick?: (view: string) => void }> = ({ onNav
         item.artistId ? { ...item.artistId, _id: item.artistId._id ?? item._id } : item
       );
       setFollowing(artists);
+      if (artists.length) {
+        const response = await songsService.getSongs({ artistId: artists.map(artist => artist._id).join(','), sort: 'date', limit: 8 });
+        setLatestSongs(response.data?.data ?? response.data ?? []);
+      } else {
+        setLatestSongs([]);
+      }
     } catch {
       setFollowing([]);
     } finally {
@@ -91,6 +106,7 @@ const FanFollowing: React.FC<{ onNavClick?: (view: string) => void }> = ({ onNav
           </button>
         </div>
       ) : (
+        <>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
           {following.map(artist => (
             <div
@@ -142,6 +158,11 @@ const FanFollowing: React.FC<{ onNavClick?: (view: string) => void }> = ({ onNav
             </div>
           ))}
         </div>
+        <div className="section-card" style={{ marginTop: 24 }}>
+          <div className="section-header"><h2>Latest from Artists</h2></div>
+          {latestSongs.length === 0 ? <p style={{ color: 'var(--text-muted)' }}>No recent releases from followed artists.</p> : <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>{latestSongs.map(song => <div key={song._id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 10, background: 'var(--bg-tertiary)', borderRadius: 10 }}><div style={{ width: 42, height: 42, borderRadius: 8, overflow: 'hidden', background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{song.coverArt ? <img src={song.coverArt} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <i className="fas fa-music" style={{ color: 'var(--accent-color)' }} />}</div><div><strong>{song.title}</strong><div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{song.artistId?.name || 'Unknown Artist'}{song.genre ? ` • ${song.genre}` : ''}</div></div></div>)}</div>}
+        </div>
+        </>
       )}
     </div>
   );

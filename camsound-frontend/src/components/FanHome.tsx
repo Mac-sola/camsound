@@ -135,7 +135,7 @@ const FanHome: React.FC = () => {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const handlePlay = (song: Song) => {
-    try { playSong(song as any); } catch { console.log('Play:', song.title); }
+    try { playSong(song as any, [...newReleases, ...trending]); } catch { console.log('Play:', song.title); }
   };
 
   const totalPlays = newReleases.reduce((acc, s) => acc + (s.plays ?? 0), 0);

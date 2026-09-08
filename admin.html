@@ -1,0 +1,1279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AfroRhythm | Premium Admin Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="assets/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/lib/datatables/dataTables.bootstrap5.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="assets/lib/fontawesome/all.min.css">
+    <link rel="stylesheet" href="assets/lib/fonts/fonts.css">
+    <!-- Modern Dark Theme CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/premium-theme.css">
+    <link rel="stylesheet" href="css/theme-components.css">
+    <link rel="stylesheet" href="css/mobile.css">
+    <link rel="stylesheet" href="css/camsound-dashboard.css">
+    <link rel="stylesheet" href="css/camsound-reference.css">
+    <link rel="stylesheet" href="css/dashboard-layout.css">
+    <link rel="stylesheet" href="css/camsound-dark-theme.css">
+</head>
+
+<body class="camsound-ref dashboard-page admin-dashboard">
+    <div id="sidebarOverlay" class="sidebar-overlay"></div>
+    <div class="app d-flex" id="wrapper">
+        <!-- Sidebar -->
+        <div class="sidebar" id="sidebar-wrapper">
+            <div class="sidebar-header">
+                <button class="hamburger-btn d-lg-none" id="sidebarClose"
+                    style="position: absolute; right: 15px; top: 15px;">
+                    <i class="fas fa-times"></i>
+                </button>
+                <h1><i class="fas fa-drum"></i> <span class="platform-name">AfroRhythm</span></h1>
+                <p class="platform-description">Discover Cameroonian Music</p>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-view="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-view="users">
+                    <i class="fas fa-users"></i>
+                    <span>Users</span>
+                </a>
+                <a href="#" class="nav-item" data-view="artists">
+                    <i class="fas fa-microphone"></i>
+                    <span>Artists</span>
+                </a>
+                <a href="#" class="nav-item" data-view="songs">
+                    <i class="fas fa-music"></i>
+                    <span>Songs</span>
+                </a>
+                <a href="#" class="nav-item" data-view="subscriptions">
+                    <i class="fas fa-credit-card"></i>
+                    <span>Subscriptions</span>
+                </a>
+                <a href="#" class="nav-item" data-view="reports">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reports</span>
+                </a>
+                <a href="#" class="nav-item" data-view="settings">
+                    <i class="fas fa-cog"></i>
+                    <span>Settings</span>
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Top Bar -->
+            <div class="top-bar d-flex justify-content-between align-items-center px-4 py-3 border-bottom" style="border-color: rgba(255,255,255,0.05)!important; background-color: var(--bg-dark, #0B0F0C); box-shadow: 0 4px 12px rgba(0,0,0,0.1);">
+                <div class="top-bar-left d-flex align-items-center">
+                    <button class="btn btn-outline-secondary d-lg-none me-3" id="sidebarToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="mb-0 text-white fs-4 fs-md-3">Admin Dashboard Overview</h1>
+                </div>
+                <div class="top-bar-right d-flex align-items-center gap-2">
+                    <div id="langToggleContainer"></div>
+
+                    <input type="text" class="search-input d-none d-md-block" id="globalSearch"
+                        placeholder="Search users, artists, songs...">
+                    <button class="icon-btn" id="notificationsBtn">
+                        <i class="fas fa-bell"></i>
+                    </button>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle d-flex align-items-center"
+                            type="button" data-bs-toggle="dropdown">
+                            <div class="avatar me-2" id="adminAvatar">AD</div>
+                            <span class="d-none d-md-inline text-fix" id="adminUserName">Admin</span>
+                            <i class="fas fa-chevron-down ms-2 text-fix"></i>
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item text-fix" href="#" data-view="settings"><i class="fas fa-cog me-2"></i>Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" id="adminLogoutBtn"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content Area -->
+            <div class="content-area">
+                <!-- Dashboard View -->
+                <div id="dashboardSection" class="dashboard-view active">
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon users">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div>
+                                    <div class="stat-value" id="totalUsers">0</div>
+                                    <div class="stat-label">Total Users</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon artists">
+                                    <i class="fas fa-microphone"></i>
+                                </div>
+                                <div>
+                                    <div class="stat-value" id="totalArtists">0</div>
+                                    <div class="stat-label">Total Artists</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon songs">
+                                    <i class="fas fa-music"></i>
+                                </div>
+                                <div>
+                                    <div class="stat-value" id="totalSongs">0</div>
+                                    <div class="stat-label">Total Songs</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div class="stat-icon revenue">
+                                    <i class="fas fa-dollar-sign"></i>
+                                </div>
+                                <div>
+                                    <div class="stat-value" id="totalRevenue">0 FCFA</div>
+                                    <div class="stat-label">Total Revenue</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="stats-grid mt-3">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value" id="activeUsers">0</div>
+                                    <div class="stat-label">Active Users</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value" id="artistUsers">0</div>
+                                    <div class="stat-label">Artist Users</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value" id="pendingUsers">0</div>
+                                    <div class="stat-label">Pending Users</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value" id="blockedUsers">0</div>
+                                    <div class="stat-label">Blocked Users</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dashboard-charts mt-4">
+                        <div class="row gx-3 gy-3">
+                            <div class="col-lg-6">
+                                <div class="card card-body h-100">
+                                    <h5 class="mb-3">User Growth</h5>
+                                    <div style="position: relative; height: 250px; width: 100%;">
+                                        <canvas id="userGrowthChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card card-body h-100">
+                                    <h5 class="mb-3">Artist Distribution</h5>
+                                    <div style="position: relative; height: 250px; width: 100%;">
+                                        <canvas id="artistDistributionChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card card-body h-100">
+                                    <h5 class="mb-3">Platform Analytics</h5>
+                                    <div style="position: relative; height: 250px; width: 100%;">
+                                        <canvas id="analyticsChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card card-body h-100">
+                                    <h5 class="mb-3">Genre Spread</h5>
+                                    <div style="position: relative; height: 250px; width: 100%;">
+                                        <canvas id="genreChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card card-body h-100">
+                                    <h5 class="mb-3">Revenue Breakdown</h5>
+                                    <div style="position: relative; height: 250px; width: 100%;">
+                                        <canvas id="revenueChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-lg-6">
+                                <div class="card card-body h-100">
+                                    <h5 class="mb-3">Verification Status</h5>
+                                    <div style="position: relative; height: 250px; width: 100%;">
+                                        <canvas id="artistVerificationChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row gx-3 gy-3 mt-4">
+                        <div class="col-lg-6">
+                            <div class="card card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5>Top Songs</h5>
+                                </div>
+                                <div class="table-responsive">
+                                    <table id="topSongsTable" class="table table-dark table-hover custom-table w-100">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Title</th>
+                                                <th>Artist</th>
+                                                <th>Plays</th>
+                                                <th>Likes</th>
+                                                <th>Duration</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="topSongsTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5>Top Artists</h5>
+                                </div>
+                                <div class="table-responsive">
+                                    <table id="topArtistsTable" class="table table-dark table-hover custom-table w-100">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Artist</th>
+                                                <th>Genre</th>
+                                                <th>Followers</th>
+                                                <th>Songs</th>
+                                                <th>Verification</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="topArtistsTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="card card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h5>Recent Songs</h5>
+                                </div>
+                                <div class="table-responsive">
+                                    <table id="recentSongsTable" class="table table-dark table-hover custom-table w-100">
+                                        <thead>
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Title</th>
+                                                <th>Artist</th>
+                                                <th>Genre</th>
+                                                <th>Plays</th>
+                                                <th>Date</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="recentSongsTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="usersSection" class="dashboard-view" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2>User Management</h2>
+                        <div class="d-flex gap-2">
+                            <button id="addUserBtn" class="btn btn-primary btn-sm">Add User</button>
+                            <button id="exportAllUsersBtn" class="btn btn-outline-light btn-sm">Export Users</button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <input id="userSearch" class="form-control" type="search" placeholder="Search all users...">
+                    </div>
+                    <div class="table-responsive">
+                        <table id="allUsersTable" class="table table-dark table-hover custom-table w-100">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Phone</th>
+                                    <th>Type</th>
+                                    <th>Status</th>
+                                    <th>Joined</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="allUsersTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="artistsSection" class="dashboard-view" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2>Artist Management</h2>
+                        <div class="d-flex gap-2">
+                            <button id="addArtistBtn" class="btn btn-primary btn-sm">Add Artist</button>
+                            <button id="exportArtistsBtn" class="btn btn-outline-light btn-sm">Export Artists</button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <input id="artistSearch" class="form-control" type="search" placeholder="Search artists...">
+                    </div>
+                    <div class="table-responsive">
+                        <table id="artistsTable" class="table table-dark table-hover custom-table w-100">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Artist</th>
+                                    <th>Genre</th>
+                                    <th>Followers</th>
+                                    <th>Songs</th>
+                                    <th>Status</th>
+                                    <th>Verification</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="artistsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="songsSection" class="dashboard-view" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2>Song Management</h2>
+                        <div class="d-flex gap-2">
+                            <button id="addSongBtn" class="btn btn-primary btn-sm">Add Song</button>
+                            <button id="exportSongsBtn" class="btn btn-outline-light btn-sm">Export Songs</button>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <input id="songSearch" class="form-control" type="search" placeholder="Search songs...">
+                    </div>
+                    <div class="table-responsive">
+                        <table id="songsTable" class="table table-dark table-hover custom-table w-100">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Title</th>
+                                    <th>Artist</th>
+                                    <th>Genre</th>
+                                    <th>Plays</th>
+                                    <th>Duration</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="songsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div id="subscriptionsSection" class="dashboard-view" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2>Subscription Management</h2>
+                        <div class="d-flex gap-2">
+                            <button id="addSubscriptionBtn" class="btn btn-primary btn-sm">Add Subscription</button>
+                            <button id="addSubscriptionPlanBtn" class="btn btn-outline-light btn-sm">Manage Plans</button>
+                        </div>
+                    </div>
+                    <div class="row gx-3 gy-3">
+                        <div class="col-lg-6">
+                            <div class="card card-body">
+                                <h5 class="mb-3">Subscription Plans</h5>
+                                <div class="table-responsive">
+                                    <table id="subscriptionPlansTable" class="table table-dark table-hover custom-table w-100">
+                                        <thead>
+                                            <tr>
+                                                <th>ID</th>
+                                                <th>Plan</th>
+                                                <th>User</th>
+                                                <th>Amount</th>
+                                                <th>Status</th>
+                                                <th>Start</th>
+                                                <th>End</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="subscriptionPlansTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="card card-body">
+                                <h5 class="mb-3">Recent Subscriptions</h5>
+                                <div class="table-responsive">
+                                    <table id="recentSubscriptionsTable" class="table table-dark table-hover custom-table w-100">
+                                        <thead>
+                                            <tr>
+                                                <th>Plan</th>
+                                                <th>User</th>
+                                                <th>Amount</th>
+                                                <th>Start</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="recentSubscriptionsTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="reportsSection" class="dashboard-view" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2>Reports & Analytics</h2>
+                        <button id="resetDemoBtn" class="btn btn-warning btn-sm">Reset Demo State</button>
+                    </div>
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value" id="totalUsersStat">0</div>
+                                    <div class="stat-label">Total Users</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value" id="totalArtistsStat">0</div>
+                                    <div class="stat-label">Total Artists</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value" id="totalSongsStat">0</div>
+                                    <div class="stat-label">Total Songs</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value" id="totalPlaysStat">0</div>
+                                    <div class="stat-label">Total Plays</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value" id="activeSubscriptionsStat">0</div>
+                                    <div class="stat-label">Active Subscriptions</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value" id="subscriptionRevenue">0 XAF</div>
+                                    <div class="stat-label">Subscription Revenue</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value" id="adRevenue">0 XAF</div>
+                                    <div class="stat-label">Ad Revenue</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-header">
+                                <div>
+                                    <div class="stat-value" id="royaltiesPaid">0 XAF</div>
+                                    <div class="stat-label">Royalties Paid</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row gx-3 gy-3 mt-4">
+                        <div class="col-12">
+                            <div class="table-responsive">
+                                <table id="reportsTable" class="table table-dark table-hover custom-table w-100">
+                                    <thead>
+                                        <tr>
+                                            <th>ID</th>
+                                            <th>Reporter</th>
+                                            <th>Subject</th>
+                                            <th>Type</th>
+                                            <th>Reason</th>
+                                            <th>Status</th>
+                                            <th>Date</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="reportsTableBody"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="settingsSection" class="dashboard-view" style="display:none;">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h2>Platform Settings</h2>
+                        <button class="btn btn-primary btn-sm" onclick="saveAdminProfile()">Save Settings</button>
+                    </div>
+                    <form class="row gx-3 gy-3">
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label">Platform Name</label>
+                                <input type="text" class="form-control" id="platformName" placeholder="CamSound">
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label class="form-label">Contact Email</label>
+                                <input type="email" class="form-control" id="contactEmail" placeholder="contact@camsound.com">
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="mb-3">
+                                <label class="form-label">Platform Description</label>
+                                <textarea class="form-control" id="platformDesc" rows="4" placeholder="Describe the platform..."></textarea>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="emailNotifications">
+                                <label class="form-check-label" for="emailNotifications">Email Notifications</label>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="twoFactorAuth">
+                                <label class="form-check-label" for="twoFactorAuth">Two-Factor Auth</label>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="autoLogout">
+                                <label class="form-check-label" for="autoLogout">Auto Logout</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reset Password Modal -->
+    <div class="modal fade" id="resetPasswordModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-key me-2"></i>Reset Password</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="resetPasswordUserId">
+                    <div class="mb-3">
+                        <label for="resetPasswordNew" class="form-label">New Password</label>
+                        <input type="password" class="form-control" id="resetPasswordNew" minlength="8" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="resetPasswordConfirm" class="form-label">Confirm Password</label>
+                        <input type="password" class="form-control" id="resetPasswordConfirm" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="resetUserPassword()"><i class="fas fa-save me-1"></i>Reset Password</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Modal -->
+    <div class="modal fade" id="notificationsModal" tabindex="-1" aria-labelledby="notificationsModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="notificationsModalLabel"><i class="fas fa-bell me-2"></i>Notifications
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="notification-list" id="notificationList">
+                        <!-- Populated by JS -->
+                        <div class="text-center py-4 text-muted">No new notifications</div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" onclick="markAllAsRead()"><i
+                            class="fas fa-check-double me-1"></i>Mark All as Read</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin Profile Modal -->
+    <div class="modal fade" id="adminProfileModal" tabindex="-1" aria-labelledby="adminProfileModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="adminProfileModalLabel"><i class="fas fa-user-cog me-2"></i>Admin
+                        Profile & Settings</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="avatar mb-3"
+                                style="width: 100px; height: 100px; font-size: 36px; margin: 0 auto; background: var(--primary-color); display: flex; align-items: center; justify-content: center; border-radius: 50%;">
+                                AD</div>
+                            <h6 id="profileDisplayName">Admin User</h6>
+                            <p class="text-muted">Administrator</p>
+                        </div>
+                        <div class="col-md-8">
+                            <form id="adminProfileForm">
+                                <div class="mb-3">
+                                    <label class="form-label">Full Name</label>
+                                    <input type="text" class="form-control" id="adminName" value="Admin User">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Email Address</label>
+                                    <input type="email" class="form-control" id="adminEmail" value="admin@afrohythm.com">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">New Password (leave blank to keep current)</label>
+                                    <input type="password" class="form-control" id="adminNewPassword">
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveAdminProfile()"><i
+                            class="fas fa-save me-1"></i>Save Profile</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-user-plus me-2"></i>Add New User</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addUserForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">First Name</label>
+                                <input type="text" class="form-control" id="userFirstName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Last Name</label>
+                                <input type="text" class="form-control" id="userLastName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" id="userEmail" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Phone</label>
+                                <input type="tel" class="form-control" id="userPhone">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Role</label>
+                                <select class="form-control" id="userType" required>
+                                    <option value="fan">Fan</option>
+                                    <option value="artist">Artist</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Password</label>
+                                <input type="password" class="form-control" id="userPassword" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Confirm Password</label>
+                                <input type="password" class="form-control" id="userConfirmPassword" required>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-center">
+                                <div class="form-check mt-4">
+                                    <input class="form-check-input" type="checkbox" id="userActive" checked>
+                                    <label class="form-check-label" for="userActive">Activate user</label>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="addNewUser()"><i class="fas fa-save me-1"></i>Create User</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Artist Modal -->
+    <div class="modal fade" id="addArtistModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-microphone-alt me-2"></i>Add New Artist</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addArtistForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Artist Name</label>
+                                <input type="text" class="form-control" id="artistName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Genre</label>
+                                <select class="form-control" id="artistGenre" required>
+                                    <option value="Makossa">Makossa</option>
+                                    <option value="Bikutsi">Bikutsi</option>
+                                    <option value="Afrobeat">Afrobeat</option>
+                                    <option value="Assiko">Assiko</option>
+                                    <option value="Traditional">Traditional</option>
+                                    <option value="Gospel">Gospel</option>
+                                    <option value="Bend Skin">Bend Skin</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">User Account</label>
+                                <select class="form-control" id="artistUserId"></select>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">Short Bio</label>
+                                <textarea class="form-control" id="artistBio" rows="3"></textarea>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="addNewArtist()"><i class="fas fa-save me-1"></i>Create Artist</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Song Modal -->
+    <div class="modal fade" id="addSongModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-music me-2"></i>Add New Song</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addSongForm">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Song Title</label>
+                                <input type="text" class="form-control" id="songTitle" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Artist</label>
+                                <select class="form-control" id="songArtist" required></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Genre</label>
+                                <select class="form-control" id="songGenre" required>
+                                    <option value="Makossa">Makossa</option>
+                                    <option value="Bikutsi">Bikutsi</option>
+                                    <option value="Afrobeat">Afrobeat</option>
+                                    <option value="Assiko">Assiko</option>
+                                    <option value="Traditional">Traditional</option>
+                                    <option value="Gospel">Gospel</option>
+                                    <option value="Bend Skin">Bend Skin</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Duration</label>
+                                <input type="text" class="form-control" id="songDuration" placeholder="03:45" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Status</label>
+                                <select class="form-control" id="songStatus" required>
+                                    <option value="active">Active</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="blocked">Blocked</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="addNewSong()"><i class="fas fa-save me-1"></i>Create Song</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Song Modal -->
+    <div class="modal fade" id="editSongModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-edit me-2"></i>Edit Song</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editSongForm">
+                        <input type="hidden" id="editSongId">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Song Title</label>
+                                <input type="text" class="form-control" id="editSongTitle" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Artist</label>
+                                <input type="text" class="form-control" id="editSongArtist" readonly>
+                                <input type="hidden" id="editSongArtistId">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Genre</label>
+                                <select class="form-control" id="editSongGenre">
+                                    <option value="Makossa">Makossa</option>
+                                    <option value="Bikutsi">Bikutsi</option>
+                                    <option value="Afrobeat">Afrobeat</option>
+                                    <option value="Assiko">Assiko</option>
+                                    <option value="Traditional">Traditional</option>
+                                    <option value="Gospel">Gospel</option>
+                                    <option value="Bend Skin">Bend Skin</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Duration</label>
+                                <input type="text" class="form-control" id="editSongDuration" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Status</label>
+                                <select class="form-control" id="editSongStatus" required>
+                                    <option value="active">Active</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="blocked">Blocked</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveSongEdit()"><i class="fas fa-save me-1"></i>Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Subscription Modal -->
+    <div class="modal fade" id="addSubscriptionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addSubscriptionModalLabel"><i class="fas fa-crown me-2"></i>Add Subscription</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="addSubscriptionForm">
+                        <input type="hidden" id="subscriptionId">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Plan Name</label>
+                                <input type="text" class="form-control" id="planName" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Amount</label>
+                                <input type="number" class="form-control" id="planAmount" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Subscriber</label>
+                                <select class="form-control" id="planUser" required></select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Start Date</label>
+                                <input type="date" class="form-control" id="planStartDate" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">End Date</label>
+                                <input type="date" class="form-control" id="planEndDate" required>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="addNewSubscription()"><i class="fas fa-save me-1"></i>Create Subscription</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage Plans Modal -->
+    <div class="modal fade" id="managePlansModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-tasks me-2"></i>Manage Subscription Plans</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">Existing Plans</h6>
+                        <button class="btn btn-primary btn-sm" id="addNewPlanBtn">
+                            <i class="fas fa-plus me-1"></i>Add New Plan
+                        </button>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover custom-table">
+                            <thead>
+                                <tr>
+                                    <th>Plan Name</th>
+                                    <th>Price</th>
+                                    <th>Period</th>
+                                    <th>Description</th>
+                                    <th>Popular</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="plansTableBody">
+                                <!-- Populated by JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add/Edit Plan Modal -->
+    <div class="modal fade" id="addEditPlanModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="addEditPlanModalLabel"><i class="fas fa-plus me-2"></i>Add New Plan</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="planForm">
+                        <input type="hidden" id="planId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="formPlanName" class="form-label">Plan Name *</label>
+                                <input type="text" class="form-control" id="formPlanName" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="formPlanPrice" class="form-label">Price *</label>
+                                <input type="number" class="form-control" id="formPlanPrice" required>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="formPlanCurrency" class="form-label">Currency *</label>
+                                <input type="text" class="form-control" id="formPlanCurrency" value="XAF" required>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="formPlanPeriod" class="form-label">Billing Period *</label>
+                                <select class="form-control" id="formPlanPeriod" required>
+                                    <option value="month">Monthly</option>
+                                    <option value="year">Yearly</option>
+                                    <option value="once">One-time</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="formPlanButtonText" class="form-label">Button Text</label>
+                                <input type="text" class="form-control" id="formPlanButtonText"
+                                    placeholder="Get Started">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="formPlanDescription" class="form-label">Description</label>
+                            <textarea class="form-control" id="formPlanDescription" rows="2"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="formPlanFeatures" class="form-label">Features (one per line)</label>
+                            <textarea class="form-control" id="formPlanFeatures" rows="4"
+                                placeholder="Unlimited skips&#10;Ad-free music&#10;Offline mode"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="formPlanPopular">
+                                <label class="form-check-label" for="formPlanPopular">Mark as Most Popular</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="savePlan()"><i
+                            class="fas fa-save me-1"></i>Save Plan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- View User Modal -->
+    <div class="modal fade" id="viewUserModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-user me-2"></i>User Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="viewUserModalBody">
+                    <!-- Details will be populated here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Artist Modal -->
+    <div class="modal fade" id="viewArtistModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-microphone-alt me-2"></i>Artist Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="viewArtistModalBody">
+                    <!-- Details will be populated here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Song Modal -->
+    <div class="modal fade" id="viewSongModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-music me-2"></i>Song Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="viewSongModalBody">
+                    <!-- Details will be populated here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- View Subscription Modal -->
+    <div class="modal fade" id="viewSubscriptionModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-credit-card me-2"></i>Subscription Details</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="viewSubscriptionModalBody">
+                    <!-- Details will be populated here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Modal -->
+    <div class="modal fade" id="editUserModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-user-edit me-2"></i>Edit User</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editUserForm">
+                        <input type="hidden" id="editUserId">
+                        <div class="mb-3">
+                            <label for="editUserName" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="editUserName" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editUserEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="editUserEmail" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editUserPhone" class="form-label">Phone</label>
+                            <input type="tel" class="form-control" id="editUserPhone" readonly>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editUserType" class="form-label">Type *</label>
+                            <select class="form-control" id="editUserType" required>
+                                <option value="fan">Fan</option>
+                                <option value="artist">Artist</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editUserStatus" class="form-label">Status *</label>
+                            <select class="form-control" id="editUserStatus" required>
+                                <option value="active">Active</option>
+                                <option value="pending">Pending</option>
+                                <option value="blocked">Blocked</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveUserEdit()"><i
+                            class="fas fa-save me-1"></i>Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Artist Modal -->
+    <div class="modal fade" id="editArtistModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="fas fa-microphone-alt me-2"></i>Edit Artist</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editArtistForm">
+                        <input type="hidden" id="editArtistId">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editArtistName" class="form-label">Artist Name *</label>
+                                <input type="text" class="form-control" id="editArtistName" readonly style="background-color: #0a0a1e; border: 1px solid #333; cursor: not-allowed;">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editArtistGenre" class="form-label">Genre *</label>
+                                <select class="form-control" id="editArtistGenre" disabled style="background-color: #0a0a1e; border: 1px solid #333; cursor: not-allowed;">
+                                    <option value="Makossa">Makossa</option>
+                                    <option value="Bikutsi">Bikutsi</option>
+                                    <option value="Afrobeat">Afrobeat</option>
+                                    <option value="Assiko">Assiko</option>
+                                    <option value="Traditional">Traditional</option>
+                                    <option value="Gospel">Gospel</option>
+                                    <option value="Bend Skin">Bend Skin</option>
+                                    <option value="Hip Hop">Hip Hop</option>
+                                    <option value="R&B">R&B</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editArtistStatus" class="form-label">Status *</label>
+                                <select class="form-control" id="editArtistStatus" required>
+                                    <option value="verified">Verified</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="rejected">Rejected</option>
+                                </select>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="saveArtistEdit()"><i
+                            class="fas fa-save me-1"></i>Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Core Libraries -->
+    <script src="assets/lib/jquery/jquery.min.js"></script>
+    <script src="assets/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="assets/lib/datatables/jquery.dataTables.min.js"></script>
+    <script src="assets/lib/datatables/dataTables.bootstrap5.min.js"></script>
+    <script src="assets/lib/chartjs/chart.min.js"></script>
+
+    <!-- Platform Scripts -->
+    <script src="Js/utils.js?v=6"></script>
+    <script src="Js/dashboard-ui.js?v=1"></script>
+    <script src="Js/platform-settings.js?v=6"></script>
+    <script src="Js/modal-player.js?v=7"></script>
+    <script src="Js/admin.js?v=8"></script>
+    <script src="Js/admin-settings.js?v=1"></script>
+    <script src="Js/admin-plans.js?v=1"></script>
+    
+    <!-- Internationalization handled in Js/utils.js -->
+    
+    <!-- Audio cleanup script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const viewSongModal = document.getElementById('viewSongModal');
+            if (viewSongModal) {
+                viewSongModal.addEventListener('hidden.bs.modal', function () {
+                    const audioElements = viewSongModal.querySelectorAll('audio');
+                    audioElements.forEach(audio => {
+                        audio.pause();
+                        audio.currentTime = 0;
+                    });
+                });
+            }
+        });
+    </script>
+</body>
+
+</html>

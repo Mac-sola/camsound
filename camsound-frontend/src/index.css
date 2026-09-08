@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
 /* ============================================================
    CamSound Design System — Faithful MERN Port of htdocs UI
    Color Palette: Deep Forest Dark + Gold Accent (from original)
@@ -2409,6 +2411,179 @@ textarea:focus-visible {
   .genres-grid { grid-template-columns: repeat(2, 1fr); }
   .testimonials-grid { grid-template-columns: 1fr; }
   .footer-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* PHP landing page parity: values from css/camsound-design.css. */
+.landing-page .navbar-camsound {
+  background: var(--bg-primary);
+  padding: 15px 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.landing-page .navbar-brand {
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  color: var(--accent-color);
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.landing-page .navbar-brand i {
+  color: var(--accent-color);
+}
+
+.landing-page .hero-section {
+  padding: 10rem 0 6rem;
+  background: linear-gradient(180deg, rgba(11, 15, 12, 0.95) 0%, rgba(15, 61, 46, 0.3) 100%), var(--bg-primary);
+  min-height: 100vh;
+}
+
+.landing-page .hero-title {
+  font-size: 3.5rem;
+  font-weight: 800;
+  line-height: 1.2;
+  letter-spacing: 0;
+}
+
+.landing-page .hero-subtitle {
+  font-size: 1.2rem;
+  color: var(--text-muted);
+  margin-bottom: 40px;
+  line-height: 1.5;
+}
+
+.landing-page .hero-stacked-cards {
+  height: 400px;
+}
+
+.landing-page .stacked-card {
+  width: 300px;
+  height: 300px;
+  border-radius: 20px;
+  background-color: #333;
+  background-image: linear-gradient(135deg, #444 0%, #222 100%);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.landing-page .stacked-card:nth-child(1) {
+  right: 0;
+  top: 0;
+  z-index: 3;
+  opacity: 1;
+}
+
+.landing-page .stacked-card:nth-child(2) {
+  right: 20px;
+  top: 20px;
+  z-index: 2;
+  opacity: 0.8;
+}
+
+.landing-page .stacked-card:nth-child(3) {
+  right: 40px;
+  top: 40px;
+  z-index: 1;
+  opacity: 0.5;
+}
+
+.landing-page .how-it-works-section,
+.landing-page .artists-section,
+.landing-page .genres-section,
+.landing-page .testimonials-section {
+  padding: 80px 0;
+}
+
+.landing-page .how-it-works-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 40px 20px;
+}
+
+.landing-page .how-it-works-card h4 {
+  font-size: 1.3rem;
+  margin-bottom: 15px;
+}
+
+.landing-page .how-it-works-card p {
+  color: #d1d5db;
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.landing-page .why-choose-us-section,
+.landing-page .cta-section {
+  background: var(--bg-green-section);
+}
+
+.landing-page .feature-card {
+  background: var(--bg-card);
+  border-radius: 15px;
+  padding: 25px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.landing-page .feature-card::before,
+.landing-page .feature-card:hover {
+  transform: none;
+}
+
+.landing-page .artist-card {
+  background: var(--bg-card);
+  border-radius: 15px;
+  padding: 25px 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.landing-page .artist-avatar-placeholder {
+  width: 100px;
+  height: 100px;
+  background: #333;
+}
+
+.landing-page .artist-avatar-placeholder i {
+  font-size: 40px;
+  color: #555;
+}
+
+.landing-page .genre-card {
+  background: var(--bg-card);
+  border-radius: 15px;
+  padding: 28px 20px;
+}
+
+.landing-page .platform-stats-section {
+  padding: 60px 0;
+  background: var(--bg-secondary);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.landing-page .stat-big {
+  color: var(--accent-color);
+}
+
+.landing-page .testimonials-section .testimonial-card {
+  background: var(--bg-card);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+}
+
+.landing-page .footer-camsound {
+  background: #0a0a0a;
+}
+
+@media (max-width: 991px) {
+  .landing-page .hero-title {
+    font-size: 2.5rem;
+  }
+
+  .landing-page .stacked-card {
+    width: 260px;
+    height: 260px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -4882,6 +5057,92 @@ select:disabled {
   box-shadow: 0 8px 24px rgba(250,204,21,0.15);
 }
 .fan-artist-avatar-premium img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ── Shared dashboard card finish ── */
+.section-card,
+.stat-card-premium,
+.stat-dash-card,
+.fan-song-card-premium,
+.fan-artist-card-premium,
+.fan-playlist-card-premium,
+.fan-composer,
+.fan-post-card,
+.fan-trending-card,
+.fan-profile-card {
+  border-color: rgba(255, 255, 255, 0.09);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.section-card,
+.stat-card-premium,
+.stat-dash-card {
+  border-radius: 14px;
+}
+
+.section-card:hover,
+.stat-card-premium:hover,
+.stat-dash-card:hover {
+  border-color: rgba(250, 204, 21, 0.22);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.24), 0 0 0 1px rgba(250, 204, 21, 0.04);
+}
+
+.fan-song-card-premium,
+.fan-artist-card-premium,
+.fan-playlist-card-premium {
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.fan-song-card-premium:hover,
+.fan-artist-card-premium:hover,
+.fan-playlist-card-premium:hover {
+  border-color: rgba(250, 204, 21, 0.28);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.34), 0 0 0 1px rgba(250, 204, 21, 0.06);
+}
+
+/* Platform-aware social actions stay aligned while keeping their identity. */
+.artist-social-links {
+  gap: 7px;
+  margin-top: 12px;
+}
+
+.artist-social-links a {
+  width: 34px;
+  height: 34px;
+  flex-basis: 34px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.045);
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.artist-social-links a:hover {
+  transform: translateY(-3px);
+  color: #fff;
+  background: rgba(255, 255, 255, 0.09);
+  border-color: currentColor;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.25);
+}
+
+.artist-social-links a:nth-child(1) { color: #e1306c; }
+.artist-social-links a:nth-child(2) { color: #f5f5f5; }
+.artist-social-links a:nth-child(3) { color: #4f7cff; }
+.artist-social-links a:nth-child(4) { color: #ff4d4d; }
+
+.artist-social-links a:nth-child(1):hover { background: rgba(225, 48, 108, 0.14); }
+.artist-social-links a:nth-child(2):hover { background: rgba(255, 255, 255, 0.12); }
+.artist-social-links a:nth-child(3):hover { background: rgba(79, 124, 255, 0.14); }
+.artist-social-links a:nth-child(4):hover { background: rgba(255, 77, 77, 0.14); }
+
+@media (max-width: 600px) {
+  .fan-song-card-premium:hover,
+  .fan-artist-card-premium:hover,
+  .fan-playlist-card-premium:hover {
+    transform: translateY(-3px);
+  }
+}
 .fan-artist-name-premium {
   font-size: 0.9rem;
   font-weight: 700;
@@ -6026,6 +6287,180 @@ select:disabled {
   background: #0F3D2E !important;
   border-top: 1px solid rgba(255, 255, 255, 0.1) !important;
   box-shadow: 0 -6px 20px rgba(0, 0, 0, 0.4) !important;
+}
+
+/* PHP dashboard geometry parity: 280px sidebar, 70px top bar, 90px player. */
+.app-shell {
+  background: var(--bg-primary);
+}
+
+.sidebar-wrapper {
+  width: 280px;
+  min-width: 280px;
+  max-width: 280px;
+  background: linear-gradient(180deg, var(--bg-secondary) 0%, #151515 100%) !important;
+  border-right: 1px solid var(--border-color) !important;
+  box-shadow: 5px 0 15px rgba(0, 0, 0, 0.3) !important;
+}
+
+.sidebar-header {
+  min-height: 104px;
+  padding: 2rem 1.5rem !important;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-nav {
+  padding: 20px 0 !important;
+}
+
+.sidebar-nav-btn {
+  min-height: 48px;
+  padding: 12px 1.5rem !important;
+  border-left: 4px solid transparent !important;
+  border-radius: 0 12px 12px 0 !important;
+  color: var(--text-secondary) !important;
+  font-weight: 500 !important;
+}
+
+.sidebar-nav-btn:hover {
+  background: rgba(250, 204, 21, 0.08) !important;
+  color: var(--accent-color) !important;
+  transform: translateX(5px);
+}
+
+.sidebar-nav-btn.active {
+  background: linear-gradient(90deg, rgba(250, 204, 21, 0.12), transparent) !important;
+  color: var(--accent-color) !important;
+  border-left-color: var(--accent-color) !important;
+  box-shadow: none !important;
+  transform: none;
+}
+
+.sidebar-nav-btn.active i {
+  color: var(--accent-color) !important;
+}
+
+.main-col {
+  height: 100vh;
+  background: var(--bg-primary) !important;
+}
+
+.top-bar {
+  height: 70px;
+  min-height: 70px;
+  padding: 1rem 2rem !important;
+  background: rgba(26, 26, 26, 0.95) !important;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+}
+
+.top-bar-title {
+  margin: 0;
+  color: var(--text-white);
+  font-size: 1.25rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.public-browse-page {
+  min-height: 100vh;
+  padding-bottom: 90px;
+  background: var(--bg-primary);
+}
+
+.public-browse-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(11, 15, 12, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+.public-browse-links {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  margin-left: auto;
+}
+
+.public-browse-links a {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.public-browse-links a:hover,
+.public-browse-links a.active {
+  color: var(--accent-color);
+}
+
+.public-browse-hero {
+  padding: 100px 0 40px;
+  text-align: center;
+  background: linear-gradient(rgba(11, 15, 12, 0.85), var(--bg-primary));
+}
+
+.public-browse-hero h1 {
+  margin: 0 0 12px;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+}
+
+.public-browse-hero p {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: 1.1rem;
+}
+
+.public-browse-content {
+  padding-top: 40px;
+}
+
+.content-area {
+  padding: 2rem !important;
+  background: linear-gradient(180deg, var(--bg-primary) 0%, #1e1e2e 100%) !important;
+  padding-bottom: calc(90px + 2rem) !important;
+}
+
+.section-card,
+.stat-card-premium,
+.music-card,
+.upload-form-card {
+  border-radius: 16px !important;
+}
+
+.section-card {
+  padding: 24px !important;
+  background: var(--bg-secondary) !important;
+  border: 1px solid var(--border-color) !important;
+}
+
+.stat-card-premium {
+  padding: 24px !important;
+}
+
+.music-player-bar {
+  height: 90px;
+  min-height: 90px;
+  left: 280px !important;
+  padding: 0 26px !important;
+}
+
+@media (max-width: 992px) {
+  .sidebar-wrapper {
+    width: min(280px, 88vw);
+    min-width: min(280px, 88vw);
+    max-width: min(280px, 88vw);
+  }
+
+  .content-area {
+    padding: 1.25rem !important;
+  }
+
+  .top-bar-title {
+    font-size: 1.05rem;
+  }
+
+  .music-player-bar {
+    left: 0 !important;
+  }
 }
 
 

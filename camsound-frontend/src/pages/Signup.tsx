@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { authService } from '../services/api';
 
 const Signup: React.FC = () => {
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(2);
   const [type, setType] = useState('fan');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -138,15 +138,8 @@ const Signup: React.FC = () => {
         ) : (
           // Step 2: Account Details
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
-              <button type="button" onClick={() => setStep(1)} style={{ background: 'none', border: 'none', color: 'var(--accent-color)', cursor: 'pointer', fontSize: '0.88rem' }}>
-                <i className="fas fa-arrow-left" style={{ marginRight: 6 }} />Back
-              </button>
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-                Signing up as: <strong style={{ color: type === 'artist' ? 'var(--accent-color)' : 'var(--text-white)' }}>
-                  {type === 'artist' ? 'Artist' : 'Fan'}
-                </strong>
-              </span>
+            <div style={{ marginBottom: 20 }}>
+              <span style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>I am registering as <strong style={{ color: type === 'artist' ? 'var(--accent-color)' : 'var(--text-white)' }}>{type === 'artist' ? 'Artist' : 'Fan'}</strong></span>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
@@ -272,19 +265,22 @@ const Signup: React.FC = () => {
               </div>
             </div>
 
+            <div className="role-selection" style={{ marginBottom: 16 }}>
+              {[
+                { value: 'fan', icon: 'fa-headphones', title: 'Fan', description: 'Discover and enjoy music from Cameroonian artists' },
+                { value: 'artist', icon: 'fa-microphone', title: 'Artist', description: 'Upload and share your music with the world' },
+              ].map(role => (
+                <div key={role.value} className={`role-option ${type === role.value ? 'selected' : ''}`} onClick={() => setType(role.value)} role="radio" aria-checked={type === role.value} tabIndex={0}>
+                  <div className="role-icon-circle"><i className={`fas ${role.icon}`} /></div>
+                  <div className="role-info"><h5>{role.title}</h5><p>{role.description}</p></div>
+                  {type === role.value && <i className="fas fa-check-circle" style={{ marginLeft: 'auto', color: 'var(--accent-color)' }} />}
+                </div>
+              ))}
+            </div>
+
             <label style={{ margin: '16px 0', fontSize: '0.83rem', color: 'var(--text-muted)', display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={acceptedTerms}
-                onChange={e => setAcceptedTerms(e.target.checked)}
-                required
-                style={{ marginTop: 3 }}
-              />
-              <span>
-                By creating an account, you agree to our{' '}
-                <a href="#" onClick={e => e.preventDefault()} style={{ color: 'var(--secondary-color)' }}>Terms of Service</a> and{' '}
-                <a href="#" onClick={e => e.preventDefault()} style={{ color: 'var(--secondary-color)' }}>Privacy Policy</a>.
-              </span>
+              <input type="checkbox" checked={acceptedTerms} onChange={e => setAcceptedTerms(e.target.checked)} required style={{ marginTop: 3 }} />
+              <span>I agree to the <a href="#" onClick={e => e.preventDefault()} style={{ color: 'var(--secondary-color)' }}>Terms of Service</a> and <a href="#" onClick={e => e.preventDefault()} style={{ color: 'var(--secondary-color)' }}>Privacy Policy</a>.</span>
             </label>
 
             <button type="submit" className="btn-auth-submit" disabled={loading || !acceptedTerms}>
@@ -294,6 +290,12 @@ const Signup: React.FC = () => {
             </button>
           </form>
         )}
+
+        <div className="auth-divider"><span>Or sign up with</span></div>
+        <div className="social-buttons">
+          <button type="button" className="btn-social" onClick={() => setError('Google signup is currently disabled in test environment.')}><i className="fab fa-google" /> Google</button>
+          <button type="button" className="btn-social" onClick={() => setError('Facebook signup is currently disabled in test environment.')}><i className="fab fa-facebook-f" /> Facebook</button>
+        </div>
 
         <div className="auth-footer-links">
           <p>Already have an account? <Link to="/login">Login</Link></p>

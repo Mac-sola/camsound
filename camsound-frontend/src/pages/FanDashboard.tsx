@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import Layout from '../components/Layout';
 import FanHome from '../components/FanHome';
 import FanBrowse from '../components/FanBrowse';
@@ -11,6 +11,7 @@ import FanNotifications from '../components/FanNotifications';
 import FanSettings from '../components/FanSettings';
 import FanFavorites from '../components/FanFavorites';
 import FanPlaylists from '../components/FanPlaylists';
+import { notificationsService } from '../services/api';
 
 /** Navigation items per LEGACY_PROJECT_SPEC § 3.3.1 */
 const FAN_NAV = [
@@ -20,7 +21,7 @@ const FAN_NAV = [
   { label: 'Genres',        icon: 'fa-music',         view: 'genres' },
   { label: 'Community',     icon: 'fa-users',         view: 'community' },
   { section: 'MY MUSIC' },
-  { label: 'Favorites',     icon: 'fa-heart',         view: 'favorites' },
+  { label: 'My Music',      icon: 'fa-music',         view: 'favorites' },
   { label: 'Playlists',     icon: 'fa-list',          view: 'playlists' },
   { label: 'History',       icon: 'fa-history',       view: 'history' },
   { section: 'FOLLOWING' },
@@ -34,6 +35,13 @@ const FAN_NAV = [
 const FanDashboard: React.FC = () => {
   const [activeView, setActiveView] = useState('home');
   const [searchQuery, setSearchQuery] = useState('');
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    notificationsService.getNotifications().then(response => {
+      setUnreadCount(response.data?.unreadCount ?? (response.data?.data ?? []).filter((item: any) => !item.isRead && !item.read).length);
+    }).catch(() => setUnreadCount(0));
+  }, [activeView]);
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
@@ -71,6 +79,8 @@ const FanDashboard: React.FC = () => {
       onNavClick={setActiveView}
       searchValue={searchQuery}
       onSearchChange={handleSearchChange}
+      showQuickStats
+      notifCount={unreadCount}
     >
       <div key={activeView} className="view-fade-in">
         {renderView()}

@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Music - AfroRhythm</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="assets/lib/bootstrap/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="assets/lib/fontawesome/all.min.css">
+    <link href="assets/lib/fonts/fonts.css" rel="stylesheet">
+    <!-- Modern Dark Theme CSS -->
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/premium-theme.css">
+    <link rel="stylesheet" href="css/theme-components.css">
+    <link rel="stylesheet" href="css/mobile.css">
+    <link rel="stylesheet" href="css/camsound-reference.css">
+<style>
+    :root {
+        --primary-color: #0F3D2E;
+        --secondary-color: #14532D;
+        --dark-color: #0B0F0C;
+        --light-color: #D1D5DB;
+    }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background-color: var(--dark-color);
+        color: var(--light-color);
+        padding-bottom: 80px;
+    }
+
+    .navbar {
+        background-color: rgba(11, 15, 12, 0.95);
+        backdrop-filter: blur(10px);
+    }
+
+    .browse-header {
+        padding: 100px 0 40px;
+        background: linear-gradient(rgba(11, 15, 12, 0.85), var(--dark-color));
+        background-size: cover;
+        background-position: center;
+    }
+
+        .category-pill {
+            padding: 8px 20px;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            display: inline-block;
+            margin: 5px;
+        }
+
+        .category-pill:hover,
+        .category-pill.active {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .song-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 15px;
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            cursor: pointer;
+            height: 100%;
+        }
+
+        .song-card:hover {
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-5px);
+            border-color: var(--primary-color);
+        }
+
+        .song-cover {
+            width: 100%;
+            aspect-ratio: 1;
+            border-radius: 8px;
+            object-fit: cover;
+            margin-bottom: 15px;
+            background: #222;
+        }
+
+        .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 50px;
+            height: 50px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .song-card:hover .play-overlay {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body class="camsound-ref">
+    <nav class="navbar navbar-expand-lg navbar-dark fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="index.html"><i class="fas fa-drum"></i> AfroRhythm</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="browse.html">Browse</a></li>
+                    <li id="loginNavItem" class="nav-item"><a class="nav-link" href="auth/login.html">Login</a></li>
+                    <li id="dashboardNavItem" class="nav-item d-none"><a class="nav-link" href="#"
+                            id="dashboardLink">Dashboard</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <header class="browse-header text-center">
+        <div class="container">
+            <h1 class="display-4 fw-bold">Discover Cameroonian Magic</h1>
+            <p class="lead">Explore the best Makossa, Bikutsi, Afrobeat, and more.</p>
+            <div id="category-list" class="mt-4">
+                <a href="#" class="category-pill active" onclick="filterByGenre('All')">All</a>
+            </div>
+        </div>
+    </header>
+
+    <main class="container my-5">
+        <div class="row" id="song-grid">
+            <!-- Songs will be loaded here -->
+            <div class="col-12 text-center py-5">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="assets/lib/bootstrap/bootstrap.bundle.min.js"></script>
+    <script src="Js/utils.js"></script>
+    <script src="Js/session.js"></script>
+    <script src="Js/player.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.afro.init();
+            updateUI();
+            loadCategories();
+            loadSongs();
+        });
+
+        function updateUI() {
+            if (window.afro.user) {
+                document.getElementById('loginNavItem').classList.add('d-none');
+                const dash = document.getElementById('dashboardNavItem');
+                dash.classList.remove('d-none');
+                const link = document.getElementById('dashboardLink');
+                link.href = window.afro.user.type === 'artist' ? 'artist.html' : 'fan.html';
+                link.textContent = 'Dashboard';
+            }
+        }
+
+        async function loadCategories() {
+            try {
+                const res = await fetch('backend/api/categories.php');
+                const j = await res.json();
+                if (j.success) {
+                    const list = document.getElementById('category-list');
+                    j.data.forEach(cat => {
+                        const a = document.createElement('a');
+                        a.href = '#';
+                        a.className = 'category-pill';
+                        a.textContent = cat.name;
+                        a.onclick = (e) => {
+                            e.preventDefault();
+                            document.querySelectorAll('.category-pill').forEach(p => p.classList.remove('active'));
+                            a.classList.add('active');
+                            filterByGenre(cat.name);
+                        };
+                        list.appendChild(a);
+                    });
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        let allSongs = [];
+        async function loadSongs() {
+            try {
+                const res = await fetch('backend/api/songs.php');
+                const j = await res.json();
+                if (j.success) {
+                    allSongs = j.data;
+                    renderSongs(allSongs);
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        function renderSongs(songs) {
+            const grid = document.getElementById('song-grid');
+            grid.innerHTML = '';
+            if (songs.length === 0) {
+                grid.innerHTML = '<div class="col-12 text-center text-muted">No songs found in this category.</div>';
+                return;
+            }
+            songs.forEach(song => {
+                const col = document.createElement('div');
+                col.className = 'col-6 col-md-4 col-lg-2 mb-4';
+                col.innerHTML = `
+                    <div class="song-card" onclick="window.afroPlayById(${song.id})">
+                        <div class="position-relative">
+                            <img src="${song.cover_art || 'data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 300 300%27%3E%3Crect width=%27300%27 height=%27300%27 fill=%27%23161717%27/%3E%3Ccircle cx=%27150%27 cy=%27150%27 r=%2780%27 fill=%27%230d5c3f%27 opacity=%270.92%27/%3E%3Ccircle cx=%27150%27 cy=%27150%27 r=%2722%27 fill=%27%23fbbf24%27/%3E%3C/svg%3E'}" class="song-cover" alt="${song.title}">
+                            <div class="play-overlay"><i class="fas fa-play text-white"></i></div>
+                        </div>
+                        <div class="fw-bold text-truncate">${song.title}</div>
+                        <div class="small text-muted text-truncate">${song.artist_name}</div>
+                    </div>
+                `;
+                grid.appendChild(col);
+            });
+        }
+
+        function filterByGenre(genre) {
+            if (genre === 'All') renderSongs(allSongs);
+            else renderSongs(allSongs.filter(s => s.genre === genre));
+        }
+    </script>
+</body>
+
+</html>

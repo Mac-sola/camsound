@@ -131,7 +131,7 @@ export const uploadSong = [
                 cloudinaryAudioId: audioResult.public_id,
                 cloudinaryImageId: coverArtId,
                 status: 'active',
-                moderationStatus: 'pending',
+                moderationStatus: 'approved',
             });
 
             // Update artist song count

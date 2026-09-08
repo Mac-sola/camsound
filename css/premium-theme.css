@@ -1,0 +1,100 @@
+/* ============================================================
+   AfroRhythm — Premium Emerald & Gold Theme Design System
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+
+:root {
+    /* Color System */
+    --primary-color: #0F3D2E;
+    --primary-dark: #0A2818;
+    --secondary-color: #14532D;
+    --accent-color: #FACC15;
+    --accent-dark: #D4A212;
+    --bg-primary: #0B0F0C;
+    --bg-secondary: #111827;
+    --bg-tertiary: #1F2937;
+    
+    /* Semantic Colors */
+    --card-bg: rgba(17, 24, 39, 0.6);
+    --sidebar-active: #FACC15;
+    --light-dark: #111827;
+    --dark-color: #0B0F0C;
+    
+    /* Text Colors */
+    --text-white: #FFFFFF;
+    --text-light: #D1D5DB;
+    --text-muted: #9CA3AF;
+    --sidebar-color: #D1D5DB;
+    
+    /* Compatibility aliases used across pages */
+    --accent-primary: var(--accent-color);
+    --accent-hover: var(--accent-dark);
+    --danger-color: #EF4444;
+    --warning-color: #F59E0B;
+    
+    /* Gradients */
+    --gradient-primary: linear-gradient(135deg, #0F3D2E 0%, #14532D 60%, #0B0F0C 100%);
+    --gradient-accent: linear-gradient(135deg, #FACC15 0%, #F59E0B 100%);
+    --gradient-card: linear-gradient(135deg, rgba(31, 41, 55, 0.4) 0%, rgba(17, 24, 39, 0.6) 100%);
+    --gradient-dark: linear-gradient(180deg, #0F3D2E 0%, #111827 60%, #0B0F0C 100%);
+    --gradient-glass: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
+    
+    /* Shadows & Glows */
+    --shadow-soft: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    --shadow-medium: 0 16px 48px 0 rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 20px rgba(15, 61, 46, 0.3);
+    --glow-accent: 0 0 15px rgba(250, 204, 21, 0.4);
+    --glow-green: 0 0 20px rgba(15, 61, 46, 0.45);
+    --border-color: rgba(255, 255, 255, 0.08);
+    
+    /* Borders & Rounded Corners */
+    --border-glass: 1px solid rgba(255, 255, 255, 0.08);
+    --border-glass-focus: 1px solid rgba(250, 204, 21, 0.4);
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 20px;
+    --radius-circle: 50%;
+    
+    /* Transitions */
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Base Body Styles */
+body {
+    font-family: 'Poppins', 'Inter', sans-serif;
+    background-color: var(--bg-primary);
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(15, 61, 46, 0.2) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(20, 83, 45, 0.15) 0px, transparent 50%);
+    background-attachment: fixed;
+    color: var(--text-white);
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Custom Premium Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: var(--radius-sm);
+    border: 2px solid var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+}
+
+/* Accessibility / Selection Color */
+::selection {
+    background: var(--accent-color);
+    color: var(--bg-primary);
+}

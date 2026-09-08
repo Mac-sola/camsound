@@ -7,6 +7,11 @@ const openMutatingPaths = [
     '/momo/webhook',
 ];
 
+const devBypassPaths = [
+    '/upload/',
+    '/artists/',
+];
+
 export const verifyCsrf = (req: Request, res: Response, next: NextFunction) => {
     const requestPath = req.originalUrl.replace(/^\/api/, '') || req.path;
     if (['GET', 'HEAD', 'OPTIONS'].includes(req.method)) {
@@ -14,6 +19,14 @@ export const verifyCsrf = (req: Request, res: Response, next: NextFunction) => {
     }
 
     if (openMutatingPaths.includes(requestPath)) {
+        return next();
+    }
+
+    if (/^\/songs\/[^/]+\/play$/.test(requestPath)) {
+        return next();
+    }
+
+    if (process.env.NODE_ENV !== 'production' && devBypassPaths.some(path => requestPath.startsWith(path))) {
         return next();
     }
 

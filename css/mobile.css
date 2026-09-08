@@ -1,0 +1,375 @@
+/* ============================================================
+   AfroRhythm – Global Mobile Responsiveness
+   Included on every page after the page-specific CSS.
+   ============================================================ */
+
+/* ─── Sidebar Overlay Backdrop ─── */
+.sidebar-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 999;
+    backdrop-filter: blur(2px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.sidebar-overlay.active {
+    display: block;
+    opacity: 1;
+}
+
+/* ─── Hamburger Button ─── */
+.hamburger-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: inherit;
+    font-size: 1.4rem;
+    cursor: pointer;
+    padding: 6px 10px;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    color: #ffffff;
+}
+
+.hamburger-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+/* ─── Table Responsive Wrapper ─── */
+.table-responsive-mobile {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+}
+
+/* ─── General Mobile Fixes ─── */
+*,
+*::before,
+*::after {
+    -webkit-tap-highlight-color: transparent;
+}
+
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* ============================================================
+   ≤ 992px  (Tablet and below – sidebar collapses)
+   ============================================================ */
+@media (max-width: 992px) {
+
+    /* Show hamburger */
+    .hamburger-btn {
+        display: flex;
+    }
+
+    /* Sidebar slide-in: dashboard-layout.css */
+
+    /* Main content takes full width */
+    .main-content,
+    #page-content-wrapper {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    /* Admin body overflow fix */
+    body {
+        overflow: auto !important;
+    }
+
+    /* Admin app height fix */
+    .app {
+        height: auto !important;
+        min-height: 100vh;
+    }
+
+    /* Fan dashboard main layout — dashboard-layout.css */
+
+    /* Top bar fixes */
+    .top-bar {
+        padding: 0.75rem 1rem !important;
+        gap: 0.5rem;
+    }
+
+    .top-bar-left {
+        gap: 0.5rem !important;
+    }
+
+    /* Search bar */
+    .search-container {
+        width: 180px !important;
+    }
+
+    /* Admin search input */
+    .search-input {
+        width: 160px !important;
+        font-size: 13px;
+    }
+}
+
+/* ============================================================
+   ≤ 768px  (Mobile – full overhaul)
+   ============================================================ */
+@media (max-width: 768px) {
+
+    /* Hide search input in top bar; user can use a section's search */
+    .top-bar .search-container,
+    .top-bar .search-input {
+        display: none !important;
+    }
+
+    /* Top bar title smaller */
+    .top-bar h1,
+    .top-bar .top-bar-left h1 {
+        font-size: 1.1rem !important;
+    }
+
+    /* User profile label hiding on very small top bar */
+    .user-info .user-details,
+    .user-profile .user-info {
+        display: none;
+    }
+
+    /* Content area padding */
+    .content-area,
+    .container-fluid.page-content,
+    .container-fluid {
+        padding: 1rem !important;
+    }
+
+    /* ── Stats grid → 2 columns on tablet, 1 on phone ── */
+    .stats-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* ── Cards grid → 2 columns ── */
+    .cards-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* ── Charts grid → 1 column ── */
+    .charts-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* ── Hero Welcome box ── */
+    .hero-welcome {
+        padding: 1.5rem !important;
+    }
+
+    .hero-content h1 {
+        font-size: 1.6rem !important;
+    }
+
+    .hero-content p {
+        font-size: 0.95rem !important;
+    }
+
+    .hero-stats {
+        gap: 1rem !important;
+    }
+
+    .hero-stat-value {
+        font-size: 1.4rem !important;
+    }
+
+    /* ── Tables wrap ── */
+    .table-responsive-mobile,
+    .data-table .table-content,
+    .table-content {
+        overflow-x: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+        min-width: 500px;
+    }
+
+    /* ── Table header stacks ── */
+    .table-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.5rem !important;
+    }
+
+    /* ── Plan cards de-scale ── */
+    .plan-card.featured {
+        transform: scale(1) !important;
+    }
+
+    /* Upload area condensed */
+    .upload-area {
+        padding: 1.5rem !important;
+    }
+
+    /* Section header wraps */
+    .section-header {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    /* ── Now Playing Bar ── */
+    .now-playing-bar {
+        padding: 0.5rem 0 !important;
+    }
+
+    /* Hide volume control on small phones */
+    .volume-control,
+    .volume-slider {
+        display: none !important;
+    }
+
+    /* Player info text truncate */
+    .now-playing-bar .song-title,
+    .now-playing-bar .artist-name {
+        max-width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    /* Fix page-content bottom clearance for now-playing bar */
+    #page-content-wrapper,
+    .content-area {
+        padding-bottom: 80px !important;
+    }
+}
+
+/* ============================================================
+   ≤ 480px  (Small phones)
+   ============================================================ */
+@media (max-width: 480px) {
+
+    /* Stats grid → 1 column */
+    .stats-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Cards grid → 1 column */
+    .cards-grid {
+        grid-template-columns: 1fr !important;
+    }
+
+    /* Font size for h2 sections */
+    .section-header h2 {
+        font-size: 1.3rem !important;
+    }
+
+    /* Sidebar full width on phones */
+    .sidebar,
+    #sidebar-wrapper {
+        width: 100% !important;
+        max-width: 280px;
+    }
+
+    /* Top bar branding */
+    .sidebar-header h1 {
+        font-size: 22px !important;
+    }
+
+    /* Auth card full width */
+    .auth-card {
+        padding: 20px 15px !important;
+    }
+
+    /* Hide non-essential user profile text */
+    .user-profile {
+        padding: 6px !important;
+    }
+
+    /* Buttons smaller */
+    .btn-auth {
+        padding: 10px 16px !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* Notification / user icon buttons in top bar */
+    .notification-btn,
+    .icon-btn {
+        font-size: 16px !important;
+        padding: 6px !important;
+    }
+}
+
+/* ============================================================
+   Landing Page (index.html) specific overrides
+   ============================================================ */
+@media (max-width: 992px) {
+    .hero-section {
+        padding: 120px 0 60px !important;
+        text-align: center;
+    }
+
+    .hero-section .d-flex.flex-wrap {
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 100px 0 50px !important;
+    }
+
+    .display-3 {
+        font-size: 2rem !important;
+    }
+
+    .lead {
+        font-size: 1rem !important;
+    }
+
+    /* Stats counter text */
+    .counter-number {
+        font-size: 2rem !important;
+    }
+
+    /* Artist image smaller */
+    .artist-image {
+        height: 180px !important;
+    }
+
+    /* Genre badges wrap */
+    .genre-badge {
+        font-size: 0.75rem;
+        padding: 4px 10px;
+    }
+
+    /* Pricing popular de-scale */
+    .pricing-card.popular {
+        transform: scale(1) !important;
+    }
+
+    /* Stats counter section padding */
+    .stats-counter {
+        padding: 40px 20px !important;
+    }
+
+    /* Navbar adjustments */
+    .navbar-brand {
+        font-size: 1.4rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .display-3 {
+        font-size: 1.7rem !important;
+    }
+
+    .btn-lg {
+        padding: 0.6rem 1.2rem !important;
+        font-size: 0.9rem !important;
+    }
+
+    /* Hide right-side hero image grid on very small phones */
+    .hero-section .col-lg-6:last-child {
+        display: none;
+    }
+}

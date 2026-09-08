@@ -1,12 +1,16 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
-import { songsService, historyService } from '../services/api';
+import { songsService } from '../services/api';
 
 interface Song {
   _id: string;
   title: string;
-  filePath: string;
+  filePath?: string;
+  fileUrl?: string;
   coverArt?: string;
-  artistId?: { name: string; _id: string };
+  artistId?: { name?: string; _id?: string };
+  genre?: string;
+  plays?: number;
+  duration?: string;
 }
 
 interface AudioContextType {
@@ -15,11 +19,15 @@ interface AudioContextType {
   progress: number;
   duration: number;
   audioError: string | null;
-  playSong: (song: Song) => void;
+  playSong: (song: Song, queue?: Song[]) => void;
   togglePlay: () => void;
   seek: (percentage: number) => void;
   skipForward: () => void;
   skipBackward: () => void;
+  nextSong: () => void;
+  previousSong: () => void;
+  isPlayerOpen: boolean;
+  closePlayer: () => void;
   volume: number;
   setVolume: (v: number) => void;
   isMuted: boolean;
@@ -36,6 +44,8 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [volume, setVolumeState] = useState(0.8);
   const [isMuted, setIsMuted] = useState(false);
   const [audioError, setAudioError] = useState<string | null>(null);
+  const [songQueue, setSongQueue] = useState<Song[]>([]);
+  const [isPlayerOpen, setIsPlayerOpen] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
@@ -79,16 +89,19 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return url || '';
   };
 
-  const playSong = async (song: Song) => {
+  const playSong = async (song: Song, queue?: Song[]) => {
     if (audioRef.current) {
       setAudioError(null);
+      setIsPlayerOpen(true);
+      if (queue?.length) setSongQueue(queue);
+      else if (!songQueue.length) setSongQueue([song]);
       if (currentSong?._id === song._id) {
         togglePlay();
         return;
       }
 
       setCurrentSong(song);
-      const source = getAudioSource(song.filePath);
+      const source = getAudioSource(song.filePath || song.fileUrl || '');
       audioRef.current.src = source;
       audioRef.current.volume = isMuted ? 0 : volume;
       
@@ -105,11 +118,6 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         await songsService.trackPlay(song._id);
       } catch {}
 
-      try {
-        if (historyService && typeof historyService.addHistory === 'function') {
-          try { await historyService.addHistory({ song_id: song._id }); } catch { }
-        }
-      } catch {}
     }
   };
 
@@ -152,6 +160,22 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const nextSong = () => {
+    if (!currentSong || !songQueue.length) return;
+    const currentIndex = songQueue.findIndex(song => song._id === currentSong._id);
+    const next = songQueue[currentIndex + 1];
+    if (next) playSong(next, songQueue);
+  };
+
+  const previousSong = () => {
+    if (!currentSong || !songQueue.length) return;
+    const currentIndex = songQueue.findIndex(song => song._id === currentSong._id);
+    const previous = songQueue[currentIndex - 1];
+    if (previous) playSong(previous, songQueue);
+  };
+
+  const closePlayer = () => setIsPlayerOpen(false);
+
   const setVolume = (v: number) => {
     setVolumeState(v);
     if (audioRef.current) {
@@ -185,7 +209,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [togglePlay]);
 
   return (
-    <AudioContext.Provider value={{ currentSong, isPlaying, progress, duration, audioError, playSong, togglePlay, seek, skipForward, skipBackward, volume, setVolume, isMuted, toggleMute }}>
+    <AudioContext.Provider value={{ currentSong, isPlaying, progress, duration, audioError, playSong, togglePlay, seek, skipForward, skipBackward, nextSong, previousSong, isPlayerOpen, closePlayer, volume, setVolume, isMuted, toggleMute }}>
       {children}
     </AudioContext.Provider>
   );

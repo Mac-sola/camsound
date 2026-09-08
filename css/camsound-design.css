@@ -1,0 +1,396 @@
+/* CamSound Design System - Based on Figma Mockups */
+:root {
+    --bg-dark: #121212;
+    --bg-card: #1e1e1e;
+    --bg-green-section: #0c2b18; /* Dark green for sections */
+    --primary-green: #114224; /* Button/accent green */
+    --accent-yellow: #f5b927; /* Primary yellow */
+    --accent-yellow-hover: #dca31f;
+    --text-main: #ffffff;
+    --text-muted: #a0a0a0;
+    --border-color: #333333;
+    
+    --font-primary: 'Montserrat', 'Inter', sans-serif;
+}
+
+body.camsound-design {
+    background-color: var(--bg-dark);
+    color: var(--text-main);
+    font-family: var(--font-primary);
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+/* Buttons */
+.btn-camsound-yellow {
+    background-color: var(--accent-yellow);
+    color: #000;
+    font-weight: 600;
+    border: none;
+    border-radius: 30px;
+    padding: 10px 24px;
+    transition: all 0.3s ease;
+}
+
+.btn-camsound-yellow:hover {
+    background-color: var(--accent-yellow-hover);
+    color: #000;
+}
+
+.btn-camsound-outline {
+    background-color: transparent;
+    color: var(--text-main);
+    font-weight: 600;
+    border: 1px solid var(--border-color);
+    border-radius: 30px;
+    padding: 10px 24px;
+    transition: all 0.3s ease;
+}
+
+.btn-camsound-outline:hover {
+    border-color: var(--text-main);
+    color: var(--text-main);
+}
+
+.btn-camsound-outline-green {
+    background-color: transparent;
+    color: var(--accent-yellow);
+    font-weight: 600;
+    border: 1px solid var(--primary-green);
+    border-radius: 30px;
+    padding: 10px 24px;
+    transition: all 0.3s ease;
+}
+
+.btn-camsound-outline-green:hover {
+    background-color: var(--primary-green);
+    color: #fff;
+}
+
+/* Navbar */
+.navbar-camsound {
+    background-color: var(--bg-dark);
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.navbar-camsound .navbar-brand {
+    font-weight: 700;
+    font-size: 1.5rem;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.navbar-camsound .navbar-brand img, .navbar-camsound .navbar-brand i {
+    color: var(--primary-green);
+}
+
+.navbar-camsound .nav-link {
+    color: var(--text-muted);
+    font-weight: 500;
+    margin: 0 10px;
+    transition: color 0.3s ease;
+}
+
+.navbar-camsound .nav-link:hover, .navbar-camsound .nav-link.active {
+    color: var(--accent-yellow);
+}
+
+/* Hero Section */
+.hero-section {
+    padding: 100px 0;
+    position: relative;
+    background: linear-gradient(180deg, rgba(11, 15, 12, 0.95) 0%, rgba(15, 61, 46, 0.3) 100%),
+                var(--bg-dark);
+    background-size: cover;
+    background-position: center;
+}
+
+.hero-title {
+    font-size: 3.5rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 20px;
+}
+
+.hero-subtitle {
+    font-size: 1.2rem;
+    color: var(--text-muted);
+    margin-bottom: 40px;
+    max-width: 500px;
+}
+
+.hero-stacked-cards {
+    position: relative;
+    width: 100%;
+    height: 400px;
+}
+
+.stacked-card {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background-color: #333;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    background-image: linear-gradient(135deg, #444 0%, #222 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.stacked-card::after {
+    content: '';
+    position: absolute;
+    width: 80%;
+    height: 60%;
+    background-color: rgba(255,255,255,0.05);
+    border-radius: 50% 50% 0 0;
+    bottom: 0;
+}
+
+.stacked-card:nth-child(1) { right: 0; top: 0; z-index: 3; }
+.stacked-card:nth-child(2) { right: 20px; top: 20px; z-index: 2; opacity: 0.8; }
+.stacked-card:nth-child(3) { right: 40px; top: 40px; z-index: 1; opacity: 0.5; }
+
+/* How It Works Section */
+.how-it-works {
+    padding: 80px 0;
+    text-align: center;
+}
+
+.how-it-works-card {
+    background-color: var(--bg-card);
+    border-radius: 20px;
+    padding: 40px 20px;
+    height: 100%;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.how-it-works-card h4 {
+    color: var(--text-main);
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+}
+
+.how-it-works-card p {
+    color: #d1d5db;
+    font-size: 0.95rem;
+    line-height: 1.6;
+}
+
+.how-icon-wrapper {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: rgba(245, 185, 39, 0.1);
+    color: var(--accent-yellow);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    margin: 0 auto 20px;
+}
+
+.arrow-connector {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted);
+    font-size: 20px;
+    height: 100%;
+}
+
+/* Why Choose Us Section */
+.why-choose-us {
+    background-color: var(--bg-green-section);
+    padding: 80px 0;
+}
+
+.feature-card {
+    background-color: var(--bg-card);
+    border-radius: 15px;
+    padding: 25px;
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.feature-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background-color: var(--accent-yellow);
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+}
+
+.feature-text h4 {
+    font-size: 1.1rem;
+    margin-bottom: 5px;
+}
+
+.feature-text p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+/* Featured Artists Section */
+.featured-artists {
+    padding: 80px 0;
+}
+
+.artist-card {
+    background-color: var(--bg-card);
+    border-radius: 15px;
+    padding: 25px 20px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.05);
+    position: relative;
+}
+
+.artist-avatar-placeholder {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    background-color: #333;
+    margin: 0 auto 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.artist-avatar-placeholder i {
+    font-size: 40px;
+    color: #555;
+}
+
+.artist-name {
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.artist-genre {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+}
+
+.play-btn-float {
+    position: absolute;
+    bottom: 20px;
+    right: 20px;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    background-color: var(--accent-yellow);
+    color: #000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+/* CTA Section */
+.cta-section {
+    background-color: var(--bg-green-section);
+    padding: 80px 0;
+    text-align: center;
+}
+
+.cta-section h2 {
+    font-size: 2.5rem;
+    margin-bottom: 30px;
+}
+
+.cta-section .btn-camsound-yellow {
+    padding: 15px 40px;
+    font-size: 1.2rem;
+}
+
+/* Footer */
+.footer-camsound {
+    background-color: #0a0a0a;
+    padding: 60px 0 30px;
+    border-top: 1px solid var(--border-color);
+}
+
+.footer-col h5 {
+    font-size: 1rem;
+    margin-bottom: 20px;
+}
+
+.footer-col p {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-links li {
+    margin-bottom: 10px;
+}
+
+.footer-links a {
+    color: var(--text-muted);
+    text-decoration: none;
+    font-size: 0.9rem;
+    transition: color 0.3s;
+}
+
+.footer-links a:hover {
+    color: var(--accent-yellow);
+}
+
+.footer-social {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.footer-social-link {
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    border: 1px solid var(--text-muted);
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    transition: all 0.3s;
+}
+
+.footer-social-link:hover {
+    border-color: var(--text-main);
+    color: var(--text-main);
+}
+
+.footer-bottom {
+    border-top: 1px solid var(--border-color);
+    margin-top: 40px;
+    padding-top: 20px;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+}

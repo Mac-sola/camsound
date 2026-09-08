@@ -5,11 +5,11 @@ import ProtectedRoute from './components/ProtectedRoute';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import Dashboard from './pages/Dashboard';
+import FanDashboard from './pages/FanDashboard';
 import ArtistDashboard from './pages/ArtistDashboard';
 import AdminDashboard from './pages/AdminDashboard';
-import FanDashboard from './pages/FanDashboard';
 import Subscription from './pages/Subscription';
+import Browse from './pages/Browse';
 
 function App() {
   return (
@@ -20,11 +20,12 @@ function App() {
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
             <Route path="/signup" element={<Signup />} />
+            <Route path="/browse" element={<Browse />} />
             <Route 
               path="/dashboard" 
               element={
                 <ProtectedRoute>
-                  <Dashboard />
+                  <FanDashboard />
                 </ProtectedRoute>
               } 
             />

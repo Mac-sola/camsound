@@ -35,7 +35,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [csrfToken, setCsrfToken] = useState<string | null>(localStorage.getItem('csrfToken'));
   const [isLoading, setIsLoading] = useState(true);
   const navigateRef = useRef<((path: string) => void) | undefined>(undefined);
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
   const setNavigate = (callback: (path: string) => void) => {
     navigateRef.current = callback;
@@ -43,58 +42,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const validateToken = async () => {
-      if (token) {
-        try {
-          const headers: HeadersInit = {};
-          if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
+      try {
+        const response = await authService.getSession();
+        const data = response.data;
+        if (data.success && data.data?.user) {
+          setUser(data.data.user);
+          if (data.data.csrfToken) {
+            setCsrfToken(data.data.csrfToken);
+            localStorage.setItem('csrfToken', data.data.csrfToken);
           }
-
-          const response = await fetch(`${baseUrl}/api/auth/session`, {
-            method: 'GET',
-            headers,
-            credentials: 'include',
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            if (data.success && data.data) {
-              setUser(data.data.user);
-              if (data.data.csrfToken) {
-                setCsrfToken(data.data.csrfToken);
-                localStorage.setItem('csrfToken', data.data.csrfToken);
-              }
-            } else {
-              localStorage.removeItem('token');
-              localStorage.removeItem('user');
-              localStorage.removeItem('csrfToken');
-              setToken(null);
-              setCsrfToken(null);
-              setUser(null);
-            }
-          } else {
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-            localStorage.removeItem('csrfToken');
-            setToken(null);
-            setCsrfToken(null);
-            setUser(null);
-            if (navigateRef.current) navigateRef.current('/login');
-          }
-        } catch {
-          localStorage.removeItem('token');
-          localStorage.removeItem('user');
-          localStorage.removeItem('csrfToken');
-          setToken(null);
-          setCsrfToken(null);
-          setUser(null);
         }
+      } catch {
+        setUser(null);
       }
       setIsLoading(false);
     };
 
     validateToken();
-  }, [token, baseUrl]);
+  }, []);
 
   const login = (newToken: string, newUser: User, newCsrfToken?: string) => {
     localStorage.setItem('token', newToken);

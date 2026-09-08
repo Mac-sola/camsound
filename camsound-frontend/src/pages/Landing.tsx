@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 
 const Landing: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const dashboardPath = user?.type === 'admin' ? '/admin' : user?.type === 'artist' ? '/artist' : '/fan';
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -12,7 +17,7 @@ const Landing: React.FC = () => {
   }, []);
 
   return (
-    <div>
+    <div className="landing-page">
       {/* ── Navbar ── */}
       <nav className="navbar-camsound" style={{ boxShadow: scrolled ? '0 2px 20px rgba(0,0,0,0.5)' : undefined }}>
         <div className="container">
@@ -35,13 +40,18 @@ const Landing: React.FC = () => {
             {/* Desktop Navigation */}
             <ul className="navbar-nav d-none d-lg-flex" style={{ display: 'flex', alignItems: 'center', gap: 32, listStyle: 'none' }}>
               <li><a className="nav-link active" href="/">Home</a></li>
-              <li><a className="nav-link" href="#discover">Discover</a></li>
+              <li><Link className="nav-link" to="/browse">Discover</Link></li>
               <li><a className="nav-link" href="#artists">Artists</a></li>
               <li><a className="nav-link" href="#pricing">Pricing</a></li>
             </ul>
             <div className="navbar-actions d-none d-lg-flex">
-              <Link to="/login" className="btn-camsound-outline" style={{ borderRadius: 30, padding: '8px 20px', fontSize: '0.9rem' }}>Login</Link>
-              <Link to="/signup" className="btn-camsound-yellow" style={{ padding: '8px 20px', fontSize: '0.9rem' }}>Sign Up</Link>
+              {user ? <>
+                <Link to={dashboardPath} className="btn-camsound-yellow" style={{ padding: '8px 20px', fontSize: '0.9rem' }}>Dashboard</Link>
+                <button className="btn-camsound-outline" style={{ padding: '8px 20px', fontSize: '0.9rem' }} onClick={async () => { await logout(); navigate('/'); }}>Logout</button>
+              </> : <>
+                <Link to="/login" className="btn-camsound-outline" style={{ borderRadius: 30, padding: '8px 20px', fontSize: '0.9rem' }}>Login</Link>
+                <Link to="/signup" className="btn-camsound-yellow" style={{ padding: '8px 20px', fontSize: '0.9rem' }}>Sign Up</Link>
+              </>}
             </div>
           </div>
         </div>
@@ -50,12 +60,17 @@ const Landing: React.FC = () => {
         {mobileMenuOpen && (
           <div style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
             <a className="nav-link" href="/" onClick={() => setMobileMenuOpen(false)}>Home</a>
-            <a className="nav-link" href="#discover" onClick={() => setMobileMenuOpen(false)}>Discover</a>
+            <Link className="nav-link" to="/browse" onClick={() => setMobileMenuOpen(false)}>Discover</Link>
             <a className="nav-link" href="#artists" onClick={() => setMobileMenuOpen(false)}>Artists</a>
             <a className="nav-link" href="#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
             <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
-              <Link to="/login" className="btn-camsound-outline" style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }} onClick={() => setMobileMenuOpen(false)}>Login</Link>
-              <Link to="/signup" className="btn-camsound-yellow" style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }} onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
+              {user ? <>
+                <Link to={dashboardPath} className="btn-camsound-yellow" style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }} onClick={() => setMobileMenuOpen(false)}>Dashboard</Link>
+                <button className="btn-camsound-outline" style={{ flex: 1, justifyContent: 'center' }} onClick={async () => { await logout(); setMobileMenuOpen(false); navigate('/'); }}>Logout</button>
+              </> : <>
+                <Link to="/login" className="btn-camsound-outline" style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }} onClick={() => setMobileMenuOpen(false)}>Login</Link>
+                <Link to="/signup" className="btn-camsound-yellow" style={{ flex: 1, textAlign: 'center', justifyContent: 'center' }} onClick={() => setMobileMenuOpen(false)}>Sign Up</Link>
+              </>}
             </div>
           </div>
         )}
@@ -70,27 +85,12 @@ const Landing: React.FC = () => {
               <p className="hero-subtitle">The premier platform connecting local talent with fans across Cameroon and beyond.</p>
               <div className="hero-actions">
                 <Link to="/signup?role=artist" className="btn-camsound-yellow">Join as an Artist</Link>
-                <Link to="/signup" className="btn-camsound-outline-green">Listen as a Fan</Link>
+                <Link to="/browse" className="btn-camsound-outline-green">Listen as a Fan</Link>
               </div>
             </div>
             <div style={{ display: 'flex', justifyContent: 'center' }}>
               <div className="hero-stacked-cards">
-                <div className="stacked-card">
-                  <svg className="vinyl-record" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="100" cy="100" r="95" fill="#FACC15" />
-                    <circle cx="100" cy="100" r="70" fill="#1a1a1a" opacity="0.8" />
-                    <circle cx="100" cy="100" r="55" fill="#0F3D2E" />
-                    <circle cx="100" cy="100" r="45" fill="#1a1a1a" opacity="0.6" />
-                    <circle cx="100" cy="100" r="35" fill="#FACC15" />
-                    <circle cx="100" cy="100" r="20" fill="#0F3D2E" />
-                    <g stroke="rgba(255,255,255,0.1)" strokeWidth="1" fill="none">
-                      <circle cx="100" cy="100" r="65" />
-                      <circle cx="100" cy="100" r="60" />
-                      <circle cx="100" cy="100" r="50" />
-                      <circle cx="100" cy="100" r="40" />
-                    </g>
-                  </svg>
-                </div>
+                <div className="stacked-card" />
                 <div className="stacked-card"></div>
                 <div className="stacked-card"></div>
               </div>
@@ -158,16 +158,16 @@ const Landing: React.FC = () => {
           <h2 style={{ fontSize: '2rem' }}>Featured Artists &mdash; <span style={{ color: 'var(--text-muted)', fontSize: '1.2rem', fontWeight: 400 }}>Trending Cameroonian Talent</span></h2>
           <div className="artists-grid" style={{ marginTop: 40 }}>
             {[
-              { name: 'Charlotte Dipanda', genre: 'Makossa / Acoustic', initials: 'CD', color: '#FF6B6B' },
-              { name: 'Stanley Enow', genre: 'Hip Hop / Rap', initials: 'SE', color: '#4ECDC4' },
-              { name: 'Tenor', genre: 'Afro-Trap / Rap', initials: 'TR', color: '#45B7D1' },
-              { name: 'Daphne', genre: 'Afrobeat / Pop', initials: 'DA', color: '#FFA07A' },
-              { name: 'Ko-C', genre: 'Afro-Pop', initials: 'KC', color: '#98D8C8' },
-              { name: 'Locko', genre: 'R&B / Afro-Pop', initials: 'LO', color: '#F7DC6F' },
+              { name: 'Artist Name Placeholder', genre: 'Afrobeat / Makossa' },
+              { name: 'Artist Name Placeholder', genre: 'Afrobeat / Makossa' },
+              { name: 'Artist Name Placeholder', genre: 'Afrobeat / Makossa' },
+              { name: 'Artist Name Placeholder', genre: 'Afrobeat / Makossa' },
+              { name: 'Artist Name Placeholder', genre: 'Afrobeat / Makossa' },
+              { name: 'Artist Name Placeholder', genre: 'Afrobeat / Makossa' },
             ].map((artist, i) => (
               <div key={i} className="artist-card">
-                <div className="artist-avatar-placeholder" style={{ background: artist.color }}>
-                  <span style={{ fontSize: '1.8rem', fontWeight: 'bold', color: 'white' }}>{artist.initials}</span>
+                <div className="artist-avatar-placeholder">
+                  <i className="fas fa-user" />
                 </div>
                 <div className="artist-name">{artist.name}</div>
                 <div className="artist-genre">{artist.genre}</div>

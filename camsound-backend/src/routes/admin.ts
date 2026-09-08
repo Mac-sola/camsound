@@ -9,12 +9,16 @@ router.use(protect, restrictTo('admin'));
 
 // Users
 router.get('/users', admin.getUsers);
+router.post('/users', admin.createUser);
 router.put('/users/:id/status', admin.updateUserStatus);
 router.put('/users/:id/role', admin.updateUserRole);
+router.put('/users/:id/reset-password', admin.resetUserPassword);
 router.delete('/users/:id', admin.deleteUser);
 
 // Song moderation
 router.get('/songs', admin.getSongsAdmin);
+router.put('/songs/:id', admin.updateSongAdmin);
+router.delete('/songs/:id', admin.deleteSongAdmin);
 router.put('/songs/:id/moderate', admin.moderateSong);
 
 // Reports

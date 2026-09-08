@@ -73,7 +73,7 @@ export const getArtistStats = async (req: Request, res: Response) => {
         const totalDownloads = songs.reduce((s, song) => s + song.downloads, 0);
 
         // Top 5 songs by plays
-        const topSongs = await Song.find({ artistId: artist._id }).sort({ plays: -1 }).limit(5).select('title plays likes coverArt');
+        const topSongs = await Song.find({ artistId: artist._id }).sort({ plays: -1 }).limit(5).select('title plays likes downloads coverArt filePath duration genre artistId status moderationStatus');
 
         // Play trend (last 30 days via ListeningHistory)
         const thirtyDaysAgo = new Date();

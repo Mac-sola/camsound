@@ -32,9 +32,14 @@ const FanFavorites: React.FC = () => {
     });
   };
 
+  const handlePlayAll = () => {
+    if (favorites.length) playSong(favorites[0], favorites);
+  };
+
   return (
     <div className="fan-history-container">
-      <div style={{ marginBottom: 28 }}>
+      <div style={{ marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: 16, flexWrap: 'wrap' }}>
+        <div>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 20, color: '#ef4444', fontSize: '0.78rem', fontWeight: 700, marginBottom: 8 }}>
           <i className="fas fa-heart" /> SAVED TRACKS
         </div>
@@ -44,6 +49,8 @@ const FanFavorites: React.FC = () => {
         <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', margin: '4px 0 0 0' }}>
           Your personally curated collection of loved Cameroonian songs
         </p>
+        </div>
+        {favorites.length > 0 && <button className="btn-camsound-yellow" onClick={handlePlayAll}><i className="fas fa-play" /> Play All</button>}
       </div>
 
       {loading ? (

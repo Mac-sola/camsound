@@ -28,11 +28,13 @@ export const requestWithdrawal = async (req: Request, res: Response) => {
         const artist = await Artist.findOne({ userId: req.user.id });
         if (!artist) return res.status(404).json({ success: false, message: 'Artist profile not found' });
 
-        const { amount, momoNumber } = req.body;
-        if (!amount || !momoNumber) {
-            return res.status(400).json({ success: false, message: 'Amount and momoNumber are required' });
+        const { amount, momoNumber, phone_number } = req.body;
+        const phoneNumber = momoNumber || phone_number;
+        if (!amount || !phoneNumber) {
+            return res.status(400).json({ success: false, message: 'Amount and phone number are required' });
         }
-        const withdrawal = await Withdrawal.create({ artistId: artist._id, amount, momoNumber });
+        if (Number(amount) < 5000) return res.status(400).json({ success: false, message: 'Minimum withdrawal is 5000' });
+        const withdrawal = await Withdrawal.create({ artistId: artist._id, amount: Number(amount), momoNumber: phoneNumber });
         res.status(201).json({ success: true, message: 'Withdrawal request submitted', data: withdrawal });
     } catch (error: any) {
         res.status(500).json({ success: false, message: error.message });

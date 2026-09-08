@@ -54,7 +54,7 @@ const FanBrowse: React.FC<FanBrowseProps> = ({ initialQuery = '' }) => {
   useEffect(() => { fetchSongs(); }, [fetchSongs]);
 
   const handlePlay = (song: Song) => {
-    try { playSong(song as any); } catch {}
+    try { playSong(song as any, songs); } catch {}
   };
 
   return (
