@@ -1,10 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { songsService, artistsService } from '../services/api';
+import SongCard, { type SongItem } from '../components/SongCard';
+import ArtistCard, { type ArtistItem } from '../components/ArtistCard';
+import ArtistDetailsModal from '../components/ArtistDetailsModal';
+import HeroCarousel from '../components/HeroCarousel';
+import { GENRE_CARDS_DATA } from '../utils/musicImages';
 
 const Landing: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [featuredSongs, setFeaturedSongs] = useState<SongItem[]>([]);
+  const [featuredArtists, setFeaturedArtists] = useState<ArtistItem[]>([]);
+  const [selectedArtist, setSelectedArtist] = useState<any>(null);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -16,6 +25,17 @@ const Landing: React.FC = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
+  useEffect(() => {
+    // Fetch live approved songs and artists from backend
+    songsService.getSongs({ limit: 6, sort: 'date' }).then((res) => {
+      setFeaturedSongs(res.data?.data ?? res.data ?? []);
+    }).catch(() => {});
+
+    artistsService.getArtists({ limit: 6 }).then((res) => {
+      setFeaturedArtists(res.data?.data ?? res.data ?? []);
+    }).catch(() => {});
+  }, []);
+
   return (
     <div className="landing-page">
       {/* ── Navbar ── */}
@@ -23,7 +43,7 @@ const Landing: React.FC = () => {
         <div className="container">
           <div className="navbar-inner">
             <a href="/" className="navbar-brand">
-              <i className="fas fa-drum" />
+              <i className="fas fa-music" style={{ marginRight: 8, color: 'var(--accent-color, #facc15)' }} />
               CamSound
             </a>
 
@@ -41,6 +61,7 @@ const Landing: React.FC = () => {
             <ul className="navbar-nav d-none d-lg-flex" style={{ display: 'flex', alignItems: 'center', gap: 32, listStyle: 'none' }}>
               <li><a className="nav-link active" href="/">Home</a></li>
               <li><Link className="nav-link" to="/browse">Discover</Link></li>
+              <li><a className="nav-link" href="#songs">Trending Songs</a></li>
               <li><a className="nav-link" href="#artists">Artists</a></li>
               <li><a className="nav-link" href="#pricing">Pricing</a></li>
             </ul>
@@ -61,6 +82,7 @@ const Landing: React.FC = () => {
           <div style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
             <a className="nav-link" href="/" onClick={() => setMobileMenuOpen(false)}>Home</a>
             <Link className="nav-link" to="/browse" onClick={() => setMobileMenuOpen(false)}>Discover</Link>
+            <a className="nav-link" href="#songs" onClick={() => setMobileMenuOpen(false)}>Trending Songs</a>
             <a className="nav-link" href="#artists" onClick={() => setMobileMenuOpen(false)}>Artists</a>
             <a className="nav-link" href="#pricing" onClick={() => setMobileMenuOpen(false)}>Pricing</a>
             <div style={{ display: 'flex', gap: 12, marginTop: 8 }}>
@@ -76,27 +98,9 @@ const Landing: React.FC = () => {
         )}
       </nav>
 
-      {/* ── Hero ── */}
-      <section className="hero-section">
-        <div className="container">
-          <div className="hero-grid">
-            <div>
-              <h1 className="hero-title">Discover, Stream &amp; Promote Cameroonian Music.</h1>
-              <p className="hero-subtitle">The premier platform connecting local talent with fans across Cameroon and beyond.</p>
-              <div className="hero-actions">
-                <Link to="/signup?role=artist" className="btn-camsound-yellow">Join as an Artist</Link>
-                <Link to="/browse" className="btn-camsound-outline-green">Listen as a Fan</Link>
-              </div>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <div className="hero-stacked-cards">
-                <div className="stacked-card" />
-                <div className="stacked-card"></div>
-                <div className="stacked-card"></div>
-              </div>
-            </div>
-          </div>
-        </div>
+      {/* ── Full-Width Dynamic Hero Carousel with Music Imagery ── */}
+      <section className="hero-carousel-section-full">
+        <HeroCarousel isFullWidth={true} />
       </section>
 
       {/* ── How It Works ── */}
@@ -122,6 +126,39 @@ const Landing: React.FC = () => {
               <p>Artists gain visibility and build their fanbase.</p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* ── Live Published Songs ── */}
+      <section className="songs-section" id="songs" style={{ padding: '60px 0', background: 'var(--bg-secondary)' }}>
+        <div className="container">
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
+            <div>
+              <h2 style={{ fontSize: '2rem', margin: 0 }}>Latest Published Releases</h2>
+              <p style={{ color: 'var(--text-muted)', margin: '6px 0 0 0' }}>Freshly approved tracks from Cameroonian artists</p>
+            </div>
+            <Link to="/browse" className="btn-camsound-outline" style={{ fontSize: '0.88rem', padding: '8px 18px' }}>
+              View All Songs <i className="fas fa-arrow-right" style={{ marginLeft: 6 }} />
+            </Link>
+          </div>
+
+          {featuredSongs.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+              <i className="fas fa-music" style={{ fontSize: '2.5rem', opacity: 0.4, marginBottom: 12 }} />
+              <p>Approved artist releases will appear here automatically.</p>
+            </div>
+          ) : (
+            <div className="cards-grid">
+              {featuredSongs.map((song) => (
+                <SongCard
+                  key={song._id}
+                  song={song}
+                  playlist={featuredSongs}
+                  onArtistClick={setSelectedArtist}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
@@ -153,51 +190,69 @@ const Landing: React.FC = () => {
       </section>
 
       {/* ── Featured Artists ── */}
-      <section className="artists-section" id="artists">
+      <section className="artists-section" id="artists" style={{ padding: '60px 0' }}>
         <div className="container">
-          <h2 style={{ fontSize: '2rem' }}>Featured Artists &mdash; <span style={{ color: 'var(--text-muted)', fontSize: '1.2rem', fontWeight: 400 }}>Trending Cameroonian Talent</span></h2>
-          <div className="artists-grid" style={{ marginTop: 40 }}>
-            {[
-              { name: 'Artist Name Placeholder', genre: 'Afrobeat / Makossa' },
-              { name: 'Artist Name Placeholder', genre: 'Afrobeat / Makossa' },
-              { name: 'Artist Name Placeholder', genre: 'Afrobeat / Makossa' },
-              { name: 'Artist Name Placeholder', genre: 'Afrobeat / Makossa' },
-              { name: 'Artist Name Placeholder', genre: 'Afrobeat / Makossa' },
-              { name: 'Artist Name Placeholder', genre: 'Afrobeat / Makossa' },
-            ].map((artist, i) => (
-              <div key={i} className="artist-card">
-                <div className="artist-avatar-placeholder">
-                  <i className="fas fa-user" />
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 32, flexWrap: 'wrap', gap: 16 }}>
+            <div>
+              <h2 style={{ fontSize: '2rem', margin: 0 }}>Featured Artists</h2>
+              <p style={{ color: 'var(--text-muted)', margin: '6px 0 0 0' }}>Trending talent across Cameroon</p>
+            </div>
+            <Link to="/browse" className="btn-camsound-outline" style={{ fontSize: '0.88rem', padding: '8px 18px' }}>
+              Explore All Artists <i className="fas fa-arrow-right" style={{ marginLeft: 6 }} />
+            </Link>
+          </div>
+
+          {featuredArtists.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '40px 0', color: 'var(--text-muted)' }}>
+              <i className="fas fa-users" style={{ fontSize: '2.5rem', opacity: 0.4, marginBottom: 12 }} />
+              <p>Registered artists will appear here.</p>
+            </div>
+          ) : (
+            <div className="cards-grid">
+              {featuredArtists.map((artist) => (
+                <ArtistCard
+                  key={artist._id}
+                  artist={artist}
+                  onArtistClick={setSelectedArtist}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* ── Trending Genres with Rich Photography ── */}
+      <section className="genres-section" id="discover">
+        <div className="container">
+          <div style={{ textAlign: 'center', marginBottom: 32 }}>
+            <h2 style={{ fontSize: '2.2rem', margin: '0 0 8px 0' }}>Explore Cameroonian Genres</h2>
+            <p style={{ color: 'var(--text-muted)', fontSize: '0.95rem' }}>Immerse yourself in authentic sonic cultures and signature styles</p>
+          </div>
+
+          <div className="genre-image-grid">
+            {GENRE_CARDS_DATA.map((genre) => (
+              <Link
+                key={genre.name}
+                to={`/browse?genre=${encodeURIComponent(genre.name)}`}
+                className="genre-image-card"
+              >
+                <div
+                  className="genre-image-bg"
+                  style={{ backgroundImage: `url('${genre.image}')` }}
+                />
+                <div className="genre-image-overlay">
+                  <span className="genre-image-tag" style={{ background: genre.color }}>
+                    <i className="fas fa-compact-disc" /> {genre.name}
+                  </span>
+                  <h3 className="genre-image-title">{genre.name}</h3>
+                  <p className="genre-image-desc">{genre.desc}</p>
                 </div>
-                <div className="artist-name">{artist.name}</div>
-                <div className="artist-genre">{artist.genre}</div>
-                <div className="play-btn-float"><i className="fas fa-play" style={{ fontSize: '0.7rem' }} /></div>
-              </div>
+              </Link>
             ))}
           </div>
         </div>
       </section>
 
-      {/* ── Trending Genres ── */}
-      <section className="genres-section" id="discover">
-        <div className="container">
-          <h2 style={{ fontSize: '2rem', textAlign: 'center' }}>Trending Genres</h2>
-          <div className="genres-grid">
-            {[
-              { icon: 'fa-music', label: 'Makossa', sub: 'Classic rhythms' },
-              { icon: 'fa-drum', label: 'Afrobeat', sub: 'Modern vibes' },
-              { icon: 'fa-guitar', label: 'Bikutsi', sub: 'High energy' },
-              { icon: 'fa-compact-disc', label: 'Assiko', sub: 'Traditional fusion' },
-            ].map((g) => (
-              <div key={g.label} className="genre-card">
-                <div className="feature-icon" style={{ margin: '0 auto 16px' }}><i className={`fas ${g.icon}`} /></div>
-                <h4>{g.label}</h4>
-                <p className="text-muted-color" style={{ fontSize: '0.82rem' }}>{g.sub}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* ── Platform Stats ── */}
       <section className="platform-stats-section">
@@ -241,7 +296,7 @@ const Landing: React.FC = () => {
               <div style={{ fontSize: '2.2rem', fontWeight: 800, margin: '16px 0', color: 'var(--accent-color)' }}>XAF 5,000 <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 400 }}>/month</span></div>
               <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0', display: 'flex', flexDirection: 'column', gap: 12, flex: 1, color: 'var(--text-light)', fontSize: '0.92rem' }}>
                 <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Unlimited track uploads</li>
-                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Stream & play analytics</li>
+                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Stream &amp; play analytics</li>
                 <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />MoMo Mobile Money Payouts</li>
                 <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Verified Artist Badge</li>
               </ul>
@@ -307,7 +362,7 @@ const Landing: React.FC = () => {
               <h5>Quick Links</h5>
               <ul className="footer-links">
                 <li><a href="#how">How It Works</a></li>
-                <li><a href="#discover">Discover</a></li>
+                <li><a href="#songs">Trending Songs</a></li>
                 <li><a href="#artists">Artists</a></li>
                 <li><a href="#pricing">Pricing</a></li>
                 <li><a href="mailto:support@camsound.com">Contact Support</a></li>
@@ -335,9 +390,10 @@ const Landing: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      <ArtistDetailsModal artist={selectedArtist} onClose={() => setSelectedArtist(null)} />
     </div>
   );
 };
 
 export default Landing;
-

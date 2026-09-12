@@ -60,11 +60,11 @@ export const createSong = async (req: Request, res: Response) => {
         const artist = await Artist.findOne({ userId: req.user.id });
         if (!artist) return res.status(404).json({ success: false, message: 'Artist profile not found' });
 
-        const { title, genre, duration, filePath, coverArt } = req.body;
+        const { title, genre, duration, filePath, coverArt, description } = req.body;
         if (!title || !genre) {
             return res.status(400).json({ success: false, message: 'Title and genre are required' });
         }
-        const song = await Song.create({ title, artistId: artist._id, genre, duration, filePath, coverArt });
+        const song = await Song.create({ title, artistId: artist._id, genre, duration, filePath, coverArt, description });
         await Artist.findByIdAndUpdate(artist._id, { $inc: { songsCount: 1 } });
         res.status(201).json({ success: true, message: 'Song created', data: song });
     } catch (error: any) {

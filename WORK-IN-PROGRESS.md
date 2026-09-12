@@ -1,5 +1,7 @@
 # CamSound MERN Migration Status
 
+> **Current source of truth:** The dated continuation checkpoint below is authoritative. Older sections in this file are historical notes from earlier sessions and may describe work as complete before the PHP-to-React parity audit was finished.
+
 ## CONTINUATION CHECKPOINT - 2026-09-08
 
 ### Suggested Commit Message
@@ -59,7 +61,9 @@ The repository contains many pre-existing untracked PHP/reference files and gene
 
 Start by checking the running process on port 5000, then run both builds. After that, continue with item 1 above. The primary reference files are `index.html`, `browse.html`, `fan.html`, `artist.html`, `admin.html`, `auth/`, `backend/api/`, `Js/`, and `css/`.
 
-## 🎉 PROJECT STATUS: ALL PRIORITIES COMPLETE ✅ (8/22/2026)
+## Historical Status: Priorities Reported Complete (8/22/2026)
+
+The original migration status below was written before the full PHP-to-React contract and visual parity audit. It is retained for history, but it is not the current completion status.
 
 **Session Achievements:**
 - ✅ Backend & Frontend servers running (ports 5000 & 5173)

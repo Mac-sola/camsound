@@ -4,6 +4,7 @@ export interface ISong extends Document {
     title: string;
     artistId: Types.ObjectId;
     genre?: string;
+    description?: string;
     duration?: string;
     plays: number;
     likes: number;
@@ -24,6 +25,7 @@ const SongSchema = new Schema<ISong>(
         title: { type: String, required: true, trim: true },
         artistId: { type: Schema.Types.ObjectId, ref: 'Artist', required: true },
         genre: { type: String, trim: true },
+        description: { type: String, trim: true },
         duration: { type: String },
         plays: { type: Number, default: 0 },
         likes: { type: Number, default: 0 },

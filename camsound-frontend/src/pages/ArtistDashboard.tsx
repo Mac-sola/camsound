@@ -53,11 +53,13 @@ const ArtistDashboard: React.FC = () => {
 
   // Upload form
   const [title, setTitle] = useState('');
-  const [genre, setGenre] = useState('Afrobeat');
+  const [genre, setGenre] = useState('');
+  const [description, setDescription] = useState('');
   const [songFile, setSongFile] = useState<File | null>(null);
   const [coverArt, setCoverArt] = useState<File | null>(null);
-  const [selectedSongLabel, setSelectedSongLabel] = useState('Accepted audio formats: MP3, WAV, OGG, FLAC — max 50MB');
-  const [selectedCoverLabel, setSelectedCoverLabel] = useState('Optional cover art: JPG, PNG, WEBP, GIF — max 5MB');
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [isDraggingAudio, setIsDraggingAudio] = useState(false);
+  const [isDraggingCover, setIsDraggingCover] = useState(false);
   const [uploading, setUploading] = useState(false);
   // State for toast notifications
   const [toastMessage, setToastMessage] = useState<string>('');
@@ -67,6 +69,7 @@ const ArtistDashboard: React.FC = () => {
   const [uploadMessage, setUploadMessage] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const coverRef = useRef<HTMLInputElement>(null);
+  const uploadFormRef = useRef<HTMLDivElement>(null);
   const successResetTimer = useRef<number | null>(null);
 
   const MAX_AUDIO_SIZE = 50 * 1024 * 1024;
@@ -106,9 +109,12 @@ const ArtistDashboard: React.FC = () => {
 
   const handleSongFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
+    processAudioFile(file);
+  };
+
+  const processAudioFile = (file: File | null) => {
     if (!file) {
       setSongFile(null);
-      setSelectedSongLabel('Accepted audio formats: MP3, WAV, OGG, FLAC — max 50MB');
       resetUploadNotice();
       return;
     }
@@ -118,21 +124,23 @@ const ArtistDashboard: React.FC = () => {
       setUploadStatus('error');
       setUploadMessage(error);
       setSongFile(null);
-      setSelectedSongLabel('Invalid audio file selected');
       if (fileRef.current) fileRef.current.value = '';
       return;
     }
 
     setSongFile(file);
-    setSelectedSongLabel(`${file.name} • ${Math.round(file.size / 1024)} KB`);
     resetUploadNotice();
   };
 
   const handleCoverArtChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
+    processCoverFile(file);
+  };
+
+  const processCoverFile = (file: File | null) => {
     if (!file) {
       setCoverArt(null);
-      setSelectedCoverLabel('Optional cover art: JPG, PNG, WEBP, GIF — max 5MB');
+      setCoverPreview(null);
       resetUploadNotice();
       return;
     }
@@ -142,13 +150,13 @@ const ArtistDashboard: React.FC = () => {
       setUploadStatus('error');
       setUploadMessage(error);
       setCoverArt(null);
-      setSelectedCoverLabel('Invalid cover art selected');
+      setCoverPreview(null);
       if (coverRef.current) coverRef.current.value = '';
       return;
     }
 
     setCoverArt(file);
-    setSelectedCoverLabel(`${file.name} • ${Math.round(file.size / 1024)} KB`);
+    setCoverPreview(URL.createObjectURL(file));
     resetUploadNotice();
   };
 
@@ -417,6 +425,22 @@ const ArtistDashboard: React.FC = () => {
     }
   };
 
+  const handleAudioDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDraggingAudio(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processAudioFile(e.dataTransfer.files[0]);
+    }
+  };
+
+  const handleCoverDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDraggingCover(false);
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      processCoverFile(e.dataTransfer.files[0]);
+    }
+  };
+
   const handleUpload = async (e: React.FormEvent) => {
     e.preventDefault();
     const titleTrimmed = title.trim();
@@ -453,12 +477,15 @@ const ArtistDashboard: React.FC = () => {
     // All validations passed – start upload
     setUploading(true);
     setUploadStatus('loading');
-    setUploadMessage(`Uploading ${titleTrimmed}...`);
+    setUploadMessage(`Uploading "${titleTrimmed}"...`);
 
     const fd = new FormData();
     fd.append('upload_type', 'song');
     fd.append('title', titleTrimmed);
-    fd.append('genre', genre);
+    fd.append('genre', genre || 'Afrobeat');
+    if (description.trim()) {
+      fd.append('description', description.trim());
+    }
     fd.append('song_file', songFile!);
     if (coverArt) {
       fd.append('cover_art', coverArt);
@@ -472,7 +499,7 @@ const ArtistDashboard: React.FC = () => {
           if (total > 0) {
             const percent = Math.min(100, Math.round((loaded / total) * 100));
             setUploadProgress(percent);
-            setUploadMessage(`Uploading ${titleTrimmed}... ${percent}%`);
+            setUploadMessage(`Uploading "${titleTrimmed}"... ${percent}%`);
           }
         },
       });
@@ -480,18 +507,21 @@ const ArtistDashboard: React.FC = () => {
         // Success handling – show toast and reset form
         setToastMessage('✅ Track uploaded successfully and is pending moderation.');
         setShowToast(true);
-        // Auto‑dismiss toast after 4 seconds
         setTimeout(() => setShowToast(false), 4000);
 
         // Reset form fields
         setTitle('');
+        setGenre('');
+        setDescription('');
         setSongFile(null);
         setCoverArt(null);
+        setCoverPreview(null);
         setUploadProgress(100);
-        setSelectedSongLabel('Accepted audio formats: MP3, WAV, OGG, FLAC — max 50MB');
-        setSelectedCoverLabel('Optional cover art: JPG, PNG, WEBP, GIF — max 5MB');
         if (fileRef.current) fileRef.current.value = '';
         if (coverRef.current) coverRef.current.value = '';
+
+        // Reload stats and track list
+        fetchStats();
 
         // Reset upload UI after short delay
         successResetTimer.current = window.setTimeout(() => {
@@ -629,45 +659,80 @@ const ArtistDashboard: React.FC = () => {
 
   const renderUploadView = () => (
     <div>
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
-        <div className="upload-form-card">
-          <div className="upload-form-title">
-            <i className="fas fa-upload" />Upload New Track
+      {/* Top Header */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 16 }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 800, color: '#fff' }}>Music Uploads</h1>
+        </div>
+        <button
+          type="button"
+          onClick={() => {
+            uploadFormRef.current?.scrollIntoView({ behavior: 'smooth' });
+          }}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 8,
+            padding: '12px 24px',
+            background: 'linear-gradient(135deg, #f97316 0%, #ea580c 100%)',
+            color: '#fff',
+            borderRadius: 10,
+            fontWeight: 700,
+            fontSize: '0.95rem',
+            border: 'none',
+            cursor: 'pointer',
+            boxShadow: '0 4px 15px rgba(249, 115, 22, 0.35)',
+            transition: 'all 0.2s ease',
+          }}
+        >
+          <i className="fas fa-plus" /> Upload New Song
+        </button>
+      </div>
+
+      {/* Upload New Song Card */}
+      <div ref={uploadFormRef} className="artist-upload-card">
+        <div className="artist-upload-card-header">
+          Upload New Song
+        </div>
+
+        {/* Inline validation feedback */}
+        {uploadStatus === 'error' && uploadMessage && (
+          <div className="upload-message error" aria-live="polite">
+            <i className="fas fa-exclamation-circle" /> <span>{uploadMessage}</span>
           </div>
+        )}
 
-          {/* Inline validation feedback */}
-          {uploadStatus === 'error' && uploadMessage && (
-            <div className="upload-message error" aria-live="polite">
-              <i className="fas fa-exclamation-circle" /> <span>{uploadMessage}</span>
+        {/* Toast notification for success */}
+        {showToast && (
+          <div className="toast" role="alert" aria-live="polite">
+            {toastMessage}
+          </div>
+        )}
+
+        {(uploading || uploadStatus === 'loading') && (
+          <div className="upload-progress" aria-hidden="true">
+            <div className="upload-progress-track">
+              <div className="upload-progress-bar" style={{ width: `${uploadProgress}%` }} />
             </div>
-          )}
+            <div className="upload-progress-meta">{uploadProgress ? `${uploadProgress}% uploaded` : 'Preparing upload...'}</div>
+          </div>
+        )}
 
-          {/* Toast notification for success */}
-          {showToast && (
-            <div className="toast" role="alert" aria-live="polite">
-              {toastMessage}
-            </div>
-          )}
-
-          {(uploading || uploadStatus === 'loading') && (
-            <div className="upload-progress" aria-hidden="true">
-              <div className="upload-progress-track">
-                <div className="upload-progress-bar" style={{ width: `${uploadProgress}%` }} />
-              </div>
-              <div className="upload-progress-meta">{uploadProgress ? `${uploadProgress}% uploaded` : 'Preparing upload...'}</div>
-            </div>
-          )}
-
-          <form onSubmit={handleUpload} noValidate>
-            <div className="form-field">
-              <label htmlFor="track-title">Track Title</label>
+        <form onSubmit={handleUpload} noValidate>
+          {/* Row 1: Song Title & Genre */}
+          <div className="upload-grid-2col">
+            <div className="upload-form-group">
+              <label className="upload-label" htmlFor="song-title">
+                Song Title <span className="required-star">*</span>
+              </label>
               <input
-                id="track-title"
-                name="trackTitle"
+                id="song-title"
+                name="songTitle"
                 type="text"
                 autoComplete="off"
                 spellCheck={false}
-                placeholder="e.g. African Giant"
+                placeholder="Enter song title"
+                className="upload-input"
                 value={title}
                 onChange={e => {
                   setTitle(e.target.value);
@@ -675,116 +740,272 @@ const ArtistDashboard: React.FC = () => {
                 }}
                 disabled={uploading}
                 aria-invalid={!!fieldErrors.title}
-                aria-describedby={fieldErrors.title ? 'title-error' : undefined}
               />
               {fieldErrors.title && (
-                <div id="title-error" className="field-error" role="alert">
+                <div className="field-error" role="alert" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: 4 }}>
                   {fieldErrors.title}
                 </div>
               )}
             </div>
-            <div className="form-field">
-              <label htmlFor="genre">Genre</label>
-              <select id="genre" name="genre" value={genre} onChange={e => setGenre(e.target.value)}>
-                {['Afrobeat','Makossa','Bikutsi','Assiko','Hip Hop','R&B','Ndombolo','Highlife'].map(g => <option key={g}>{g}</option>)}
+
+            <div className="upload-form-group">
+              <label className="upload-label" htmlFor="song-genre">
+                Genre <span className="required-star">*</span>
+              </label>
+              <select
+                id="song-genre"
+                name="songGenre"
+                className="upload-select"
+                value={genre}
+                onChange={e => setGenre(e.target.value)}
+                disabled={uploading}
+              >
+                <option value="">Select genre</option>
+                {['Afrobeat', 'Makossa', 'Bikutsi', 'Assiko', 'Amapiano', 'Hip Hop', 'R&B', 'Gospel', 'Ndombolo', 'Highlife', 'Afro-Pop', 'Reggae', 'World Music', 'Jazz'].map(g => (
+                  <option key={g} value={g}>{g}</option>
+                ))}
               </select>
             </div>
-            <div className="form-field">
-              <label htmlFor="audio-file">Audio File</label>
-              <input
-                ref={fileRef}
-                id="audio-file"
-                name="songFile"
-                type="file"
-                accept="audio/*,audio/mpeg,audio/wav,audio/ogg,audio/flac"
-                onChange={handleSongFileChange}
-                disabled={uploading}
-                aria-invalid={!!fieldErrors.songFile}
-                aria-describedby={fieldErrors.songFile ? 'songfile-error' : undefined}
-              />
-              {fieldErrors.songFile && (
-                <div id="songfile-error" className="field-error" role="alert">
-                  {fieldErrors.songFile}
-                </div>
-              )}
-              <div className="upload-file-hint">{selectedSongLabel}</div>
-            </div>
-            <div className="form-field">
-              <label htmlFor="cover-art">Cover Art (Optional)</label>
-              <input
-                ref={coverRef}
-                id="cover-art"
-                name="coverArt"
-                type="file"
-                accept="image/*"
-                onChange={handleCoverArtChange}
-                disabled={uploading}
-                aria-invalid={!!fieldErrors.coverArt}
-                aria-describedby={fieldErrors.coverArt ? 'coverart-error' : undefined}
-              />
-              {fieldErrors.coverArt && (
-                <div id="coverart-error" className="field-error" role="alert">
-                  {fieldErrors.coverArt}
-                </div>
-              )}
-              <div className="upload-file-hint">{selectedCoverLabel}</div>
-            </div>
-            <button type="submit" className="btn-camsound-yellow" style={{ width: '100%', marginTop: 8, justifyContent: 'center', borderRadius: 10 }} disabled={uploading}>
-              {uploading ? <><i className="fas fa-spinner fa-spin" /> Uploading...</> : <><i className="fas fa-upload" /> Publish Track</>}
-            </button>
-          </form>
-        </div>
+          </div>
 
-        {/* Uploaded tracks */}
-        <div className="section-card" style={{ alignSelf: 'start' }}>
-          <div className="section-header"><h2>My Tracks</h2></div>
-          {loading ? (
-            <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
-          ) : !stats?.topSongs?.length ? (
-            <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-muted)' }}>
-              <i className="fas fa-music" style={{ fontSize: '2rem', opacity: 0.4, display: 'block', marginBottom: 12 }} />
-              <p>No tracks uploaded yet.</p>
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {stats.topSongs.map((song: any) => (
-                <div key={song._id} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '10px 12px', background: 'var(--bg-tertiary)', borderRadius: 10 }}>
-                  <button
-                    onClick={() => playSong(song)}
-                    style={{ width: 40, height: 40, borderRadius: 6, background: 'var(--bg-secondary)', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', border: 'none', cursor: 'pointer', color: currentSong?._id === song._id ? 'var(--accent-color)' : 'var(--text-muted)' }}
-                    title="Play"
-                  >
-                    {currentSong?._id === song._id && isPlaying ? <i className="fas fa-pause" /> : <i className="fas fa-play" />}
-                  </button>
-                  <div style={{ flex: 1, overflow: 'hidden' }}>
-                    <div style={{ fontWeight: 600, fontSize: '0.88rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{song.title}</div>
-                    <div style={{ fontSize: '0.76rem', color: 'var(--text-muted)' }}>{song.genre}</div>
-                  </div>
-                  <span style={{ fontSize: '0.75rem', background: 'rgba(250,204,21,0.1)', color: 'var(--accent-color)', padding: '3px 10px', borderRadius: 999, fontWeight: 600 }}>
-                    {song.status || 'active'}
+          {/* Row 2: Description */}
+          <div className="upload-form-group">
+            <label className="upload-label" htmlFor="song-description">
+              Description
+            </label>
+            <textarea
+              id="song-description"
+              name="songDescription"
+              rows={3}
+              placeholder="Tell listeners about this song..."
+              className="upload-textarea"
+              value={description}
+              onChange={e => setDescription(e.target.value)}
+              disabled={uploading}
+            />
+          </div>
+
+          {/* Row 3: Audio File */}
+          <div className="upload-form-group">
+            <label className="upload-label">
+              Audio File <span className="required-star">*</span>
+            </label>
+            <input
+              ref={fileRef}
+              id="audio-file"
+              type="file"
+              accept="audio/*,audio/mpeg,audio/wav,audio/ogg,audio/flac"
+              style={{ display: 'none' }}
+              onChange={handleSongFileChange}
+              disabled={uploading}
+            />
+            <div
+              className={`upload-dropzone ${isDraggingAudio ? 'dragging' : ''} ${songFile ? 'has-file' : ''}`}
+              onClick={() => fileRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setIsDraggingAudio(true); }}
+              onDragLeave={() => setIsDraggingAudio(false)}
+              onDrop={handleAudioDrop}
+            >
+              <i className="fas fa-cloud-upload-alt upload-dropzone-icon" />
+              <div className="upload-dropzone-text">
+                {songFile ? songFile.name : 'Drop audio file here or click to upload'}
+              </div>
+              <div className="upload-dropzone-subtext">
+                {songFile ? `${(songFile.size / (1024 * 1024)).toFixed(2)} MB • Click or drop new file to replace` : 'Supports MP3, WAV, OGG, FLAC (Max 50MB)'}
+              </div>
+              {songFile && (
+                <div style={{ marginTop: 10, display: 'flex', gap: 8, alignItems: 'center' }}>
+                  <span className="file-selected-badge">
+                    <i className="fas fa-check-circle" /> Audio file ready
                   </span>
-                  <div style={{ display: 'flex', gap: 6 }}>
-                    <button
-                      onClick={() => handleEditSong(song)}
-                      style={{ padding: '6px 10px', background: 'rgba(59, 130, 246, 0.15)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: 6, color: '#60a5fa', cursor: 'pointer', fontSize: '0.75rem' }}
-                      title="Edit"
-                    >
-                      <i className="fas fa-edit" />
-                    </button>
-                    <button
-                      onClick={() => handleDeleteSong(song)}
-                      disabled={deletingSong?._id === song._id}
-                      style={{ padding: '6px 10px', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 6, color: '#ef4444', cursor: 'pointer', fontSize: '0.75rem', opacity: deletingSong?._id === song._id ? 0.5 : 1 }}
-                      title="Delete"
-                    >
-                      <i className="fas fa-trash" />
-                    </button>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      processAudioFile(null);
+                      if (fileRef.current) fileRef.current.value = '';
+                    }}
+                    style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 8, padding: '8px 12px', fontSize: '0.8rem', cursor: 'pointer' }}
+                  >
+                    <i className="fas fa-times" /> Remove
+                  </button>
+                </div>
+              )}
+            </div>
+            {fieldErrors.songFile && (
+              <div className="field-error" role="alert" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: 4 }}>
+                {fieldErrors.songFile}
+              </div>
+            )}
+          </div>
+
+          {/* Row 4: Cover Art (beneath audio file) */}
+          <div className="upload-form-group">
+            <label className="upload-label">
+              Cover Art <span style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.5)', fontWeight: 400 }}>(Optional)</span>
+            </label>
+            <input
+              ref={coverRef}
+              id="cover-file"
+              type="file"
+              accept="image/png,image/jpeg,image/webp,image/gif"
+              style={{ display: 'none' }}
+              onChange={handleCoverArtChange}
+              disabled={uploading}
+            />
+            <div
+              className={`upload-dropzone ${isDraggingCover ? 'dragging' : ''} ${coverArt ? 'has-file' : ''}`}
+              onClick={() => coverRef.current?.click()}
+              onDragOver={(e) => { e.preventDefault(); setIsDraggingCover(true); }}
+              onDragLeave={() => setIsDraggingCover(false)}
+              onDrop={handleCoverDrop}
+            >
+              {coverPreview ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+                  <img
+                    src={coverPreview}
+                    alt="Cover preview"
+                    style={{ width: 68, height: 68, borderRadius: 10, objectFit: 'cover', border: '2px solid #f97316' }}
+                  />
+                  <div style={{ textAlign: 'left' }}>
+                    <div className="upload-dropzone-text">{coverArt?.name}</div>
+                    <div className="upload-dropzone-subtext">Click or drop new image to change</div>
                   </div>
                 </div>
-              ))}
+              ) : (
+                <>
+                  <i className="fas fa-image upload-dropzone-icon" />
+                  <div className="upload-dropzone-text">Drop cover image here or click to upload</div>
+                  <div className="upload-dropzone-subtext">Supports PNG, JPG, WEBP, GIF (Max 5MB)</div>
+                </>
+              )}
+              {coverArt && (
+                <div style={{ marginTop: 10 }}>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      processCoverFile(null);
+                      if (coverRef.current) coverRef.current.value = '';
+                    }}
+                    style={{ background: 'rgba(239, 68, 68, 0.2)', color: '#ef4444', border: '1px solid rgba(239,68,68,0.4)', borderRadius: 8, padding: '6px 12px', fontSize: '0.8rem', cursor: 'pointer' }}
+                  >
+                    <i className="fas fa-times" /> Remove Cover Art
+                  </button>
+                </div>
+              )}
             </div>
-          )}
+            {fieldErrors.coverArt && (
+              <div className="field-error" role="alert" style={{ color: '#ef4444', fontSize: '0.8rem', marginTop: 4 }}>
+                {fieldErrors.coverArt}
+              </div>
+            )}
+          </div>
+
+          {/* Submit Action */}
+          <div style={{ display: 'flex', gap: 12, marginTop: 24, flexWrap: 'wrap' }}>
+            <button
+              type="submit"
+              className="btn-upload-submit"
+              disabled={uploading}
+            >
+              {uploading ? (
+                <><i className="fas fa-spinner fa-spin" /> Uploading Track...</>
+              ) : (
+                <><i className="fas fa-cloud-upload-alt" /> Upload Song</>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setTitle('');
+                setGenre('');
+                setDescription('');
+                processAudioFile(null);
+                processCoverFile(null);
+                if (fileRef.current) fileRef.current.value = '';
+                if (coverRef.current) coverRef.current.value = '';
+              }}
+              style={{
+                background: 'transparent',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: 10,
+                color: 'rgba(255,255,255,0.7)',
+                padding: '14px 20px',
+                cursor: 'pointer',
+                fontWeight: 600,
+                fontSize: '0.92rem',
+              }}
+            >
+              Clear Form
+            </button>
+          </div>
+        </form>
+      </div>
+
+      {/* Uploaded tracks */}
+      <div className="section-card">
+        <div className="section-header">
+          <h2 style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <i className="fas fa-music" /> Your Uploaded Tracks
+          </h2>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+            {stats?.topSongs?.length || 0} tracks
+          </span>
         </div>
+        {loading ? (
+          <p style={{ color: 'var(--text-muted)' }}>Loading...</p>
+        ) : !stats?.topSongs?.length ? (
+          <div style={{ textAlign: 'center', padding: '32px 0', color: 'var(--text-muted)' }}>
+            <i className="fas fa-music" style={{ fontSize: '2rem', opacity: 0.4, display: 'block', marginBottom: 12 }} />
+            <p>No tracks uploaded yet. Use the form above to upload your first track!</p>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {stats.topSongs.map((song: any) => (
+              <div key={song._id} style={{ display: 'flex', gap: 14, alignItems: 'center', padding: '12px 16px', background: 'var(--bg-tertiary)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)' }}>
+                <button
+                  onClick={() => playSong(song)}
+                  style={{ width: 44, height: 44, borderRadius: 8, background: 'rgba(249, 115, 22, 0.15)', border: '1px solid rgba(249, 115, 22, 0.3)', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: currentSong?._id === song._id ? '#f97316' : '#fff' }}
+                  title="Play"
+                >
+                  {currentSong?._id === song._id && isPlaying ? <i className="fas fa-pause" /> : <i className="fas fa-play" />}
+                </button>
+                <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', background: '#242247', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  {song.coverArt ? (
+                    <img src={song.coverArt} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    <i className="fas fa-compact-disc" style={{ color: '#f97316', fontSize: '1.2rem' }} />
+                  )}
+                </div>
+                <div style={{ flex: 1, overflow: 'hidden' }}>
+                  <div style={{ fontWeight: 700, fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fff' }}>{song.title}</div>
+                  <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>{song.genre || 'Afrobeat'} • {song.plays?.toLocaleString() ?? 0} plays</div>
+                </div>
+                <span style={{ fontSize: '0.75rem', background: 'rgba(34,197,94,0.12)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.25)', padding: '4px 12px', borderRadius: 999, fontWeight: 600, textTransform: 'capitalize' }}>
+                  {song.status || 'active'}
+                </span>
+                <div style={{ display: 'flex', gap: 6 }}>
+                  <button
+                    onClick={() => handleEditSong(song)}
+                    style={{ padding: '8px 12px', background: 'rgba(59, 130, 246, 0.15)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: 8, color: '#60a5fa', cursor: 'pointer', fontSize: '0.8rem' }}
+                    title="Edit"
+                  >
+                    <i className="fas fa-edit" />
+                  </button>
+                  <button
+                    onClick={() => handleDeleteSong(song)}
+                    disabled={deletingSong?._id === song._id}
+                    style={{ padding: '8px 12px', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 8, color: '#ef4444', cursor: 'pointer', fontSize: '0.8rem', opacity: deletingSong?._id === song._id ? 0.5 : 1 }}
+                    title="Delete"
+                  >
+                    <i className="fas fa-trash" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -1171,6 +1392,53 @@ const ArtistDashboard: React.FC = () => {
               </div>
             )}
           </div>
+
+          {/* Royalties Breakdown Table — full width */}
+          {stats?.topSongs?.length > 0 && (
+            <div className="section-card" style={{ gridColumn: '1 / -1' }}>
+              <div className="section-header"><h2>Royalties Breakdown by Track</h2></div>
+              <div style={{ overflowX: 'auto' }}>
+                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+                  <thead>
+                    <tr style={{ borderBottom: '1px solid var(--border-color)', textAlign: 'left', color: 'var(--text-muted)' }}>
+                      <th style={{ padding: '10px 12px' }}>Track</th>
+                      <th style={{ padding: '10px 12px' }}>Plays</th>
+                      <th style={{ padding: '10px 12px' }}>Rate (XAF/play)</th>
+                      <th style={{ padding: '10px 12px' }}>Estimated Royalty</th>
+                      <th style={{ padding: '10px 12px' }}>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {stats.topSongs.map((song: any) => (
+                      <tr key={song._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                        <td style={{ padding: '12px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 10 }}>
+                          <i className="fas fa-music" style={{ color: 'var(--accent-color)' }} />
+                          {song.title}
+                        </td>
+                        <td style={{ padding: '12px' }}>{(song.plays || 0).toLocaleString()}</td>
+                        <td style={{ padding: '12px', color: 'var(--text-muted)' }}>1.50</td>
+                        <td style={{ padding: '12px', color: 'var(--accent-color)', fontWeight: 700 }}>
+                          XAF {((song.plays || 0) * 1.5).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </td>
+                        <td style={{ padding: '12px' }}>
+                          <span style={{ fontSize: '0.78rem', background: 'rgba(250,204,21,0.1)', color: 'var(--accent-color)', padding: '3px 10px', borderRadius: 999, fontWeight: 600 }}>
+                            {song.status || 'active'}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                    <tr style={{ borderTop: '2px solid rgba(255,255,255,0.1)', background: 'rgba(250,204,21,0.04)' }}>
+                      <td style={{ padding: '12px', fontWeight: 800, color: '#fff' }} colSpan={3}>Total Estimated Royalties</td>
+                      <td style={{ padding: '12px', color: 'var(--accent-color)', fontWeight: 800, fontSize: '1rem' }}>
+                        XAF {((stats?.totalPlays || 0) * 1.5).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                      </td>
+                      <td />
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       )}
 

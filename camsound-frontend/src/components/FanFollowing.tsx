@@ -1,20 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { followsService, songsService } from '../services/api';
-import ArtistSocialLinks from './ArtistSocialLinks';
-
-interface Artist {
-  _id: string;
-  name: string;
-  genre?: string;
-  followers?: number;
-  image?: string;
-  bio?: string;
-  instagramUrl?: string;
-  twitterUrl?: string;
-  facebookUrl?: string;
-  youtubeUrl?: string;
-  artistId?: { _id: string; name: string; genre?: string; followers?: number; image?: string };
-}
+import ArtistCard, { type ArtistItem } from './ArtistCard';
+import ArtistDetailsModal from './ArtistDetailsModal';
 
 interface Song {
   _id: string;
@@ -24,23 +11,27 @@ interface Song {
   artistId?: { name?: string };
 }
 
-const FanFollowing: React.FC<{ onNavClick?: (view: string) => void }> = ({ onNavClick }) => {
-  const [following, setFollowing] = useState<Artist[]>([]);
+export const FanFollowing: React.FC<{ onNavClick?: (view: string) => void }> = ({ onNavClick }) => {
+  const [following, setFollowing] = useState<ArtistItem[]>([]);
   const [loading, setLoading] = useState(false);
-  const [unfollowing, setUnfollowing] = useState<Set<string>>(new Set());
   const [latestSongs, setLatestSongs] = useState<Song[]>([]);
+  const [selectedArtist, setSelectedArtist] = useState<any>(null);
 
   const fetchFollowing = useCallback(async () => {
     setLoading(true);
     try {
       const res = await followsService.getFollowing();
       const raw: any[] = res.data?.data ?? res.data ?? [];
-      const artists: Artist[] = raw.map(item =>
+      const artists: ArtistItem[] = raw.map((item) =>
         item.artistId ? { ...item.artistId, _id: item.artistId._id ?? item._id } : item
       );
       setFollowing(artists);
       if (artists.length) {
-        const response = await songsService.getSongs({ artistId: artists.map(artist => artist._id).join(','), sort: 'date', limit: 8 });
+        const response = await songsService.getSongs({
+          artistId: artists.map((artist) => artist._id).join(','),
+          sort: 'date',
+          limit: 8,
+        });
         setLatestSongs(response.data?.data ?? response.data ?? []);
       } else {
         setLatestSongs([]);
@@ -52,22 +43,21 @@ const FanFollowing: React.FC<{ onNavClick?: (view: string) => void }> = ({ onNav
     }
   }, []);
 
-  useEffect(() => { fetchFollowing(); }, [fetchFollowing]);
+  useEffect(() => {
+    fetchFollowing();
+  }, [fetchFollowing]);
 
-  const handleUnfollow = async (id: string) => {
-    setUnfollowing(prev => new Set(prev).add(id));
+  const handleUnfollow = async (artist: ArtistItem) => {
     try {
-      await followsService.unfollowArtist(id);
-      setFollowing(prev => prev.filter(a => a._id !== id));
+      await followsService.unfollowArtist(artist._id);
+      setFollowing((prev) => prev.filter((a) => a._id !== artist._id));
     } catch {
       fetchFollowing();
-    } finally {
-      setUnfollowing(prev => { const s = new Set(prev); s.delete(id); return s; });
     }
   };
 
   return (
-    <div className="fan-following-container">
+    <div className="fan-following-container view-enter">
       <div style={{ marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
         <div>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', background: 'rgba(168, 85, 247, 0.15)', border: '1px solid rgba(168, 85, 247, 0.3)', borderRadius: 20, color: '#c084fc', fontSize: '0.78rem', fontWeight: 700, marginBottom: 8 }}>
@@ -86,9 +76,9 @@ const FanFollowing: React.FC<{ onNavClick?: (view: string) => void }> = ({ onNav
       </div>
 
       {loading ? (
-        <div className="fan-loading">
+        <div className="fan-loading" style={{ padding: 40 }}>
           <i className="fas fa-spinner fa-spin" />
-          <span>Loading artists...</span>
+          <span>Loading followed artists...</span>
         </div>
       ) : following.length === 0 ? (
         <div className="fan-empty-state" style={{ background: 'rgba(18, 26, 22, 0.6)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -97,76 +87,82 @@ const FanFollowing: React.FC<{ onNavClick?: (view: string) => void }> = ({ onNav
           <p>Discover Cameroonian artists and follow them to see their latest drops.</p>
           <button
             onClick={() => onNavClick?.('browse')}
-            style={{
-              marginTop: 16, padding: '10px 20px', background: 'var(--accent-color)',
-              color: '#000', borderRadius: 20, fontWeight: 700, border: 'none', cursor: 'pointer'
-            }}
+            className="btn-camsound-yellow"
+            style={{ marginTop: 16 }}
           >
             <i className="fas fa-search" /> Discover Artists
           </button>
         </div>
       ) : (
         <>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 20 }}>
-          {following.map(artist => (
-            <div
-              key={artist._id}
-              className="stat-card-premium"
-              style={{
-                padding: '24px', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 14
-              }}
-            >
-              <div className="hero-avatar-ring">
-                {artist.image ? (
-                  <img src={artist.image} alt={artist.name} style={{ width: 80, height: 80, borderRadius: '50%', objectFit: 'cover' }} />
-                ) : (
-                  <div style={{ width: 80, height: 80, borderRadius: '50%', background: 'var(--accent-color)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '2rem' }}>
-                    {artist.name?.charAt(0)?.toUpperCase() ?? 'A'}
-                  </div>
-                )}
-              </div>
-              <div>
-                <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>{artist.name}</h3>
-                {artist.genre && (
-                  <div style={{ fontSize: '0.82rem', color: 'var(--accent-color)', fontWeight: 600, marginTop: 4 }}>
-                    <i className="fas fa-music" /> {artist.genre}
-                  </div>
-                )}
-                {artist.followers != null && (
-                  <div style={{ fontSize: '0.78rem', color: 'rgba(255,255,255,0.6)', marginTop: 4 }}>
-                    <i className="fas fa-users" /> {artist.followers.toLocaleString()} followers
-                  </div>
-                )}
-                <ArtistSocialLinks artist={artist} />
-              </div>
-              <button
-                onClick={() => handleUnfollow(artist._id)}
-                disabled={unfollowing.has(artist._id)}
-                style={{
-                  width: '100%', padding: '10px', background: 'rgba(255, 255, 255, 0.06)',
-                  border: '1px solid rgba(255, 255, 255, 0.12)', color: 'rgba(255, 255, 255, 0.8)',
-                  borderRadius: 12, fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer',
-                  transition: 'all 0.2s ease', opacity: unfollowing.has(artist._id) ? 0.6 : 1
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)'; e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)'; e.currentTarget.style.color = '#ef4444'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255, 255, 255, 0.06)'; e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.12)'; e.currentTarget.style.color = 'rgba(255, 255, 255, 0.8)'; }}
-              >
-                {unfollowing.has(artist._id)
-                  ? <><i className="fas fa-spinner fa-spin" /> Unfollowing...</>
-                  : <><i className="fas fa-user-minus" /> Unfollow</>}
-              </button>
+          <div className="cards-grid">
+            {following.map((artist) => (
+              <ArtistCard
+                key={artist._id}
+                artist={artist}
+                isFollowing={true}
+                onFollowToggle={handleUnfollow}
+                onArtistClick={setSelectedArtist}
+              />
+            ))}
+          </div>
+
+          <div className="section-card" style={{ marginTop: 32 }}>
+            <div className="section-header">
+              <h2>Latest from Followed Artists</h2>
             </div>
-          ))}
-        </div>
-        <div className="section-card" style={{ marginTop: 24 }}>
-          <div className="section-header"><h2>Latest from Artists</h2></div>
-          {latestSongs.length === 0 ? <p style={{ color: 'var(--text-muted)' }}>No recent releases from followed artists.</p> : <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>{latestSongs.map(song => <div key={song._id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: 10, background: 'var(--bg-tertiary)', borderRadius: 10 }}><div style={{ width: 42, height: 42, borderRadius: 8, overflow: 'hidden', background: 'var(--bg-secondary)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{song.coverArt ? <img src={song.coverArt} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <i className="fas fa-music" style={{ color: 'var(--accent-color)' }} />}</div><div><strong>{song.title}</strong><div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>{song.artistId?.name || 'Unknown Artist'}{song.genre ? ` • ${song.genre}` : ''}</div></div></div>)}</div>}
-        </div>
+            {latestSongs.length === 0 ? (
+              <p style={{ color: 'var(--text-muted)' }}>No recent releases from followed artists.</p>
+            ) : (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {latestSongs.map((song) => (
+                  <div
+                    key={song._id}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 12,
+                      padding: 12,
+                      background: 'var(--bg-tertiary)',
+                      borderRadius: 10,
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: 44,
+                        height: 44,
+                        borderRadius: 8,
+                        overflow: 'hidden',
+                        background: 'var(--bg-secondary)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                      }}
+                    >
+                      {song.coverArt ? (
+                        <img src={song.coverArt} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        <i className="fas fa-music" style={{ color: 'var(--accent-color)' }} />
+                      )}
+                    </div>
+                    <div>
+                      <strong style={{ color: '#fff', fontSize: '0.95rem' }}>{song.title}</strong>
+                      <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                        {song.artistId?.name || 'Unknown Artist'}
+                        {song.genre ? ` • ${song.genre}` : ''}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </>
       )}
+
+      <ArtistDetailsModal artist={selectedArtist} onClose={() => setSelectedArtist(null)} />
     </div>
   );
 };
 
 export default FanFollowing;
-

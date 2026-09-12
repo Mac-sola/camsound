@@ -1,28 +1,27 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 interface Genre {
   name: string;
   icon: string;
   description: string;
   color: string;
+  count: number;
 }
 
 const GENRES: Genre[] = [
-  { name: 'Makossa', icon: 'fa-compact-disc', description: 'Traditional & modern Cameroonian urban rhythms', color: '#facc15' },
-  { name: 'Afrobeat', icon: 'fa-fire', description: 'Pan-African energetic beats & dance vibes', color: '#10b981' },
-  { name: 'Bikutsi', icon: 'fa-drum', description: 'Beti tribal high-tempo dance music', color: '#f43f5e' },
-  { name: 'Assiko', icon: 'fa-guitar', description: 'Bassa coastal acoustic string rhythms', color: '#3b82f6' },
-  { name: 'Hip Hop', icon: 'fa-microphone-alt', description: 'Camer urban flow, rap & street poetry', color: '#a855f7' },
-  { name: 'Gospel', icon: 'fa-synagogue', description: 'Uplifting spiritual & choir harmonies', color: '#fbbf24' },
-  { name: 'R&B', icon: 'fa-heart', description: 'Smooth soul & contemporary love jams', color: '#ec4899' },
-  { name: 'Jazz', icon: 'fa-music', description: 'Afro-jazz fusion & improvisational grooves', color: '#14b8a6' },
+  { name: 'Makossa', icon: 'fas fa-music', color: '#FF6B35', count: 245, description: 'Rhythmic dance music from Douala' },
+  { name: 'Bikutsi', icon: 'fas fa-drum', color: '#2E8B57', count: 189, description: 'Traditional Beti dance music' },
+  { name: 'Afrobeat', icon: 'fas fa-headphones', color: '#4A6CF7', count: 156, description: 'Modern African rhythms' },
+  { name: 'Traditional', icon: 'fas fa-guitar', color: '#8B4513', count: 134, description: 'Heritage Cameroonian music' },
+  { name: 'Assiko', icon: 'fas fa-drumstick-bite', color: '#9C27B0', count: 112, description: 'Urban dance music' },
+  { name: 'Gospel', icon: 'fas fa-pray', color: '#2196F3', count: 98, description: 'Christian inspirational music' },
+  { name: 'Hip Hop', icon: 'fas fa-microphone', color: '#FFA726', count: 87, description: 'Urban rap and hip hop' },
+  { name: 'Highlife', icon: 'fas fa-glass-cheers', color: '#4CAF50', count: 76, description: 'West African guitar music' },
 ];
 
-const FanGenres: React.FC = () => {
-  const [hovered, setHovered] = useState<string | null>(null);
-
+export const FanGenres: React.FC<{ onSelectGenre?: (genre: string) => void }> = ({ onSelectGenre }) => {
   return (
-    <div className="fan-genres-container">
+    <div className="fan-genres-container view-enter">
       <div style={{ marginBottom: 28 }}>
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', background: 'rgba(250, 204, 21, 0.12)', border: '1px solid rgba(250, 204, 21, 0.3)', borderRadius: 20, color: 'var(--accent-color)', fontSize: '0.78rem', fontWeight: 700, marginBottom: 8 }}>
           <i className="fas fa-layer-group" /> EXPLORE STYLES
@@ -35,38 +34,37 @@ const FanGenres: React.FC = () => {
         </p>
       </div>
 
-      <div className="fan-genres-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 20 }}>
-        {GENRES.map(genre => (
+      <div className="cards-grid" id="genresGrid">
+        {GENRES.map((genre) => (
           <div
             key={genre.name}
-            className="stat-card-premium"
-            onMouseEnter={() => setHovered(genre.name)}
-            onMouseLeave={() => setHovered(null)}
-            style={{
-              padding: '24px', cursor: 'pointer', flexDirection: 'column', alignItems: 'flex-start', gap: 14,
-              borderColor: hovered === genre.name ? genre.color : 'rgba(255, 255, 255, 0.08)',
-              background: hovered === genre.name ? 'rgba(24, 34, 28, 0.9)' : 'rgba(18, 26, 22, 0.75)'
-            }}
+            className="song-card"
+            data-genre={genre.name.toLowerCase()}
+            onClick={() => onSelectGenre?.(genre.name)}
+            role="button"
+            tabIndex={0}
           >
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-              <div
-                className="stat-card-icon"
-                style={{
-                  color: genre.color, borderColor: `${genre.color}40`,
-                  background: `${genre.color}15`, width: 48, height: 48
+            <div className="song-cover" style={{ background: genre.color }}>
+              <i className={genre.icon} />
+            </div>
+
+            <div className="song-info">
+              <h4>{genre.name}</h4>
+              <p>{genre.count} songs • {genre.description}</p>
+            </div>
+
+            <div className="song-actions">
+              <button
+                type="button"
+                className="action-btn"
+                title={`Explore ${genre.name}`}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onSelectGenre?.(genre.name);
                 }}
               >
-                <i className={`fas ${genre.icon}`} style={{ fontSize: '1.25rem' }} />
-              </div>
-              <div style={{ color: genre.color, fontSize: '0.85rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 4 }}>
-                Explore <i className="fas fa-arrow-right" style={{ transform: hovered === genre.name ? 'translateX(4px)' : 'none', transition: 'transform 0.2s' }} />
-              </div>
-            </div>
-            <div>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: '#fff' }}>{genre.name}</h3>
-              <p style={{ margin: '6px 0 0 0', fontSize: '0.85rem', color: 'rgba(255, 255, 255, 0.65)', lineHeight: 1.5 }}>
-                {genre.description}
-              </p>
+                <i className="fas fa-arrow-right" />
+              </button>
             </div>
           </div>
         ))}
@@ -76,4 +74,3 @@ const FanGenres: React.FC = () => {
 };
 
 export default FanGenres;
-

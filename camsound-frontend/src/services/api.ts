@@ -69,6 +69,9 @@ export const authService = {
   getProfile: () => api.get('/api/auth/me'),
   updateProfile: (data: any) => api.put('/api/auth/me', data),
   changePassword: (data: any) => api.put('/api/auth/change-password', data),
+  uploadAvatar: (formData: FormData) => api.post('/api/upload/avatar', formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  }),
 };
 
 // --- Songs ---

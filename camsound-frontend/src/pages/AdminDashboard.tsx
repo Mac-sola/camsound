@@ -235,9 +235,14 @@ const AdminDashboard: React.FC = () => {
           { label: 'Total Songs', value: stats.totalSongs, icon: 'fa-music', color: '#c084fc' },
           { label: 'Total Revenue', value: `XAF ${(stats.totalRevenue ?? 0).toLocaleString()}`, icon: 'fa-dollar-sign', color: '#facc15' },
         ].map(s => (
-          <div key={s.label} className="stat-dash-card">
-            <div className="stat-dash-icon" style={{ color: s.color, background: `${s.color}18`, borderColor: `${s.color}30` }}><i className={`fas ${s.icon}`} /></div>
-            <div><div className="stat-dash-label">{s.label}</div><div className="stat-dash-value">{loading ? '…' : s.value?.toLocaleString?.() ?? s.value ?? 0}</div></div>
+          <div key={s.label} className="admin-stat-card">
+            <div className="admin-stat-icon" style={{ color: s.color, background: `${s.color}16`, border: `1px solid ${s.color}30` }}>
+              <i className={`fas ${s.icon}`} />
+            </div>
+            <div>
+              <div className="admin-stat-label">{s.label}</div>
+              <div className="admin-stat-value">{loading ? '…' : s.value?.toLocaleString?.() ?? s.value ?? 0}</div>
+            </div>
           </div>
         ))}
       </div>
@@ -249,9 +254,14 @@ const AdminDashboard: React.FC = () => {
           { label: 'Pending Users', value: stats.pendingUsers ?? 0, icon: 'fa-user-clock', color: '#fbbf24' },
           { label: 'Blocked Users', value: stats.blockedUsers ?? 0, icon: 'fa-user-times', color: '#f87171' },
         ].map(s => (
-          <div key={s.label} className="stat-dash-card">
-            <div className="stat-dash-icon" style={{ color: s.color, background: `${s.color}18`, borderColor: `${s.color}30` }}><i className={`fas ${s.icon}`} /></div>
-            <div><div className="stat-dash-label">{s.label}</div><div className="stat-dash-value">{loading ? '…' : s.value?.toLocaleString?.() ?? 0}</div></div>
+          <div key={s.label} className="admin-stat-card">
+            <div className="admin-stat-icon" style={{ color: s.color, background: `${s.color}16`, border: `1px solid ${s.color}30` }}>
+              <i className={`fas ${s.icon}`} />
+            </div>
+            <div>
+              <div className="admin-stat-label">{s.label}</div>
+              <div className="admin-stat-value">{loading ? '…' : s.value?.toLocaleString?.() ?? 0}</div>
+            </div>
           </div>
         ))}
       </div>
