@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { AudioProvider } from './context/AudioContext';
+import { SettingsProvider } from './context/SettingsContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
@@ -14,8 +15,9 @@ import Browse from './pages/Browse';
 function App() {
   return (
     <AuthProvider>
-      <AudioProvider>
-        <Router>
+      <SettingsProvider>
+        <AudioProvider>
+          <Router>
           <Routes>
             <Route path="/" element={<Landing />} />
             <Route path="/login" element={<Login />} />
@@ -50,6 +52,7 @@ function App() {
           </Routes>
         </Router>
       </AudioProvider>
+      </SettingsProvider>
     </AuthProvider>
   );
 }

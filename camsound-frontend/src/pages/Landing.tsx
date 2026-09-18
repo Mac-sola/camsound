@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { songsService, artistsService } from '../services/api';
+import { usePlatformSettings } from '../context/SettingsContext';
+import { songsService, artistsService, subscriptionsService } from '../services/api';
 import SongCard, { type SongItem } from '../components/SongCard';
 import ArtistCard, { type ArtistItem } from '../components/ArtistCard';
 import ArtistDetailsModal from '../components/ArtistDetailsModal';
 import HeroCarousel from '../components/HeroCarousel';
+import MoMoPaymentModal from '../components/MoMoPaymentModal';
 import { GENRE_CARDS_DATA } from '../utils/musicImages';
 
 const Landing: React.FC = () => {
@@ -13,9 +15,13 @@ const Landing: React.FC = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [featuredSongs, setFeaturedSongs] = useState<SongItem[]>([]);
   const [featuredArtists, setFeaturedArtists] = useState<ArtistItem[]>([]);
+  const [plans, setPlans] = useState<any[]>([]);
   const [selectedArtist, setSelectedArtist] = useState<any>(null);
+  const [momoModalPlan, setMomoModalPlan] = useState<{ name: string; price: number; period?: string } | null>(null);
   const { user, logout } = useAuth();
+  const { settings } = usePlatformSettings();
   const navigate = useNavigate();
+
 
   const dashboardPath = user?.type === 'admin' ? '/admin' : user?.type === 'artist' ? '/artist' : '/fan';
 
@@ -34,6 +40,12 @@ const Landing: React.FC = () => {
     artistsService.getArtists({ limit: 6 }).then((res) => {
       setFeaturedArtists(res.data?.data ?? res.data ?? []);
     }).catch(() => {});
+
+    subscriptionsService.getPlans().then((res) => {
+      if (res.data?.success && res.data.data?.length) {
+        setPlans(res.data.data);
+      }
+    }).catch(() => {});
   }, []);
 
   return (
@@ -42,9 +54,13 @@ const Landing: React.FC = () => {
       <nav className="navbar-camsound" style={{ boxShadow: scrolled ? '0 2px 20px rgba(0,0,0,0.5)' : undefined }}>
         <div className="container">
           <div className="navbar-inner">
-            <a href="/" className="navbar-brand">
-              <i className="fas fa-music" style={{ marginRight: 8, color: 'var(--accent-color, #facc15)' }} />
-              CamSound
+            <a href="/" className="navbar-brand" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              {settings.logoUrl ? (
+                <img src={settings.logoUrl} alt={settings.platformName} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
+              ) : (
+                <i className={`fas ${settings.logoIcon || 'fa-drum'}`} style={{ color: 'var(--accent-color, #facc15)', fontSize: '1.2rem' }} />
+              )}
+              <span>{settings.platformName || 'CamSound'}</span>
             </a>
 
             {/* Mobile Hamburger Toggle */}
@@ -106,7 +122,7 @@ const Landing: React.FC = () => {
       {/* ── How It Works ── */}
       <section className="how-it-works-section" id="how">
         <div className="container">
-          <h2 style={{ fontSize: '2rem', marginBottom: 8 }}>How CamSound Works</h2>
+          <h2 style={{ fontSize: '2rem', marginBottom: 8 }}>How {settings.platformName || 'CamSound'} Works</h2>
           <div className="how-it-works-grid" style={{ marginTop: 48 }}>
             <div className="how-it-works-card">
               <div className="how-icon-wrapper"><i className="fas fa-upload" /></div>
@@ -278,42 +294,118 @@ const Landing: React.FC = () => {
           <h2 style={{ fontSize: '2.2rem', textAlign: 'center', marginBottom: 12 }}>Transparent Pricing</h2>
           <p style={{ textAlign: 'center', color: 'var(--text-muted)', marginBottom: 48 }}>Choose the plan that fits your musical journey.</p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 24 }}>
-            <div style={{ background: 'var(--bg-tertiary)', borderRadius: 16, padding: 32, border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
-              <h3>Fan Free</h3>
-              <div style={{ fontSize: '2.2rem', fontWeight: 800, margin: '16px 0', color: 'var(--text-white)' }}>XAF 0 <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 400 }}>/forever</span></div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0', display: 'flex', flexDirection: 'column', gap: 12, flex: 1, color: 'var(--text-light)', fontSize: '0.92rem' }}>
-                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Stream Cameroonian songs</li>
-                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Create personal playlists</li>
-                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Follow favorite artists</li>
-                <li style={{ opacity: 0.5 }}><i className="fas fa-times" style={{ marginRight: 8 }} />Ad-free experience</li>
-              </ul>
-              <Link to="/signup" className="btn-camsound-outline" style={{ justifyContent: 'center' }}>Get Started Free</Link>
-            </div>
+            {plans && plans.length > 0 ? (
+              plans.map((p, idx) => {
+                const isPop = Boolean(p.isPopular);
+                const feats: string[] = Array.isArray(p.features)
+                  ? p.features
+                  : typeof p.features === 'string'
+                  ? p.features.split(',').map((f: string) => f.trim()).filter(Boolean)
+                  : [];
+                return (
+                  <div
+                    key={p._id || idx}
+                    style={{
+                      background: isPop ? 'var(--bg-green-section)' : 'var(--bg-tertiary)',
+                      borderRadius: 16,
+                      padding: 32,
+                      border: isPop ? '2px solid var(--accent-color)' : '1px solid var(--border-color)',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      position: 'relative'
+                    }}
+                  >
+                    {isPop && (
+                      <div style={{ position: 'absolute', top: -12, right: 24, background: 'var(--accent-color)', color: '#000', fontWeight: 700, fontSize: '0.75rem', padding: '3px 12px', borderRadius: 999 }}>
+                        POPULAR
+                      </div>
+                    )}
+                    <h3>{p.name}</h3>
+                    {p.description && (
+                      <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', margin: '4px 0 12px 0' }}>{p.description}</p>
+                    )}
+                    <div style={{ fontSize: '2.2rem', fontWeight: 800, margin: '12px 0', color: isPop ? 'var(--accent-color)' : 'var(--text-white)' }}>
+                      {p.currency || 'XAF'} {Number(p.price || 0).toLocaleString()} <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 400 }}>{p.period || '/month'}</span>
+                    </div>
+                    <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0', display: 'flex', flexDirection: 'column', gap: 12, flex: 1, color: 'var(--text-light)', fontSize: '0.92rem' }}>
+                      {feats.map((f, fIdx) => (
+                        <li key={fIdx} style={{ display: 'flex', alignItems: 'center' }}>
+                          <i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (p.price === 0) {
+                          navigate('/signup');
+                        } else {
+                          setMomoModalPlan({ name: p.name, price: Number(p.price), period: p.period || '/month' });
+                        }
+                      }}
+                      className={isPop ? 'btn-camsound-yellow' : 'btn-camsound-outline'}
+                      style={{ justifyContent: 'center', cursor: 'pointer', border: 'none' }}
+                    >
+                      {p.buttonText || (p.price === 0 ? 'Get Started Free' : '⚡ Pay via MTN MoMo')}
+                    </button>
+                  </div>
+                );
+              })
+            ) : (
+              <>
+                <div style={{ background: 'var(--bg-tertiary)', borderRadius: 16, padding: 32, border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
+                  <h3>Fan Free</h3>
+                  <div style={{ fontSize: '2.2rem', fontWeight: 800, margin: '16px 0', color: 'var(--text-white)' }}>XAF 0 <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 400 }}>/forever</span></div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0', display: 'flex', flexDirection: 'column', gap: 12, flex: 1, color: 'var(--text-light)', fontSize: '0.92rem' }}>
+                    <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Stream Cameroonian songs</li>
+                    <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Create personal playlists</li>
+                    <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Follow favorite artists</li>
+                    <li style={{ opacity: 0.5 }}><i className="fas fa-times" style={{ marginRight: 8 }} />Ad-free experience</li>
+                  </ul>
+                  <Link to="/signup" className="btn-camsound-outline" style={{ justifyContent: 'center' }}>Get Started Free</Link>
+                </div>
 
-            <div style={{ background: 'var(--bg-green-section)', borderRadius: 16, padding: 32, border: '2px solid var(--accent-color)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
-              <div style={{ position: 'absolute', top: -12, right: 24, background: 'var(--accent-color)', color: '#000', fontWeight: 700, fontSize: '0.75rem', padding: '3px 12px', borderRadius: 999 }}>POPULAR</div>
-              <h3>Artist Pro</h3>
-              <div style={{ fontSize: '2.2rem', fontWeight: 800, margin: '16px 0', color: 'var(--accent-color)' }}>XAF 5,000 <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 400 }}>/month</span></div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0', display: 'flex', flexDirection: 'column', gap: 12, flex: 1, color: 'var(--text-light)', fontSize: '0.92rem' }}>
-                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Unlimited track uploads</li>
-                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Stream &amp; play analytics</li>
-                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />MoMo Mobile Money Payouts</li>
-                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Verified Artist Badge</li>
-              </ul>
-              <Link to="/signup?role=artist" className="btn-camsound-yellow" style={{ justifyContent: 'center' }}>Join as Artist</Link>
-            </div>
+                <div style={{ background: 'var(--bg-green-section)', borderRadius: 16, padding: 32, border: '2px solid var(--accent-color)', display: 'flex', flexDirection: 'column', position: 'relative' }}>
+                  <div style={{ position: 'absolute', top: -12, right: 24, background: 'var(--accent-color)', color: '#000', fontWeight: 700, fontSize: '0.75rem', padding: '3px 12px', borderRadius: 999 }}>POPULAR</div>
+                  <h3>Artist Pro</h3>
+                  <div style={{ fontSize: '2.2rem', fontWeight: 800, margin: '16px 0', color: 'var(--accent-color)' }}>XAF 5,000 <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 400 }}>/month</span></div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0', display: 'flex', flexDirection: 'column', gap: 12, flex: 1, color: 'var(--text-light)', fontSize: '0.92rem' }}>
+                    <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Unlimited track uploads</li>
+                    <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Stream &amp; play analytics</li>
+                    <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />MoMo Mobile Money Payouts</li>
+                    <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Verified Artist Badge</li>
+                  </ul>
+                  <button
+                    type="button"
+                    onClick={() => setMomoModalPlan({ name: 'Artist Pro', price: 5000, period: '/month' })}
+                    className="btn-camsound-yellow"
+                    style={{ justifyContent: 'center', cursor: 'pointer', border: 'none' }}
+                  >
+                    ⚡ Join with MTN MoMo
+                  </button>
+                </div>
 
-            <div style={{ background: 'var(--bg-tertiary)', borderRadius: 16, padding: 32, border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
-              <h3>Fan VIP</h3>
-              <div style={{ fontSize: '2.2rem', fontWeight: 800, margin: '16px 0', color: 'var(--text-white)' }}>XAF 2,000 <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 400 }}>/month</span></div>
-              <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0', display: 'flex', flexDirection: 'column', gap: 12, flex: 1, color: 'var(--text-light)', fontSize: '0.92rem' }}>
-                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Ad-free music streaming</li>
-                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />High quality audio playback</li>
-                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Exclusive community access</li>
-                <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Direct artist support</li>
-              </ul>
-              <Link to="/signup" className="btn-camsound-outline" style={{ justifyContent: 'center' }}>Upgrade to VIP</Link>
-            </div>
+                <div style={{ background: 'var(--bg-tertiary)', borderRadius: 16, padding: 32, border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column' }}>
+                  <h3>Fan VIP</h3>
+                  <div style={{ fontSize: '2.2rem', fontWeight: 800, margin: '16px 0', color: 'var(--text-white)' }}>XAF 2,000 <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)', fontWeight: 400 }}>/month</span></div>
+                  <ul style={{ listStyle: 'none', padding: 0, margin: '0 0 32px 0', display: 'flex', flexDirection: 'column', gap: 12, flex: 1, color: 'var(--text-light)', fontSize: '0.92rem' }}>
+                    <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Ad-free music streaming</li>
+                    <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />High quality audio playback</li>
+                    <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Exclusive community access</li>
+                    <li><i className="fas fa-check" style={{ color: 'var(--accent-color)', marginRight: 8 }} />Direct artist support</li>
+                  </ul>
+                  <button
+                    type="button"
+                    onClick={() => setMomoModalPlan({ name: 'Fan VIP', price: 2000, period: '/month' })}
+                    className="btn-camsound-outline"
+                    style={{ justifyContent: 'center', cursor: 'pointer', border: 'none' }}
+                  >
+                    ⚡ Upgrade with MTN MoMo
+                  </button>
+                </div>
+              </>
+            )}
           </div>
         </div>
       </section>
@@ -324,7 +416,7 @@ const Landing: React.FC = () => {
           <h2 style={{ fontSize: '2rem', textAlign: 'center' }}>What the Community Says</h2>
           <div className="testimonials-grid">
             {[
-              { quote: '"CamSound completely changed how I connect with my fans in Douala. The platform is incredibly intuitive."', name: '- Balo K.', role: 'Independent Artist' },
+              { quote: `"${settings.platformName || 'CamSound'} completely changed how I connect with my fans in Douala. The platform is incredibly intuitive."`, name: '- Balo K.', role: 'Independent Artist' },
               { quote: '"I discover new local talent every single day. The genre playlists are perfectly curated."', name: '- Murielle T.', role: 'Music Enthusiast' },
               { quote: '"The analytics dashboard helps me understand exactly where my listeners are coming from."', name: '- DJ Franck', role: 'Producer' },
             ].map((t) => (
@@ -354,8 +446,15 @@ const Landing: React.FC = () => {
         <div className="container">
           <div className="footer-grid">
             <div>
-              <div className="footer-brand"><i className="fas fa-drum" /> CamSound</div>
-              <p className="footer-description">Discover, stream and promote local talent across Cameroon and beyond.</p>
+              <div className="footer-brand" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                {settings.logoUrl ? (
+                  <img src={settings.logoUrl} alt={settings.platformName} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover' }} />
+                ) : (
+                  <i className={`fas ${settings.logoIcon || 'fa-drum'}`} style={{ color: 'var(--accent-color)' }} />
+                )}
+                <span>{settings.platformName || 'CamSound'}</span>
+              </div>
+              <p className="footer-description">{settings.platformDesc || 'Discover, stream and promote local talent across Cameroon and beyond.'}</p>
               <Link to="/admin" className="footer-admin-doorway"><i className="fas fa-lock" /> Admin Portal</Link>
             </div>
             <div className="footer-col">
@@ -365,7 +464,7 @@ const Landing: React.FC = () => {
                 <li><a href="#songs">Trending Songs</a></li>
                 <li><a href="#artists">Artists</a></li>
                 <li><a href="#pricing">Pricing</a></li>
-                <li><a href="mailto:support@camsound.com">Contact Support</a></li>
+                <li><a href={`mailto:${settings.supportEmail || 'support@camsound.cm'}`}>Contact Support</a></li>
               </ul>
             </div>
             <div className="footer-col">
@@ -386,14 +485,32 @@ const Landing: React.FC = () => {
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2026 CamSound. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} {settings.platformName || 'CamSound'}. All rights reserved.</p>
           </div>
         </div>
       </footer>
 
       <ArtistDetailsModal artist={selectedArtist} onClose={() => setSelectedArtist(null)} />
+
+      {/* MoMo Payment Simulation Modal on Landing */}
+      {momoModalPlan && (
+        <MoMoPaymentModal
+          isOpen={Boolean(momoModalPlan)}
+          onClose={() => setMomoModalPlan(null)}
+          mode="subscription"
+          amount={momoModalPlan.price}
+          planName={momoModalPlan.name}
+          planPeriod={momoModalPlan.period || '/month'}
+          onSuccess={() => {
+            setTimeout(() => {
+              navigate(user ? dashboardPath : '/signup');
+            }, 1500);
+          }}
+        />
+      )}
     </div>
   );
 };
+
 
 export default Landing;

@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Layout from '../components/Layout';
-import { statsService, songsService, artistsService, notificationsService, subscriptionsService, paymentsService, withdrawalsService, artistsExtendedService, commentsService, notificationSettingsService } from '../services/api';
+import { statsService, songsService, artistsService, notificationsService, subscriptionsService, paymentsService, withdrawalsService, artistsExtendedService, commentsService, notificationSettingsService, authService } from '../services/api';
 import { useSearchParams } from 'react-router-dom';
 import { useAudio } from '../context/AudioContext';
+import MoMoPaymentModal from '../components/MoMoPaymentModal';
 
 const ARTIST_NAV = [
   { label: 'Dashboard Overview', icon: 'fa-tachometer-alt', view: 'dashboard' },
@@ -19,7 +20,10 @@ const ArtistDashboard: React.FC = () => {
   const { playSong, currentSong, isPlaying } = useAudio();
   const [searchParams, setSearchParams] = useSearchParams();
   const [activeView, setActiveView] = useState('dashboard');
+  const [momoWithdrawModalOpen, setMomoWithdrawModalOpen] = useState(false);
+  const [selectedSubPlan, setSelectedSubPlan] = useState<any>(null);
   const [stats, setStats] = useState<any>(null);
+
   const [loading, setLoading] = useState(true);
   const [profile, setProfile] = useState<any>(null);
   const [profileError, setProfileError] = useState('');
@@ -28,6 +32,7 @@ const ArtistDashboard: React.FC = () => {
   const [fieldErrors, setFieldErrors] = useState<{ title?: string; songFile?: string; coverArt?: string }>({});
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMessage, setProfileMessage] = useState('');
+  const [avatarUploading, setAvatarUploading] = useState(false);
   const [plans, setPlans] = useState<any[]>([]);
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -69,6 +74,7 @@ const ArtistDashboard: React.FC = () => {
   const [uploadMessage, setUploadMessage] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
   const coverRef = useRef<HTMLInputElement>(null);
+  const avatarRef = useRef<HTMLInputElement>(null);
   const uploadFormRef = useRef<HTMLDivElement>(null);
   const successResetTimer = useRef<number | null>(null);
 
@@ -107,6 +113,15 @@ const ArtistDashboard: React.FC = () => {
     return null;
   };
 
+  const validateAvatarFile = (file: File) => {
+    if (!file.type.startsWith('image/') && !imageExtensions.test(file.name)) {
+      return 'Profile photo must be a PNG, JPG, WEBP, or GIF image.';
+    }
+    if (file.size > MAX_COVER_SIZE) {
+      return 'Profile photo must be smaller than 5MB.';
+    }
+    return null;
+  };
   const handleSongFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0] ?? null;
     processAudioFile(file);
@@ -255,6 +270,41 @@ const ArtistDashboard: React.FC = () => {
       setProfileMessage(error.response?.data?.message || 'Unable to save profile.');
     } finally {
       setProfileSaving(false);
+    }
+  };
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0] ?? null;
+    if (!file || !profile) return;
+
+    const error = validateAvatarFile(file);
+    if (error) {
+      setProfileMessage(error);
+      if (avatarRef.current) avatarRef.current.value = '';
+      return;
+    }
+
+    setAvatarUploading(true);
+    setProfileMessage('');
+    try {
+      const fd = new FormData();
+      fd.append('profile_image', file);
+      const res = await authService.uploadAvatar(fd);
+      if (!res.data.success) {
+        throw new Error(res.data.message || 'Unable to upload profile photo.');
+      }
+
+      const imageUrl = res.data.data?.file_path;
+      if (imageUrl) {
+        setProfile((prev: any) => ({ ...prev, image: imageUrl }));
+      }
+      setProfileMessage('Profile photo updated successfully.');
+      await fetchProfile();
+    } catch (error: any) {
+      setProfileMessage(error.response?.data?.message || error.message || 'Unable to upload profile photo.');
+    } finally {
+      setAvatarUploading(false);
+      if (avatarRef.current) avatarRef.current.value = '';
     }
   };
 
@@ -1070,13 +1120,20 @@ const ArtistDashboard: React.FC = () => {
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 32, marginTop: 16 }}>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ width: 160, height: 160, borderRadius: '50%', background: 'var(--bg-tertiary)', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '4rem', color: 'var(--text-muted)', position: 'relative' }}>
-                {profile.name?.charAt(0) || 'A'}
+              <div style={{ width: 160, height: 160, borderRadius: '50%', background: 'var(--bg-tertiary)', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '4rem', color: 'var(--text-muted)', position: 'relative', overflow: 'hidden' }}>
+                {(profile.image || profile.userId?.avatar) ? (
+                  <img src={profile.image || profile.userId?.avatar} alt={profile.name || 'Artist profile'} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  profile.name?.charAt(0) || 'A'
+                )}
                 {(profile.verification === 'approved' || profile.status === 'verified') && (
                   <i className="fas fa-check-circle" style={{ position: 'absolute', bottom: 8, right: 8, fontSize: '1.6rem', color: '#4ade80', background: 'var(--bg-primary)', borderRadius: '50%' }} />
                 )}
               </div>
-              <button className="btn-camsound-outline" style={{ width: '100%' }}>Change Avatar</button>
+              <input ref={avatarRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" style={{ display: 'none' }} onChange={handleAvatarChange} />
+              <button className="btn-camsound-outline" style={{ width: '100%' }} onClick={() => avatarRef.current?.click()} disabled={avatarUploading}>
+                {avatarUploading ? 'Uploading...' : 'Change Avatar'}
+              </button>
             </div>
             <div>
               {profileMessage && (
@@ -1346,7 +1403,7 @@ const ArtistDashboard: React.FC = () => {
             <p style={{ color: 'var(--text-muted)', margin: '0 0 20px' }}>Available for withdrawal</p>
             <div style={{ padding: 12, borderRadius: 10, background: 'rgba(250,204,21,0.08)', color: 'var(--text-muted)', fontSize: '0.82rem', marginBottom: 20 }}>Min: 5,000 FCFA • Max: 10,000 FCFA/day • Processed on 15th</div>
             <div className="form-field">
-              <label>Withdrawal Amount</label>
+              <label>Withdrawal Amount (FCFA)</label>
               <input
                 type="number"
                 placeholder="e.g. 5000"
@@ -1356,26 +1413,38 @@ const ArtistDashboard: React.FC = () => {
               />
             </div>
             <div className="form-field">
-              <label>Mobile Money Number</label>
+              <label>MTN Mobile Money Number (+237)</label>
               <input
                 type="text"
-                placeholder="e.g. 670000000"
+                placeholder="e.g. 670 00 00 00"
                 className="search-input-db"
                 value={withdrawalMomoNumber}
                 onChange={e => setWithdrawalMomoNumber(e.target.value)}
               />
             </div>
-            <button className="btn-camsound-yellow" style={{ width: '100%' }} onClick={handleRequestWithdrawal} disabled={isRequestingWithdrawal}>
-              {isRequestingWithdrawal ? 'Submitting...' : 'Request Withdrawal'}
+            <button
+              className="btn-camsound-yellow"
+              style={{ width: '100%', justifyContent: 'center' }}
+              onClick={() => {
+                if (!withdrawalAmount || Number(withdrawalAmount) < 5000) {
+                  setWithdrawalMessage('Minimum withdrawal amount is 5,000 FCFA.');
+                  return;
+                }
+                setWithdrawalMessage('');
+                setMomoWithdrawModalOpen(true);
+              }}
+            >
+              <i className="fas fa-mobile-alt" style={{ marginRight: 6 }} /> ⚡ Withdraw via MTN MoMo
             </button>
             {withdrawalMessage && (
-              <p style={{ marginTop: 12, color: withdrawalMessage.includes('successfully') ? '#27ae60' : 'var(--text-muted)' }}>
+              <p style={{ marginTop: 12, color: withdrawalMessage.includes('successfully') ? '#27ae60' : '#f87171' }}>
                 {withdrawalMessage}
               </p>
             )}
           </div>
           <div className="section-card">
             <div className="section-header"><h2>Withdrawal History</h2></div>
+
             {withdrawals.length === 0 ? (
               <p style={{ color: 'var(--text-muted)' }}>No withdrawals yet.</p>
             ) : (
@@ -1450,21 +1519,20 @@ const ArtistDashboard: React.FC = () => {
             {plans.map(p => (
               <div key={p._id} style={{ padding: 24, background: 'var(--bg-tertiary)', borderRadius: 12, border: '1px solid var(--border-color)', textAlign: 'center' }}>
                 <h3 style={{ margin: '0 0 12px' }}>{p.name}</h3>
-                <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent-color)', marginBottom: 24 }}>XAF {p.price}</div>
+                <div style={{ fontSize: '2rem', fontWeight: 700, color: 'var(--accent-color)', marginBottom: 24 }}>XAF {Number(p.price).toLocaleString()}</div>
                 <div style={{ color: 'var(--text-muted)', marginBottom: 24, minHeight: 60 }}>{p.description}</div>
                 <button
-                  className="btn-camsound-outline"
-                  style={{ width: '100%' }}
-                  onClick={() => handleSubscribe(p)}
-                  disabled={isSubscribing}
+                  className="btn-camsound-yellow"
+                  style={{ width: '100%', justifyContent: 'center' }}
+                  onClick={() => setSelectedSubPlan(p)}
                 >
-                  {isSubscribing ? 'Processing...' : 'Subscribe'}
+                  <i className="fas fa-mobile-alt" style={{ marginRight: 6 }} /> ⚡ Pay with MTN MoMo
                 </button>
-                {isSubscribing && <p style={{ marginTop: 10, fontSize: '0.85rem', color: 'var(--text-muted)' }}>Simulated payment in progress.</p>}
               </div>
             ))}
             {plans.length === 0 && <p>Loading plans...</p>}
           </div>
+
           {subscriptionMessage && (
             <div style={{ marginTop: 20, padding: 16, borderRadius: 12, background: 'rgba(39, 174, 96, 0.08)', color: '#27ae60' }}>
               {subscriptionMessage}
@@ -1565,6 +1633,36 @@ const ArtistDashboard: React.FC = () => {
             </div>
           </div>
         </div>
+      {/* MoMo Withdrawal Simulation Modal */}
+      {momoWithdrawModalOpen && (
+        <MoMoPaymentModal
+          isOpen={momoWithdrawModalOpen}
+          onClose={() => setMomoWithdrawModalOpen(false)}
+          mode="withdrawal"
+          amount={Number(withdrawalAmount) || 5000}
+          initialPhone={withdrawalMomoNumber || ''}
+          onSuccess={async () => {
+            setWithdrawalMessage(`Withdrawal of ${Number(withdrawalAmount).toLocaleString()} FCFA successfully processed via MTN MoMo.`);
+            setWithdrawalAmount('');
+            setWithdrawalMomoNumber('');
+            await fetchWithdrawals();
+          }}
+        />
+      )}
+
+      {/* MoMo Subscription Modal */}
+      {selectedSubPlan && (
+        <MoMoPaymentModal
+          isOpen={Boolean(selectedSubPlan)}
+          onClose={() => setSelectedSubPlan(null)}
+          mode="subscription"
+          amount={Number(selectedSubPlan.price) || 0}
+          planName={selectedSubPlan.name}
+          planPeriod={selectedSubPlan.period || '/month'}
+          onSuccess={() => {
+            setSubscriptionMessage(`Subscribed to ${selectedSubPlan.name} plan via MTN MoMo 🎉`);
+          }}
+        />
       )}
       </div>
     </Layout>
@@ -1572,4 +1670,5 @@ const ArtistDashboard: React.FC = () => {
 };
 
 export default ArtistDashboard;
+
 

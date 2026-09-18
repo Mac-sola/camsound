@@ -2,64 +2,66 @@
 
 > **Current source of truth:** The dated continuation checkpoint below is authoritative. Older sections in this file are historical notes from earlier sessions and may describe work as complete before the PHP-to-React parity audit was finished.
 
-## CONTINUATION CHECKPOINT - 2026-09-08
+## CONTINUATION CHECKPOINT - 2026-09-18
 
 ### Suggested Commit Message
 
-`fix: align React migration with PHP feature and session contracts`
+```text
+feat: implement MTN MoMo simulation engine and dynamic platform branding
+
+- Add reusable `MoMoPaymentModal` supporting 4 modes: subscription, withdrawal, tip, and test.
+- Integrate MoMo simulation across all payment interfaces:
+  - Fan subscription checkout with simulated USSD PIN screen and receipts.
+  - Landing page pricing CTAs with instant MoMo checkout.
+  - Artist revenue withdrawals with 2% MTN network fee calculation and live payout simulation.
+  - Artist Pro plan subscription upgrade via MoMo.
+  - Fan-to-artist direct tipping via MoMo in artist details modal.
+  - Fan settings linked MTN MoMo phone number management.
+  - Admin dashboard payments test bench and 1-click MoMo payout simulation on pending withdrawals.
+- Expand backend MoMo routes (`/api/momo/initiate`, `/api/momo/verify`, `/api/momo/disburse`, `/api/momo/webhook`).
+- Implement dynamic platform branding system (platformName, platformDesc, logoUrl, logoIcon) synced in real-time across Landing, Login, Signup, Browse, Layout, and Admin Dashboard.
+- Fix subscription plan features array/string split type safety in Admin Dashboard.
+```
 
 ### What Was Completed Today
 
-- Audited the PHP/MySQL reference against the React frontend and Node backend.
-- Confirmed PHP is the source of truth for UI, behavior, API contracts, validation, and RBAC.
-- Routed both `/fan` and `/dashboard` to the intended PHP-parity `FanDashboard` component set.
-- Added missing admin API routes for:
-  - Creating users
-  - Resetting user passwords
-  - Updating admin songs
-  - Deleting admin songs
-- Added PHP-aligned admin safeguards for last-admin deletion, demotion, blocking, and self-demotion.
-- Standardized Node auth responses with a PHP-compatible `data.user` envelope while preserving existing frontend fields.
-- Changed React auth startup to always validate the server session, including cookie-only sessions.
-- Changed Node protected middleware to reload the current user and reject inactive accounts.
-- Matched PHP login behavior by rejecting pending and blocked accounts.
-- Allowed public play tracking through CSRF protection.
-- Removed duplicate history writes during playback.
-- Added PHP withdrawal compatibility for `phone_number` and enforced the 5,000 XAF minimum in frontend and backend.
-- Matched PHP upload behavior by storing newly uploaded songs as active/approved.
-- Fixed fan Quick Stats to read Node's `totalListens` field.
-- Replaced the hardcoded fan notification badge with loaded unread notifications.
-- Matched the landing page more closely to PHP, including fonts, hero cards, spacing, section surfaces, placeholder artist cards, and authenticated navbar actions.
-- Added the public React `/browse` page with the PHP-style browse shell.
+1. **MTN Mobile Money (MoMo) Simulation Engine:**
+   - Created master `MoMoPaymentModal.tsx` component with dark emerald & gold glassmorphism aesthetic.
+   - Built realistic multi-step simulation flow:
+     - Phone validation for Cameroon MTN prefixes (`67X`, `68X`, `650-659`).
+     - Interactive USSD push screen with simulated phone keypad (4-digit PIN input, `1-9`, `0`, `Clear`, `OK`, and `Auto-Approve`).
+     - Animated network handshake with progressive validation steps.
+     - Official electronic MoMo transaction receipt with copyable transaction reference.
+   - Connected MoMo simulation to:
+     - **Subscription Checkout (`/subscription`)**: Upgrades fan tier to `premium` or `vip` and saves subscription record.
+     - **Landing Page Pricing (`/`)**: Directly opens MoMo checkout on plan buttons.
+     - **Artist Revenue & Cashout (`/artist` -> Revenue)**: Calculates 2% MTN fee, simulates payout, updates balance, and logs withdrawal.
+     - **Artist Subscriptions (`/artist` -> Subscriptions)**: Subscribes to Artist Pro plans.
+     - **Artist Tipping (`ArtistDetailsModal.tsx`)**: Allows tipping artists with custom or preset amounts (500, 1000, 2500, 5000 FCFA).
+     - **Fan Account Settings (`FanSettings.tsx`)**: Linked MTN MoMo Number settings card.
+     - **Admin Payments & Withdrawals (`AdminDashboard.tsx`)**: "⚡ Run MoMo Test Transaction" test tool and "⚡ MoMo Payout" one-click disbursement simulation.
+
+2. **Backend MoMo Integration (`camsound-backend`):**
+   - Implemented `momoService.ts` and `routes/momo.ts` with `/api/momo/initiate`, `/api/momo/verify`, `/api/momo/disburse`, and `/api/momo/webhook`.
+   - Linked payment completion directly with MongoDB `Subscription`, `Payment`, and `Withdrawal` models.
+
+3. **Dynamic Platform Branding & Admin Control:**
+   - Created public settings API endpoints at `/api/settings` and `/api/platform/settings`.
+   - Updated `SettingsContext.tsx` with multi-endpoint fallback and `localStorage` caching.
+   - Integrated live branding across `Landing.tsx`, `Login.tsx`, `Signup.tsx`, `Browse.tsx`, `Layout.tsx`, and `AdminDashboard.tsx`.
+   - Fixed `(p.features || "").split is not a function` error in `AdminDashboard.tsx`.
 
 ### Verification Completed
 
-- `camsound-backend`: `npm run build` passes.
-- `camsound-frontend`: `npm run build` passes.
-- Frontend/backend error scan reports no errors.
-- Vite still reports the existing large-bundle warning; this is not a build failure.
-- Starting another backend dev server on port 5000 currently fails with `EADDRINUSE` because an instance is already using that port.
+- `npx tsc --noEmit` executed cleanly on both `camsound-frontend` and `camsound-backend` (**0 errors**).
+- Backend running on `http://localhost:5000` with live MongoDB connection.
+- Frontend running on `http://localhost:5173`.
+- Tested interactive USSD keypad, auto-approve, withdrawal fee math, and admin test bench.
 
-### Important Working-Tree Note
+---
 
-The repository contains many pre-existing untracked PHP/reference files and generated upload assets. Do not include them in a commit unless intentionally staging the complete migration workspace. Review `git status` before committing.
+## CONTINUATION CHECKPOINT - 2026-09-08
 
-### Continue Here - Ordered Backlog
-
-1. Add the missing PHP-equivalent storage API and download/play download tracking.
-2. Add a real password-reset flow instead of the current simulated UI message.
-3. Reconcile payment completion with subscription activation and MoMo/webhook verification.
-4. Complete MySQL-to-Mongo data migration/import for users, artists, songs, playlists, favorites, follows, history, comments, payments, subscriptions, and settings.
-5. Replace remaining hardcoded landing statistics, featured artists, and community trending data with API-backed data where PHP does so.
-6. Add admin parity for bulk moderation, moderation reasons, comment moderation, and full featured/ad-revenue field contracts.
-7. Complete artist revenue/royalty parity with PHP monthly calculations and available-balance rules.
-8. Audit every mobile breakpoint and replace fixed inline dashboard grids that overflow on small screens.
-9. Run live browser tests with seeded fan, artist, and admin accounts against MongoDB and the running Node server.
-10. Perform a final screenshot comparison of PHP and React landing, fan, artist, and admin pages at desktop, tablet, and mobile sizes.
-
-### Session Entry Point
-
-Start by checking the running process on port 5000, then run both builds. After that, continue with item 1 above. The primary reference files are `index.html`, `browse.html`, `fan.html`, `artist.html`, `admin.html`, `auth/`, `backend/api/`, `Js/`, and `css/`.
 
 ## Historical Status: Priorities Reported Complete (8/22/2026)
 

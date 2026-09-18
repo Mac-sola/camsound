@@ -60,6 +60,11 @@ api.interceptors.response.use(
 
 export default api;
 
+// --- Public site settings ---
+export const siteService = {
+  getPublicSettings: () => api.get('/api/settings/public'),
+};
+
 // --- Auth ---
 export const authService = {
   login: (credentials: any) => api.post('/api/auth/login', credentials),
@@ -160,6 +165,11 @@ export const adminService = {
   updateSettings: (data: any) => api.put('/api/admin/settings', data),
 };
 
+// --- Platform Public Settings ---
+export const platformService = {
+  getSettings: () => api.get('/api/settings'),
+};
+
 // --- Categories ---
 export const categoriesService = {
   getCategories: () => api.get('/api/categories'),
@@ -239,9 +249,22 @@ export const commentsService = {
   getTrendingTopics: () => api.get('/api/comments/trending'),
 };
 
+// --- MoMo Mobile Money ---
+export const momoService = {
+  initiate: (data: { amount: number; phone?: string; planName?: string; reason?: string; currency?: string }) =>
+    api.post('/api/momo/initiate', data),
+  verify: (data: { transactionId: string; planName?: string; amount?: number }) =>
+    api.post('/api/momo/verify', data),
+  disburse: (data: { amount: number; phone: string; withdrawalId?: string }) =>
+    api.post('/api/momo/disburse', data),
+  simulateWebhook: (data: { transactionId: string }) =>
+    api.post('/api/momo/webhook', data),
+};
+
 // --- Artist extended ---
 export const artistsExtendedService = {
   requestVerification: () => api.post('/api/artists/me/verify'),
   getMySongs: () => api.get('/api/songs', { params: { artistId: 'me', limit: 100 } }),
 };
+
 

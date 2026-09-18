@@ -152,6 +152,42 @@ const FanSettings: React.FC = () => {
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 14 }}><button className="btn-camsound-yellow" onClick={saveAccount} disabled={savingAccount}>{savingAccount ? 'Saving...' : 'Save Account'}</button>{accountMsg && <span style={{ color: 'var(--accent-color)' }}>{accountMsg}</span>}</div>
       </div>
 
+      {/* ── MTN Mobile Money Account ── */}
+      <div className="stat-card-premium" style={{ padding: 28, flexDirection: 'column', alignItems: 'stretch' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+          <div style={{ width: 32, height: 32, borderRadius: 8, background: '#FACC15', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 900, fontSize: '0.75rem' }}>
+            MoMo
+          </div>
+          <div>
+            <h3 style={{ margin: 0, color: '#fff', fontSize: '1.2rem', fontWeight: 800 }}>MTN Mobile Money Linked Account</h3>
+            <p style={{ margin: '2px 0 0', color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem' }}>
+              Used for 1-click subscription renewals, tipping artists, and receiving royalty payouts
+            </p>
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ flex: 1, minWidth: 240, position: 'relative' }}>
+            <span style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: '#FACC15', fontWeight: 700, fontSize: '0.9rem' }}>🇨🇲 +237</span>
+            <input
+              className="search-input-db"
+              style={{ paddingLeft: 84 }}
+              value={accountForm.phone}
+              onChange={e => setAccountForm(prev => ({ ...prev, phone: e.target.value }))}
+              placeholder="670 00 00 00"
+            />
+          </div>
+          <button
+            className="btn-camsound-yellow"
+            onClick={saveAccount}
+            disabled={savingAccount}
+            style={{ padding: '10px 20px' }}
+          >
+            <i className="fas fa-check-circle" style={{ marginRight: 6 }} /> Update MoMo Number
+          </button>
+        </div>
+      </div>
+
+
       {/* ── Notification Preferences ── */}
       <div className="stat-card-premium" style={{ padding: 28, flexDirection: 'column', alignItems: 'stretch' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: 16 }}>

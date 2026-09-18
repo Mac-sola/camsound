@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import Layout from '../components/Layout';
 import { useAuth } from '../context/AuthContext';
-import { subscriptionsService, paymentsService } from '../services/api';
+import { usePlatformSettings } from '../context/SettingsContext';
+import { subscriptionsService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
+import MoMoPaymentModal from '../components/MoMoPaymentModal';
 
 const FAN_NAV = [
   { section: 'Discover' },
@@ -37,15 +39,11 @@ interface Plan {
 
 const Subscription: React.FC = () => {
   const { user, updateUser } = useAuth();
+  const { settings } = usePlatformSettings();
   const navigate = useNavigate();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isMoMoModalOpen, setIsMoMoModalOpen] = useState(false);
-  const [momoPhone, setMomoPhone] = useState('');
-  const [momoCarrier, setMomoCarrier] = useState<'mtn' | 'orange'>('mtn');
-  const [paymentStep, setPaymentStep] = useState<'form' | 'prompt' | 'success' | 'error'>('form');
-  const [paymentError, setPaymentError] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
 
   useEffect(() => {
     const fetchPlans = async () => {
@@ -71,52 +69,19 @@ const Subscription: React.FC = () => {
       return;
     }
     setSelectedPlan(plan);
-    setPaymentStep('form');
-    setPaymentError('');
     setIsMoMoModalOpen(true);
   };
 
-  const handleInitiateMoMo = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!momoPhone.trim() || momoPhone.trim().length < 9) {
-      setPaymentError('Please enter a valid 9-digit mobile money phone number (e.g. 670000000)');
-      return;
-    }
-
-    setIsProcessing(true);
-    setPaymentError('');
-    try {
-      const response = await paymentsService.createPayment({
-        amount: selectedPlan?.price,
-        phone: momoPhone,
-        planName: selectedPlan?.name,
-        carrier: momoCarrier,
-        currency: selectedPlan?.currency || 'XAF',
+  const handleSubscriptionSuccess = (data: { planName?: string }) => {
+    if (user) {
+      const isVIP = data.planName?.toLowerCase().includes('vip') || data.planName?.toLowerCase().includes('annual');
+      updateUser({
+        ...user,
+        subscriptionStatus: isVIP ? 'vip' : 'premium',
       });
-      if (!response.data?.success) {
-        throw new Error(response.data?.message || 'Payment initiation failed.');
-      }
-    } catch (error: any) {
-      setPaymentError(error.response?.data?.message || error.message || 'Payment initiation failed.');
-      setPaymentStep('error');
-      setIsProcessing(false);
-      return;
     }
-
-    setIsProcessing(false);
-    setPaymentStep('prompt');
-
-    // Simulate mobile USSD confirmation delay
-    setTimeout(() => {
-      setPaymentStep('success');
-      if (user) {
-        updateUser({
-          ...user,
-          subscriptionStatus: selectedPlan?.name.toLowerCase().includes('annual') ? 'vip' : 'premium',
-        });
-      }
-    }, 3500);
   };
+
 
   return (
     <Layout
@@ -156,7 +121,7 @@ const Subscription: React.FC = () => {
               👑 Elevate Your Sound Experience
             </span>
             <h1 style={{ fontSize: '2.2rem', margin: '0 0 10px', color: '#fff' }}>
-              CamSound Premium Plans
+              {settings.platformName || 'CamSound'} Premium Plans
             </h1>
             <p style={{ color: 'rgba(255,255,255,0.85)', maxWidth: 620, margin: 0, fontSize: '1rem', lineHeight: 1.6 }}>
               Support Cameroonian artists directly, stream without interruptions, and listen in studio-master audio quality anywhere.
@@ -308,172 +273,22 @@ const Subscription: React.FC = () => {
       </div>
 
       {/* MoMo Payment Modal */}
-      {isMoMoModalOpen && selectedPlan && (
-        <div
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(0,0,0,0.75)',
-            backdropFilter: 'blur(8px)',
-            zIndex: 9999,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: 16,
-          }}
-        >
-          <div
-            style={{
-              background: 'var(--bg-secondary)',
-              border: '1px solid var(--border-gold-subtle)',
-              borderRadius: 16,
-              maxWidth: 460,
-              width: '100%',
-              padding: 32,
-              boxShadow: 'var(--shadow-large)',
-              position: 'relative',
-            }}
-          >
-            {paymentStep === 'form' && (
-              <>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                  <h3 style={{ margin: 0, fontSize: '1.25rem' }}>📱 Mobile Money Payment</h3>
-                  <button
-                    onClick={() => setIsMoMoModalOpen(false)}
-                    style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '1.2rem' }}
-                  >
-                    ×
-                  </button>
-                </div>
-
-                <div style={{ background: 'var(--bg-tertiary)', borderRadius: 10, padding: 14, marginBottom: 20 }}>
-                  <div style={{ fontSize: '0.82rem', color: 'var(--text-muted)' }}>Plan Selected</div>
-                  <div style={{ fontWeight: 700, fontSize: '1.05rem', color: '#fff' }}>{selectedPlan.name}</div>
-                  <div style={{ fontWeight: 800, color: 'var(--accent-color)', fontSize: '1.2rem', marginTop: 4 }}>
-                    {selectedPlan.price.toLocaleString()} {selectedPlan.currency} {selectedPlan.period}
-                  </div>
-                </div>
-
-                {paymentError && (
-                  <div style={{ padding: '10px 14px', borderRadius: 8, background: 'rgba(239,68,68,0.12)', color: '#f87171', fontSize: '0.88rem', marginBottom: 16 }}>
-                    <i className="fas fa-exclamation-circle" style={{ marginRight: 6 }} />
-                    {paymentError}
-                  </div>
-                )}
-
-                <form onSubmit={handleInitiateMoMo}>
-                  <div style={{ marginBottom: 16 }}>
-                    <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 8 }}>
-                      Select Carrier
-                    </label>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-                      <button
-                        type="button"
-                        onClick={() => setMomoCarrier('mtn')}
-                        style={{
-                          padding: '10px',
-                          borderRadius: 8,
-                          border: momoCarrier === 'mtn' ? '2px solid #FACC15' : '1px solid var(--border-color)',
-                          background: momoCarrier === 'mtn' ? 'rgba(250,204,21,0.1)' : 'var(--bg-primary)',
-                          color: '#fff',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        🟡 MTN MoMo
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setMomoCarrier('orange')}
-                        style={{
-                          padding: '10px',
-                          borderRadius: 8,
-                          border: momoCarrier === 'orange' ? '2px solid #FB923C' : '1px solid var(--border-color)',
-                          background: momoCarrier === 'orange' ? 'rgba(251,146,60,0.1)' : 'var(--bg-primary)',
-                          color: '#fff',
-                          fontWeight: 700,
-                          cursor: 'pointer',
-                        }}
-                      >
-                        🟠 Orange Money
-                      </button>
-                    </div>
-                  </div>
-
-                  <div style={{ marginBottom: 24 }}>
-                    <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: 8 }}>
-                      Mobile Money Number (+237)
-                    </label>
-                    <input
-                      type="tel"
-                      placeholder="670 00 00 00"
-                      value={momoPhone}
-                      onChange={(e) => setMomoPhone(e.target.value)}
-                      className="auth-input"
-                      style={{ width: '100%', fontSize: '1rem', letterSpacing: 1 }}
-                      required
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={isProcessing}
-                    className="btn-camsound-yellow"
-                    style={{ width: '100%', justifyContent: 'center', padding: '12px 20px', fontSize: '1rem', fontWeight: 800 }}
-                  >
-                    {isProcessing ? (
-                      <><i className="fas fa-spinner fa-spin" /> Contacting Gateway...</>
-                    ) : (
-                      <>Pay {selectedPlan.price.toLocaleString()} {selectedPlan.currency} <i className="fas fa-arrow-right" /></>
-                    )}
-                  </button>
-                </form>
-              </>
-            )}
-
-            {paymentStep === 'prompt' && (
-              <div style={{ textAlign: 'center', padding: '16px 0' }}>
-                <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(250,204,21,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: 'var(--accent-color)', fontSize: '1.8rem' }}>
-                  <i className="fas fa-mobile-alt fa-bounce" />
-                </div>
-                <h3 style={{ margin: '0 0 8px' }}>USSD Prompt Sent!</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: 20 }}>
-                  Please check your phone (<strong>{momoPhone}</strong>). A popup prompt has been sent to enter your PIN and approve the transaction.
-                </p>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, color: 'var(--accent-color)', fontSize: '0.88rem' }}>
-                  <i className="fas fa-circle-notch fa-spin" />
-                  Waiting for network confirmation...
-                </div>
-              </div>
-            )}
-
-            {paymentStep === 'success' && (
-              <div style={{ textAlign: 'center', padding: '16px 0' }}>
-                <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(74,222,128,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px', color: '#4ade80', fontSize: '2rem' }}>
-                  <i className="fas fa-check" />
-                </div>
-                <h3 style={{ margin: '0 0 8px' }}>Subscription Activated! 🎉</h3>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.5, marginBottom: 24 }}>
-                  You are now upgraded to <strong>{selectedPlan.name}</strong>. Enjoy unlimited ad-free high-fidelity Cameroonian music!
-                </p>
-                <button
-                  type="button"
-                  className="btn-camsound-yellow"
-                  style={{ width: '100%', justifyContent: 'center' }}
-                  onClick={() => {
-                    setIsMoMoModalOpen(false);
-                    navigate('/fan');
-                  }}
-                >
-                  Start Listening Now <i className="fas fa-play" />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
+      {selectedPlan && (
+        <MoMoPaymentModal
+          isOpen={isMoMoModalOpen}
+          onClose={() => setIsMoMoModalOpen(false)}
+          mode="subscription"
+          amount={selectedPlan.price}
+          currency={selectedPlan.currency || 'XAF'}
+          planName={selectedPlan.name}
+          planPeriod={selectedPlan.period || '/month'}
+          initialPhone={user?.phone || ''}
+          onSuccess={handleSubscriptionSuccess}
+        />
       )}
     </Layout>
   );
 };
 
 export default Subscription;
+

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import QuickStatsAccordion from './QuickStatsAccordion';
 import { useAuth } from '../context/AuthContext';
 import { useAudio } from '../context/AudioContext';
+import { usePlatformSettings } from '../context/SettingsContext';
 import { useNavigate } from 'react-router-dom';
 import SongPlayerModal from './SongPlayerModal';
 
@@ -21,6 +22,7 @@ export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => 
 }) => {
   const { user } = useAuth();
   const { isPlaying } = useAudio();
+  const { settings } = usePlatformSettings();
 
   return (
     <>
@@ -34,16 +36,21 @@ export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => 
               width: 42, height: 42, borderRadius: '50%',
               background: '#facc15',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 0 16px rgba(250, 204, 21, 0.4)'
+              boxShadow: '0 0 16px rgba(250, 204, 21, 0.4)',
+              overflow: 'hidden', flexShrink: 0
             }}>
-              <i className={`fas fa-drum ${isPlaying ? 'fa-spin' : ''}`} style={{ color: '#0b0f0c', fontSize: '1.3rem' }} />
+              {settings.logoUrl ? (
+                <img src={settings.logoUrl} alt={settings.platformName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              ) : (
+                <i className={`fas ${settings.logoIcon || 'fa-drum'} ${isPlaying ? 'fa-spin' : ''}`} style={{ color: '#0b0f0c', fontSize: '1.3rem' }} />
+              )}
             </div>
-            <div>
-              <h1 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 800, color: '#facc15' }}>
-                CamSound
+            <div style={{ overflow: 'hidden' }}>
+              <h1 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 800, color: '#facc15', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {settings.platformName || 'CamSound'}
               </h1>
-              <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--accent-color)', fontWeight: 600, letterSpacing: 0.5 }}>
-                Discover Cameroonian Music
+              <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--accent-color)', fontWeight: 600, letterSpacing: 0.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {settings.platformDesc || 'Discover Cameroonian Music'}
               </p>
             </div>
           </div>

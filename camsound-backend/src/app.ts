@@ -28,7 +28,9 @@ import adRevenueRoutes from './routes/adrevenue';
 import notificationSettingsRoutes from './routes/notificationSettings';
 import adminLogsRoutes from './routes/adminLogs';
 import reportsRoutes from './routes/reports';
+import settingsRoutes from './routes/settings';
 import * as commentsController from './controllers/commentsController';
+import * as adminController from './controllers/adminController';
 import { verifyCsrf } from './middleware/csrf';
 
 // Middleware
@@ -99,6 +101,8 @@ app.use('/api/admin-logs', adminLogsRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/stats', statsRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/settings', settingsRoutes);
+app.use('/api/platform/settings', settingsRoutes);
 
 // Community global routes
 app.get('/api/community/comments', commentsController.getRecentComments);
@@ -136,3 +140,4 @@ app.listen(PORT, () => {
 });
 
 export default app;
+

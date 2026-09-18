@@ -8067,6 +8067,32 @@ select:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
+/* Table chip and action polish */
+.section-card table th,
+.section-card table td {
+  padding: 14px 16px !important;
+  vertical-align: middle !important;
+}
 
+.section-card table td span[style*="border-radius: 999"] {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 28px !important;
+  padding: 6px 14px !important;
+  margin: 2px 0 !important;
+  line-height: 1.1 !important;
+  letter-spacing: 0 !important;
+  white-space: nowrap !important;
+}
 
+.section-card table .btn-camsound-outline,
+.section-card table button[style*="border"] {
+  min-height: 30px !important;
+  padding: 6px 11px !important;
+  border-radius: 8px !important;
+  line-height: 1.1 !important;
+  font-weight: 700 !important;
+  white-space: nowrap !important;
+}
 

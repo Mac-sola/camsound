@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { usePlatformSettings } from '../context/SettingsContext';
 import { authService } from '../services/api';
 
 const Login: React.FC = () => {
@@ -10,6 +11,7 @@ const Login: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showPass, setShowPass] = useState(false);
   const { login } = useAuth();
+  const { settings } = usePlatformSettings();
   const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -67,8 +69,15 @@ const Login: React.FC = () => {
       <div className="auth-card">
         {/* Logo */}
         <div className="auth-logo">
-          <h1><i className="fas fa-drum" style={{ fontSize: '2rem', WebkitTextFillColor: 'unset', background: 'none', color: 'var(--accent-color)' }} />CamSound</h1>
-          <p>Amplifying Cameroonian music globally</p>
+          <h1 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            {settings.logoUrl ? (
+              <img src={settings.logoUrl} alt={settings.platformName} style={{ width: 36, height: 36, borderRadius: '50%', objectFit: 'cover' }} />
+            ) : (
+              <i className={`fas ${settings.logoIcon || 'fa-drum'}`} style={{ fontSize: '2rem', WebkitTextFillColor: 'unset', background: 'none', color: 'var(--accent-color)' }} />
+            )}
+            {settings.platformName || 'CamSound'}
+          </h1>
+          <p>{settings.platformDesc || 'Amplifying Cameroonian music globally'}</p>
         </div>
 
         {/* Error */}
