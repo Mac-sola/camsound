@@ -1284,20 +1284,22 @@ const ArtistDashboard: React.FC = () => {
           </div>
 
           {socialTab === 'tracks' ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(240px, 320px) 1fr', gap: 20, alignItems: 'start' }}>
-              {/* Track Selector List */}
-              <div className="section-card" style={{ padding: 16 }}>
-                <h3 style={{ fontSize: '1rem', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <span>Select Track</span>
-                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{stats?.topSongs?.length || 0} tracks</span>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 24, alignItems: 'start' }}>
+              {/* Track Selector List (50% Equal Grid) */}
+              <div className="section-card" style={{ padding: 20 }}>
+                <h3 style={{ fontSize: '1.05rem', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#fff' }}>
+                  <span><i className="fas fa-list-music" style={{ marginRight: 8, color: 'var(--accent-color)' }} />Select Track</span>
+                  <span style={{ fontSize: '0.8rem', background: 'rgba(250,204,21,0.12)', color: 'var(--accent-color)', padding: '2px 10px', borderRadius: 12, fontWeight: 700 }}>
+                    {stats?.topSongs?.length || 0} tracks
+                  </span>
                 </h3>
                 {!stats?.topSongs?.length ? (
-                  <div style={{ textAlign: 'center', padding: '24px 8px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
-                    <i className="fas fa-music" style={{ fontSize: '1.8rem', opacity: 0.3, marginBottom: 8, display: 'block' }} />
+                  <div style={{ textAlign: 'center', padding: '48px 16px', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                    <i className="fas fa-music" style={{ fontSize: '2rem', opacity: 0.3, marginBottom: 12, display: 'block' }} />
                     Upload tracks to see discussions.
                   </div>
                 ) : (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '600px', overflowY: 'auto' }}>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, maxHeight: '680px', overflowY: 'auto', paddingRight: 4 }}>
                     {stats.topSongs.map((song: any) => {
                       const isSelected = (selectedSocialSongId || stats.topSongs[0]?._id) === song._id;
                       return (
@@ -1307,32 +1309,35 @@ const ArtistDashboard: React.FC = () => {
                           style={{
                             display: 'flex',
                             alignItems: 'center',
-                            gap: 12,
-                            padding: '10px 12px',
-                            borderRadius: 10,
-                            background: isSelected ? 'rgba(250,204,21,0.12)' : 'var(--bg-tertiary)',
-                            border: `1px solid ${isSelected ? 'var(--accent-color)' : 'transparent'}`,
+                            gap: 14,
+                            padding: '12px 14px',
+                            borderRadius: 12,
+                            background: isSelected ? 'rgba(250,204,21,0.14)' : 'var(--bg-tertiary)',
+                            border: `1.5px solid ${isSelected ? 'var(--accent-color)' : 'rgba(255,255,255,0.06)'}`,
+                            boxShadow: isSelected ? '0 4px 18px rgba(250,204,21,0.15)' : 'none',
                             cursor: 'pointer',
-                            transition: 'all 0.2s'
+                            transition: 'all 0.2s ease',
                           }}
                         >
-                          <div style={{ width: 40, height: 40, borderRadius: 8, overflow: 'hidden', background: '#242247', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ width: 48, height: 48, borderRadius: 10, overflow: 'hidden', background: '#242247', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             {song.coverArt ? (
                               <img src={song.coverArt} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                             ) : (
-                              <i className="fas fa-music" style={{ color: 'var(--accent-color)', fontSize: '0.9rem' }} />
+                              <i className="fas fa-music" style={{ color: 'var(--accent-color)', fontSize: '1.1rem' }} />
                             )}
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontWeight: 700, fontSize: '0.88rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: isSelected ? 'var(--accent-color)' : '#fff' }}>
+                            <div style={{ fontWeight: 700, fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: isSelected ? 'var(--accent-color)' : '#fff' }}>
                               {song.title}
                             </div>
-                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>
-                              {song.genre || 'Afrobeat'} • {song.plays || 0} plays
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: '0.78rem', color: 'var(--text-muted)', marginTop: 4 }}>
+                              <span style={{ background: 'rgba(255,255,255,0.06)', padding: '1px 6px', borderRadius: 4 }}>{song.genre || 'Afrobeat'}</span>
+                              <span>•</span>
+                              <span><i className="fas fa-play" style={{ fontSize: '0.65rem', marginRight: 3, opacity: 0.7 }} />{song.plays || 0} plays</span>
                             </div>
                           </div>
                           {isSelected && (
-                            <i className="fas fa-chevron-right" style={{ color: 'var(--accent-color)', fontSize: '0.8rem' }} />
+                            <i className="fas fa-chevron-right" style={{ color: 'var(--accent-color)', fontSize: '0.9rem', marginLeft: 4 }} />
                           )}
                         </div>
                       );
@@ -1341,8 +1346,8 @@ const ArtistDashboard: React.FC = () => {
                 )}
               </div>
 
-              {/* Dedicated Discussion Area */}
-              <div className="section-card">
+              {/* Dedicated Discussion Area (50% Equal Grid) */}
+              <div className="section-card" style={{ padding: 20 }}>
                 {(() => {
                   const currentSongId = selectedSocialSongId || stats?.topSongs?.[0]?._id;
                   const currentSong = stats?.topSongs?.find((s: any) => s._id === currentSongId);
