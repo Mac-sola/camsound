@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Layout from '../components/Layout';
 import FanHome from '../components/FanHome';
 import FanBrowse from '../components/FanBrowse';
@@ -12,36 +13,56 @@ import FanSettings from '../components/FanSettings';
 import FanFavorites from '../components/FanFavorites';
 import FanPlaylists from '../components/FanPlaylists';
 import { notificationsService } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 
-/** Navigation items per LEGACY_PROJECT_SPEC § 3.3.1 */
-const FAN_NAV = [
-  { section: 'DISCOVER' },
-  { label: 'Home',          icon: 'fa-home',         view: 'home' },
-  { label: 'Browse',        icon: 'fa-search',        view: 'browse' },
-  { label: 'Genres',        icon: 'fa-music',         view: 'genres' },
-  { label: 'Community',     icon: 'fa-users',         view: 'community' },
-  { section: 'MY MUSIC' },
-  { label: 'My Music',      icon: 'fa-music',         view: 'favorites' },
-  { label: 'Playlists',     icon: 'fa-list',          view: 'playlists' },
-  { label: 'History',       icon: 'fa-history',       view: 'history' },
-  { section: 'FOLLOWING' },
-  { label: 'Following',     icon: 'fa-user-friends',  view: 'following' },
-  { label: 'Notifications', icon: 'fa-bell',          view: 'notifications' },
-  { section: 'ACCOUNT' },
-  { label: 'Profile',       icon: 'fa-user',          view: 'profile' },
-  { label: 'Settings',      icon: 'fa-cog',           view: 'settings' },
+type FanNavItemDef =
+  | { section: string }
+  | { labelKey: string; icon: string; view: string };
+
+/** Navigation items per LEGACY_PROJECT_SPEC § 3.3.1 — labels resolved via i18n keys */
+const FAN_NAV_DEF: FanNavItemDef[] = [
+  { section: 'nav.discover_sec' },
+  { labelKey: 'nav.home',          icon: 'fa-home',         view: 'home' },
+  { labelKey: 'nav.browse',        icon: 'fa-search',        view: 'browse' },
+  { labelKey: 'nav.genres',        icon: 'fa-music',         view: 'genres' },
+  { labelKey: 'nav.community',     icon: 'fa-users',         view: 'community' },
+  { section: 'nav.my_music_sec' },
+  { labelKey: 'nav.my_music',      icon: 'fa-music',         view: 'favorites' },
+  { labelKey: 'nav.playlists',     icon: 'fa-list',          view: 'playlists' },
+  { labelKey: 'nav.history',       icon: 'fa-history',       view: 'history' },
+  { section: 'nav.following_sec' },
+  { labelKey: 'nav.following',     icon: 'fa-user-friends',  view: 'following' },
+  { labelKey: 'nav.notifications', icon: 'fa-bell',          view: 'notifications' },
+  { section: 'nav.account_sec' },
+  { labelKey: 'nav.profile',       icon: 'fa-user',          view: 'profile' },
+  { labelKey: 'nav.settings',      icon: 'fa-cog',           view: 'settings' },
+  { labelKey: 'nav.get_premium',   icon: 'fa-crown',         view: 'subscription' },
 ];
 
 const FanDashboard: React.FC = () => {
+  const navigate = useNavigate();
+  const { t } = useLanguage();
   const [activeView, setActiveView] = useState('home');
   const [searchQuery, setSearchQuery] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // Resolve nav items with translated labels
+  const FAN_NAV = FAN_NAV_DEF.map(item => {
+    if ('section' in item) return { section: t(item.section) };
+    return { ...item, label: t(item.labelKey) };
+  });
+
   useEffect(() => {
-    notificationsService.getNotifications().then(response => {
-      setUnreadCount(response.data?.unreadCount ?? (response.data?.data ?? []).filter((item: any) => !item.isRead && !item.read).length);
-    }).catch(() => setUnreadCount(0));
-  }, [activeView]);
+    document.title = 'Music Lounge — CamSound';
+    const fetchUnread = () => {
+      notificationsService.getNotifications().then(response => {
+        setUnreadCount(response.data?.unreadCount ?? (response.data?.data ?? []).filter((item: any) => !item.isRead && !item.read).length);
+      }).catch(() => setUnreadCount(0));
+    };
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 30000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
@@ -65,10 +86,18 @@ const FanDashboard: React.FC = () => {
         return (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: 80, color: 'var(--text-muted)', gap: 12 }}>
             <i className="fas fa-tools" style={{ fontSize: '3rem', color: 'var(--accent-color)' }} />
-            <h3 style={{ color: 'var(--text-light)', margin: 0 }}>Coming Soon</h3>
-            <p style={{ margin: 0 }}>This feature is being built. Check back soon!</p>
+            <h3 style={{ color: 'var(--text-light)', margin: 0 }}>{t('common.coming_soon_title')}</h3>
+            <p style={{ margin: 0 }}>{t('common.coming_soon_feature')}</p>
           </div>
         );
+    }
+  };
+
+  const handleNavClick = (view: string) => {
+    if (view === 'subscription') {
+      navigate('/subscription');
+    } else {
+      setActiveView(view);
     }
   };
 
@@ -76,7 +105,7 @@ const FanDashboard: React.FC = () => {
     <Layout
       navItems={FAN_NAV}
       activeView={activeView}
-      onNavClick={setActiveView}
+      onNavClick={handleNavClick}
       searchValue={searchQuery}
       onSearchChange={handleSearchChange}
       showQuickStats

@@ -6,14 +6,16 @@ import SongCard, { type SongItem } from './SongCard';
 import ArtistCard, { type ArtistItem } from './ArtistCard';
 import PlaylistCard, { type PlaylistItem } from './PlaylistCard';
 import ArtistDetailsModal from './ArtistDetailsModal';
-import HeroCarousel from './HeroCarousel';
+import FanSpotlightCarousel from './FanSpotlightCarousel';
 import { GENRE_CARDS_DATA } from '../utils/musicImages';
+import { useLanguage } from '../context/LanguageContext';
 
 const GENRES = ['All', 'Makossa', 'Bikutsi', 'Afrobeat', 'Traditional', 'Assiko', 'Gospel', 'Hip Hop', 'R&B'];
 
 export const FanHome: React.FC = () => {
   const { user } = useAuth();
   const { playSong } = useAudio();
+  const { t } = useLanguage();
   const [newReleases, setNewReleases] = useState<SongItem[]>([]);
   const [trending, setTrending] = useState<SongItem[]>([]);
   const [artists, setArtists] = useState<ArtistItem[]>([]);
@@ -94,9 +96,9 @@ export const FanHome: React.FC = () => {
 
   return (
     <div className="fan-home-container view-enter">
-      {/* ── Spotlight Music Carousel ── */}
+      {/* ── Fan Spotlight Carousel (music-first, not marketing) ── */}
       <div style={{ marginBottom: 28 }}>
-        <HeroCarousel />
+        <FanSpotlightCarousel songs={newReleases} artists={artists} />
       </div>
 
       {/* ── Hero Welcome Banner ── */}
@@ -139,13 +141,13 @@ export const FanHome: React.FC = () => {
                   marginBottom: 8,
                 }}
               >
-                <i className="fas fa-sparkles" /> PREMIUM DISCOVERY
+                <i className="fas fa-sparkles" /> {t('fan.premium_discovery')}
               </div>
               <h2 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 800, color: '#fff' }}>
-                Welcome back, <span style={{ color: 'var(--accent-color)' }}>{user?.name ?? 'Music Lover'}</span>!
+                {t('fan.welcome_back')} <span style={{ color: 'var(--accent-color)' }}>{user?.name ?? t('fan.music_lover')}</span>!
               </h2>
               <p style={{ margin: '6px 0 0 0', color: 'rgba(255, 255, 255, 0.75)', fontSize: '0.95rem' }}>
-                Explore the latest sounds, artists, and trending releases in Cameroon
+                {t('fan.welcome_desc')}
               </p>
             </div>
           </div>
@@ -157,7 +159,7 @@ export const FanHome: React.FC = () => {
               </div>
               <div>
                 <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff' }}>{newReleases.length}</div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>New Tracks</div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('fan.new_tracks')}</div>
               </div>
             </div>
 
@@ -179,7 +181,7 @@ export const FanHome: React.FC = () => {
                 <div style={{ fontSize: '1.25rem', fontWeight: 800, color: '#fff' }}>
                   {totalPlays.toLocaleString()}
                 </div>
-                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>Total Plays</div>
+                <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', fontWeight: 600 }}>{t('fan.total_plays')}</div>
               </div>
             </div>
           </div>
@@ -194,8 +196,8 @@ export const FanHome: React.FC = () => {
               <i className="fas fa-music" />
             </div>
             <div>
-              <div className="fan-section-title-premium">Browse by Genre</div>
-              <div className="fan-section-subtitle-premium">Filter by your favourite style</div>
+              <div className="fan-section-title-premium">{t('fan.browse_genre')}</div>
+              <div className="fan-section-subtitle-premium">{t('fan.browse_genre_sub')}</div>
             </div>
           </div>
         </div>
@@ -242,7 +244,7 @@ export const FanHome: React.FC = () => {
       {loading ? (
         <div className="fan-loading" style={{ padding: 40 }}>
           <i className="fas fa-spinner fa-spin" />
-          <span>Loading music library...</span>
+          <span>{t('fan.loading_music')}</span>
         </div>
       ) : (
         <>
@@ -254,8 +256,8 @@ export const FanHome: React.FC = () => {
                   <i className="fas fa-compact-disc" />
                 </div>
                 <div>
-                  <div className="fan-section-title-premium">New Releases</div>
-                  <div className="fan-section-subtitle-premium">Fresh tracks just dropped</div>
+                  <div className="fan-section-title-premium">{t('fan.new_releases')}</div>
+                  <div className="fan-section-subtitle-premium">{t('fan.new_releases_sub')}</div>
                 </div>
               </div>
             </div>
@@ -283,8 +285,8 @@ export const FanHome: React.FC = () => {
                   <i className="fas fa-fire" />
                 </div>
                 <div>
-                  <div className="fan-section-title-premium">Trending Now</div>
-                  <div className="fan-section-subtitle-premium">What's hot in Cameroon right now</div>
+                  <div className="fan-section-title-premium">{t('fan.trending_now')}</div>
+                  <div className="fan-section-subtitle-premium">{t('fan.trending_now_sub')}</div>
                 </div>
               </div>
             </div>
@@ -313,8 +315,8 @@ export const FanHome: React.FC = () => {
                     <i className="fas fa-list" />
                   </div>
                   <div>
-                    <div className="fan-section-title-premium">Made For You</div>
-                    <div className="fan-section-subtitle-premium">Handpicked playlists for your taste</div>
+                    <div className="fan-section-title-premium">{t('fan.made_for_you')}</div>
+                    <div className="fan-section-subtitle-premium">{t('fan.made_for_you_sub')}</div>
                   </div>
                 </div>
               </div>
@@ -335,8 +337,8 @@ export const FanHome: React.FC = () => {
                     <i className="fas fa-users" />
                   </div>
                   <div>
-                    <div className="fan-section-title-premium">Trending Artists</div>
-                    <div className="fan-section-subtitle-premium">Cameroonian talents to watch</div>
+                    <div className="fan-section-title-premium">{t('fan.trending_artists')}</div>
+                    <div className="fan-section-subtitle-premium">{t('fan.trending_artists_sub')}</div>
                   </div>
                 </div>
               </div>
@@ -361,8 +363,8 @@ export const FanHome: React.FC = () => {
                     <i className="fas fa-heart" />
                   </div>
                   <div>
-                    <div className="fan-section-title-premium">Favorite Artists</div>
-                    <div className="fan-section-subtitle-premium">Artists in your collection</div>
+                    <div className="fan-section-title-premium">{t('fan.favorite_artists')}</div>
+                    <div className="fan-section-subtitle-premium">{t('fan.favorite_artists_sub')}</div>
                   </div>
                 </div>
               </div>

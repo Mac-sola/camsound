@@ -5,6 +5,7 @@ import { usePlatformSettings } from '../context/SettingsContext';
 import { subscriptionsService } from '../services/api';
 import { useNavigate } from 'react-router-dom';
 import MoMoPaymentModal from '../components/MoMoPaymentModal';
+import { useLanguage } from '../context/LanguageContext';
 
 const FAN_NAV = [
   { section: 'Discover' },
@@ -41,6 +42,7 @@ const Subscription: React.FC = () => {
   const { user, updateUser } = useAuth();
   const { settings } = usePlatformSettings();
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [plans, setPlans] = useState<Plan[]>([]);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   const [isMoMoModalOpen, setIsMoMoModalOpen] = useState(false);
@@ -118,24 +120,24 @@ const Subscription: React.FC = () => {
                 marginBottom: 8,
               }}
             >
-              👑 Elevate Your Sound Experience
+              {t('sub.elevate')}
             </span>
             <h1 style={{ fontSize: '2.2rem', margin: '0 0 10px', color: '#fff' }}>
-              {settings.platformName || 'CamSound'} Premium Plans
+              {settings.platformName || 'CamSound'} {t('sub.premium_plans')}
             </h1>
             <p style={{ color: 'rgba(255,255,255,0.85)', maxWidth: 620, margin: 0, fontSize: '1rem', lineHeight: 1.6 }}>
-              Support Cameroonian artists directly, stream without interruptions, and listen in studio-master audio quality anywhere.
+              {t('sub.hero_desc')}
             </p>
 
             <div style={{ marginTop: 20, display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
               <span style={{ fontSize: '0.88rem', color: 'var(--text-light)', background: 'rgba(0,0,0,0.3)', padding: '6px 14px', borderRadius: 999 }}>
-                Current Status:{' '}
+                {t('sub.current_status')}{' '}
                 <strong style={{ color: user?.subscriptionStatus === 'premium' || user?.subscriptionStatus === 'vip' ? 'var(--accent-color)' : '#4ade80' }}>
                   {user?.subscriptionStatus?.toUpperCase() || 'FREE FAN'}
                 </strong>
               </span>
               <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                🔒 Fast & secure Mobile Money checkout (MTN MoMo & Orange Money)
+                {t('sub.secure_checkout')}
               </span>
             </div>
           </div>
@@ -175,7 +177,7 @@ const Subscription: React.FC = () => {
                     boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
                   }}
                 >
-                  ⭐ Most Popular
+                  ⭐ {t('sub.most_popular')}
                 </div>
               )}
 
@@ -196,7 +198,7 @@ const Subscription: React.FC = () => {
 
               <div style={{ flex: 1, marginBottom: 24 }}>
                 <div style={{ fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: 1, color: 'var(--text-muted)', fontWeight: 700, marginBottom: 12 }}>
-                  Included Features:
+                  {t('sub.included_features')}
                 </div>
                 <ul style={{ listStyle: 'none', padding: 0, margin: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
                   {plan.features.map((feat, fIdx) => (
@@ -232,9 +234,9 @@ const Subscription: React.FC = () => {
               >
                 {plan.price === 0
                   ? user?.subscriptionStatus === 'free' || !user?.subscriptionStatus
-                    ? 'Current Plan'
-                    : 'Downgrade to Free'
-                  : `Upgrade with MoMo — ${plan.price.toLocaleString()} ${plan.currency}`}
+                    ? t('sub.current_plan')
+                    : t('sub.downgrade_free')
+                  : `${t('sub.upgrade_momo')} ${plan.price.toLocaleString()} ${plan.currency}`}
               </button>
             </div>
           ))}
@@ -244,28 +246,28 @@ const Subscription: React.FC = () => {
         <div className="section-card" style={{ padding: 28, borderRadius: 16 }}>
           <h3 style={{ margin: '0 0 20px', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: 10 }}>
             <i className="fas fa-question-circle" style={{ color: 'var(--accent-color)' }} />
-            Frequently Asked Questions
+            {t('sub.faq_title')}
           </h3>
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
             <div>
-              <h4 style={{ fontSize: '0.98rem', color: '#fff', marginBottom: 6 }}>How does Mobile Money payment work?</h4>
+              <h4 style={{ fontSize: '0.98rem', color: '#fff', marginBottom: 6 }}>{t('sub.faq_q1')}</h4>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', lineHeight: 1.6, margin: 0 }}>
-                Enter your MTN MoMo or Orange Money phone number. You will receive an instant USSD popup prompt on your mobile phone to enter your PIN and validate the transaction.
+                {t('sub.faq_a1')}
               </p>
             </div>
 
             <div>
-              <h4 style={{ fontSize: '0.98rem', color: '#fff', marginBottom: 6 }}>Can I cancel anytime?</h4>
+              <h4 style={{ fontSize: '0.98rem', color: '#fff', marginBottom: 6 }}>{t('sub.faq_q2')}</h4>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', lineHeight: 1.6, margin: 0 }}>
-                Yes! There are no long-term contracts. If you choose not to renew, your account simply switches back to the Free Fan plan at the end of the billing period.
+                {t('sub.faq_a2')}
               </p>
             </div>
 
             <div>
-              <h4 style={{ fontSize: '0.98rem', color: '#fff', marginBottom: 6 }}>How do artists earn from my subscription?</h4>
+              <h4 style={{ fontSize: '0.98rem', color: '#fff', marginBottom: 6 }}>{t('sub.faq_q3')}</h4>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', lineHeight: 1.6, margin: 0 }}>
-                A major portion of every subscription fee is distributed directly to the Cameroonian artists whose songs you stream via our automated royalty calculator.
+                {t('sub.faq_a3')}
               </p>
             </div>
           </div>

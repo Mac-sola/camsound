@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { followsService, songsService } from '../services/api';
 import ArtistCard, { type ArtistItem } from './ArtistCard';
-import ArtistDetailsModal from './ArtistDetailsModal';
 
 interface Song {
   _id: string;
@@ -15,7 +15,11 @@ export const FanFollowing: React.FC<{ onNavClick?: (view: string) => void }> = (
   const [following, setFollowing] = useState<ArtistItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [latestSongs, setLatestSongs] = useState<Song[]>([]);
-  const [selectedArtist, setSelectedArtist] = useState<any>(null);
+  const navigate = useNavigate();
+
+  const handleArtistClick = (artist: { _id?: string }) => {
+    if (artist._id) navigate(`/artists/${artist._id}`);
+  };
 
   const fetchFollowing = useCallback(async () => {
     setLoading(true);
@@ -102,7 +106,7 @@ export const FanFollowing: React.FC<{ onNavClick?: (view: string) => void }> = (
                 artist={artist}
                 isFollowing={true}
                 onFollowToggle={handleUnfollow}
-                onArtistClick={setSelectedArtist}
+                onArtistClick={handleArtistClick}
               />
             ))}
           </div>
@@ -159,8 +163,6 @@ export const FanFollowing: React.FC<{ onNavClick?: (view: string) => void }> = (
           </div>
         </>
       )}
-
-      <ArtistDetailsModal artist={selectedArtist} onClose={() => setSelectedArtist(null)} />
     </div>
   );
 };

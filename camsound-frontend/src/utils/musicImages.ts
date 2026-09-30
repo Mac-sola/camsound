@@ -48,16 +48,22 @@ export const GENRE_CARDS_DATA = [
     color: '#f59e0b',
   },
   {
+    name: 'Bikutsi',
+    desc: 'Fast acoustic 6/8 rhythms from Center Cameroon',
+    image: '/music/wes-hicks-MEL-jJnm7RQ-unsplash.jpg',
+    color: '#10b981',
+  },
+  {
     name: 'Afrobeat',
     desc: 'Modern energetic club and street anthems',
     image: '/music/caught-in-joy-ptVBlniJi50-unsplash.jpg',
     color: '#ef4444',
   },
   {
-    name: 'Bikutsi',
-    desc: 'Fast acoustic 6/8 rhythms from Center Cameroon',
-    image: '/music/wes-hicks-MEL-jJnm7RQ-unsplash.jpg',
-    color: '#10b981',
+    name: 'Mbole',
+    desc: 'Viral Yaounde youth street rhythms & live percussion',
+    image: '/music/danny-howe-bn-D2bCvpik-unsplash.jpg',
+    color: '#f97316',
   },
   {
     name: 'Assiko',
@@ -68,13 +74,37 @@ export const GENRE_CARDS_DATA = [
   {
     name: 'Gospel',
     desc: 'Inspiring Cameroonian praise and worship melodies',
-    image: '/music/nainoa-shizuru-NcdG9mK3PBY-unsplash.jpg',
+    image: '/music/young-cheerful-ethnic-woman-enjoys-music-floor-sits-crossed-legs-wears-pink-shirt-jeans-socks-listens-audio-track-with-loud-sound-isolated-yellow-wall-empty-space.jpg',
     color: '#3b82f6',
   },
   {
-    name: 'Hip Hop / R&B',
-    desc: 'Urban rap, drill, and smooth Afro-R&B fusion',
-    image: '/music/lewis-guapo-XJK8gdWpxWk-unsplash.jpg',
+    name: 'Hip Hop',
+    desc: 'Urban 237 rap, street lyricism, and drill anthems',
+    image: '/music/charismatic-modern-young-attractive-africanamerican-girl-with-afro-haircut-listening-music-headph.jpg',
     color: '#ec4899',
+  },
+  {
+    name: 'Benskin',
+    desc: 'Grassfields cultural celebration and dance cadence',
+    image: '/music/john-matychuk-gUK3lA3K7Yo-unsplash.jpg',
+    color: '#14b8a6',
+  },
+  {
+    name: 'Traditional',
+    desc: 'Heritage folklore across all 10 regions of Cameroon',
+    image: '/music/adrian-korte-5gn2soeAc40-unsplash.jpg',
+    color: '#d97706',
+  },
+  {
+    name: 'Highlife',
+    desc: 'Coastal swing, brass riffs, and palm-wine melodies',
+    image: '/music/aditya-chinchure-ZhQCZjr9fHo-unsplash.jpg',
+    color: '#a855f7',
+  },
+  {
+    name: 'R&B',
+    desc: 'Smooth soulful vocals and romantic Afro-ballads',
+    image: '/music/beautiful-woman-listening-music-through-headphones-digital-device.jpg',
+    color: '#f43f5e',
   },
 ];

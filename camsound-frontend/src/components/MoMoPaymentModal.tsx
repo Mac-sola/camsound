@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { momoService } from '../services/api';
 import { usePlatformSettings } from '../context/SettingsContext';
+import { useLanguage } from '../context/LanguageContext';
 
 export interface MoMoPaymentProps {
   isOpen: boolean;
@@ -33,11 +34,11 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
   onSuccess,
 }) => {
   const { settings } = usePlatformSettings();
+  const { t } = useLanguage();
   const [phone, setPhone] = useState(initialPhone || '');
   const [tipMessage, setTipMessage] = useState('');
   const [selectedTip, setSelectedTip] = useState<number>(amount || 1000);
   const [currentAmount, setCurrentAmount] = useState<number>(amount);
-  const [customAmount, setCustomAmount] = useState<string>(amount ? String(amount) : '1000');
 
   const [step, setStep] = useState<SimulationStep>('form');
   const [pin, setPin] = useState('');
@@ -106,12 +107,12 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
     setErrorMsg('');
 
     if (!validatePhone(phone)) {
-      setErrorMsg('Please enter a valid 9-digit Cameroonian MTN number (starts with 6, e.g. 670 000 000)');
+      setErrorMsg(t('momo.valid_phone_err', 'Please enter a valid 9-digit Cameroonian MTN number (starts with 6, e.g. 670 000 000)'));
       return;
     }
 
     if (mode === 'withdrawal' && currentAmount < 5000) {
-      setErrorMsg('Minimum withdrawal amount is 5,000 FCFA.');
+      setErrorMsg(t('momo.min_withdrawal_err', 'Minimum withdrawal amount is 5,000 FCFA.'));
       return;
     }
 
@@ -161,17 +162,17 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
   const handleAuthorizePayment = async () => {
     setStep('verifying');
     setStepProgress(20);
-    setStatusMessage('Connecting to MTN Cameroon MoMo Gateway...');
+    setStatusMessage(t('momo.connecting_gateway', 'Connecting to MTN Cameroon MoMo Gateway...'));
 
     // Progress animation
     setTimeout(() => {
       setStepProgress(55);
-      setStatusMessage(`Authorizing debit of ${currentAmount.toLocaleString()} FCFA with MTN network...`);
+      setStatusMessage(t('momo.authorizing_debit', 'Authorizing debit with MTN network...'));
     }, 900);
 
     setTimeout(() => {
       setStepProgress(85);
-      setStatusMessage('Validating secure transaction token...');
+      setStatusMessage(t('momo.validating_token', 'Validating secure transaction token...'));
     }, 1800);
 
     setTimeout(async () => {
@@ -284,10 +285,10 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
             </div>
             <div>
               <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#fff', lineHeight: 1.2 }}>
-                MTN Mobile Money
+                {t('momo.title', 'MTN Mobile Money')}
               </div>
               <div style={{ fontSize: '0.72rem', color: '#FACC15', fontWeight: 600, letterSpacing: 0.5 }}>
-                ⚡ LIVE SIMULATION ENGINE
+                {t('momo.live_simulation', '⚡ LIVE SIMULATION ENGINE')}
               </div>
             </div>
           </div>
@@ -329,7 +330,7 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
               {mode === 'subscription' && (
                 <div>
                   <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 1, color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>
-                    Subscription Package
+                    {t('momo.subscription_pkg', 'Subscription Package')}
                   </div>
                   <div style={{ fontSize: '1.15rem', fontWeight: 800, color: '#fff', margin: '4px 0 2px' }}>
                     {planName}
@@ -343,18 +344,18 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
               {mode === 'withdrawal' && (
                 <div>
                   <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 1, color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>
-                    Artist MoMo Cashout
+                    {t('momo.artist_cashout', 'Artist MoMo Cashout')}
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 4 }}>
-                    <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)' }}>Gross Withdrawal:</span>
+                    <span style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.8)' }}>{t('momo.gross_withdrawal', 'Gross Withdrawal:')}</span>
                     <strong style={{ fontSize: '1.1rem', color: '#fff' }}>{currentAmount.toLocaleString()} FCFA</strong>
                   </div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginTop: 2, fontSize: '0.82rem', color: '#f87171' }}>
-                    <span>MTN MoMo 2% Network Fee:</span>
+                    <span>{t('momo.network_fee', 'MTN MoMo 2% Network Fee:')}</span>
                     <span>- {mtnFee.toLocaleString()} FCFA</span>
                   </div>
                   <div style={{ borderTop: '1px dashed rgba(255,255,255,0.15)', marginTop: 8, paddingTop: 8, display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                    <span style={{ fontWeight: 700, color: '#FACC15' }}>Net Payout to Wallet:</span>
+                    <span style={{ fontWeight: 700, color: '#FACC15' }}>{t('momo.net_payout', 'Net Payout to Wallet:')}</span>
                     <span style={{ fontSize: '1.35rem', fontWeight: 900, color: '#FACC15' }}>{netPayout.toLocaleString()} FCFA</span>
                   </div>
                 </div>
@@ -363,10 +364,10 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
               {mode === 'tip' && (
                 <div>
                   <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 1, color: 'rgba(255,255,255,0.6)', fontWeight: 700 }}>
-                    Support Cameroonian Artist
+                    {t('momo.support_artist', 'Support Cameroonian Artist')}
                   </div>
                   <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff', margin: '4px 0 10px' }}>
-                    ⭐ Direct MoMo Tip for {artistName}
+                    ⭐ {t('momo.direct_tip', 'Direct MoMo Tip for')} {artistName}
                   </div>
                   {/* Preset Tip Chips */}
                   <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 10 }}>
@@ -377,7 +378,6 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
                         onClick={() => {
                           setSelectedTip(tipVal);
                           setCurrentAmount(tipVal);
-                          setCustomAmount(String(tipVal));
                         }}
                         style={{
                           padding: '8px 4px',
@@ -395,7 +395,7 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
                     ))}
                   </div>
                   <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
-                    Total Tip: <strong style={{ color: '#FACC15', fontSize: '1.05rem' }}>{currentAmount.toLocaleString()} FCFA</strong>
+                    {t('momo.total_tip', 'Total Tip:')} <strong style={{ color: '#FACC15', fontSize: '1.05rem' }}>{currentAmount.toLocaleString()} FCFA</strong>
                   </div>
                 </div>
               )}
@@ -403,10 +403,10 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
               {mode === 'test' && (
                 <div>
                   <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 1, color: '#FACC15', fontWeight: 700 }}>
-                    Admin Gateway Test Bench
+                    {t('momo.test_bench', 'Admin Gateway Test Bench')}
                   </div>
                   <div style={{ fontSize: '1.1rem', fontWeight: 800, color: '#fff', margin: '4px 0 2px' }}>
-                    MTN MoMo Connection Health Check
+                    {t('momo.health_check', 'MTN MoMo Connection Health Check')}
                   </div>
                   <div style={{ fontSize: '1.3rem', fontWeight: 900, color: '#FACC15' }}>
                     {currentAmount.toLocaleString()} FCFA
@@ -439,7 +439,7 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
               {/* Phone Input */}
               <div style={{ marginBottom: 16 }}>
                 <label style={{ display: 'block', fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)', fontWeight: 600, marginBottom: 6 }}>
-                  MTN Mobile Money Phone Number
+                  {t('momo.phone_label', 'MTN Mobile Money Phone Number')}
                 </label>
                 <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
                   <div
@@ -480,7 +480,7 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
                   />
                 </div>
                 <div style={{ fontSize: '0.74rem', color: 'rgba(255,255,255,0.45)', marginTop: 5 }}>
-                  Accepted MTN prefixes: 67X, 68X, 650–654, 655–659
+                  {t('momo.accepted_prefixes', 'Accepted MTN prefixes: 67X, 68X, 650–654, 655–659')}
                 </div>
               </div>
 
@@ -488,11 +488,11 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
               {mode === 'tip' && (
                 <div style={{ marginBottom: 18 }}>
                   <label style={{ display: 'block', fontSize: '0.82rem', color: 'rgba(255,255,255,0.7)', fontWeight: 600, marginBottom: 6 }}>
-                    Cheering Note (Optional)
+                    {t('momo.cheering_note', 'Cheering Note (Optional)')}
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Love your song! Keep pushing!"
+                    placeholder={t('momo.cheer_placeholder', 'e.g. Love your song! Keep pushing!')}
                     value={tipMessage}
                     onChange={e => setTipMessage(e.target.value)}
                     style={{
@@ -522,7 +522,7 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
                 }}
               >
                 <i className="fas fa-shield-alt" style={{ color: '#10b981' }} />
-                <span>Encrypted direct integration with MTN Mobile Money Gateway</span>
+                <span>{t('momo.security_guarantee', 'Encrypted direct integration with MTN Mobile Money Gateway')}</span>
               </div>
 
               {/* Submit CTA */}
@@ -549,15 +549,15 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
               >
                 {isProcessing ? (
                   <>
-                    <i className="fas fa-spinner fa-spin" /> Contacting MTN MoMo...
+                    <i className="fas fa-spinner fa-spin" /> {t('momo.contacting', 'Contacting MTN MoMo...')}
                   </>
                 ) : mode === 'withdrawal' ? (
                   <>
-                    Disburse {netPayout.toLocaleString()} FCFA via MoMo <i className="fas fa-arrow-right" />
+                    {t('momo.disburse_btn', 'Disburse {amount} FCFA via MoMo').replace('{amount}', netPayout.toLocaleString())} <i className="fas fa-arrow-right" />
                   </>
                 ) : (
                   <>
-                    Pay {currentAmount.toLocaleString()} FCFA via MTN MoMo <i className="fas fa-arrow-right" />
+                    {t('momo.pay_btn', 'Pay {amount} FCFA via MTN MoMo').replace('{amount}', currentAmount.toLocaleString())} <i className="fas fa-arrow-right" />
                   </>
                 )}
               </button>
@@ -583,13 +583,13 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
                   marginBottom: 6,
                 }}
               >
-                <i className="fas fa-mobile-alt fa-bounce" /> USSD PUSH PROMPT DELIVERED
+                <i className="fas fa-mobile-alt fa-bounce" /> {t('momo.ussd_delivered', 'USSD PUSH PROMPT DELIVERED')}
               </div>
               <h3 style={{ margin: '0 0 4px', fontSize: '1.2rem', color: '#fff' }}>
-                Authorize on your Phone
+                {t('momo.auth_phone', 'Authorize on your Phone')}
               </h3>
               <p style={{ color: 'rgba(255,255,255,0.65)', fontSize: '0.82rem', margin: 0 }}>
-                A simulated USSD prompt was sent to <strong>{formatDisplayPhone(phone)}</strong>.
+                {t('momo.ussd_sent_to', 'A simulated USSD prompt was sent to')} <strong>{formatDisplayPhone(phone)}</strong>.
               </p>
             </div>
 
@@ -610,19 +610,19 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
 
               <div style={{ background: '#1c2921', borderRadius: 10, padding: 14, border: '1px solid rgba(250,204,21,0.25)', textAlign: 'center' }}>
                 <div style={{ fontSize: '0.74rem', color: '#FACC15', fontWeight: 800, textTransform: 'uppercase', letterSpacing: 1, marginBottom: 4 }}>
-                  📱 MTN MoMo Service Prompt
+                  {t('momo.prompt_service', '📱 MTN MoMo Service Prompt')}
                 </div>
                 <div style={{ fontSize: '0.86rem', color: '#fff', lineHeight: 1.4, marginBottom: 12 }}>
                   {mode === 'withdrawal' ? (
-                    <>Confirm cashout of <strong>{netPayout.toLocaleString()} FCFA</strong> to your MTN MoMo wallet?</>
+                    <>{t('momo.confirm_cashout', 'Confirm cashout of {amount} FCFA to your MTN MoMo wallet?').replace('{amount}', netPayout.toLocaleString())}</>
                   ) : (
-                    <>Authorize payment of <strong>{currentAmount.toLocaleString()} FCFA</strong> to <strong>{settings.platformName || 'CamSound'}</strong> for {mode === 'subscription' ? planName : 'Artist Support'}?</>
+                    <>{t('momo.confirm_payment', 'Authorize payment of {amount} FCFA to {platform} for {purpose}?').replace('{amount}', currentAmount.toLocaleString()).replace('{platform}', settings.platformName || 'CamSound').replace('{purpose}', mode === 'subscription' ? (planName || '') : t('momo.support_artist', 'Artist Support'))}</>
                   )}
                 </div>
 
                 {/* PIN Dots Screen */}
                 <div style={{ background: '#09100d', borderRadius: 8, padding: '10px 14px', marginBottom: 14, border: '1px solid rgba(255,255,255,0.1)' }}>
-                  <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>ENTER 4-DIGIT MOMO PIN:</div>
+                  <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.5)', marginBottom: 6 }}>{t('momo.enter_pin', 'ENTER 4-DIGIT MOMO PIN:')}</div>
                   <div style={{ display: 'flex', justifyContent: 'center', gap: 12, height: 28, alignItems: 'center' }}>
                     {[0, 1, 2, 3].map(idx => (
                       <div
@@ -676,7 +676,7 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
                       cursor: 'pointer',
                     }}
                   >
-                    Clear
+                    {t('momo.clear', 'Clear')}
                   </button>
                   <button
                     type="button"
@@ -709,7 +709,7 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
                       cursor: pin.length >= 4 ? 'pointer' : 'not-allowed',
                     }}
                   >
-                    OK ✔
+                    {t('momo.ok', 'OK ✔')}
                   </button>
                 </div>
               </div>
@@ -736,7 +736,7 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
                   gap: 6,
                 }}
               >
-                <i className="fas fa-magic" /> Auto-Approve (Skip PIN)
+                <i className="fas fa-magic" /> {t('momo.auto_approve', 'Auto-Approve (Skip PIN)')}
               </button>
               <button
                 type="button"
@@ -752,7 +752,7 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
                   cursor: 'pointer',
                 }}
               >
-                Back
+                {t('momo.back', 'Back')}
               </button>
             </div>
           </div>
@@ -779,10 +779,10 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
               <i className="fas fa-circle-notch fa-spin" />
             </div>
             <h3 style={{ margin: '0 0 8px', fontSize: '1.25rem', color: '#fff' }}>
-              Validating MoMo Network...
+              {t('momo.validating_net', 'Validating MoMo Network...')}
             </h3>
             <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.88rem', marginBottom: 24 }}>
-              {statusMessage || 'Connecting with MTN Mobile Money servers...'}
+              {statusMessage || t('momo.connecting_gateway', 'Connecting with MTN Mobile Money servers...')}
             </p>
 
             {/* Animated Progress bar */}
@@ -798,7 +798,7 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
               />
             </div>
             <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)' }}>
-              Do not refresh or close this window.
+              {t('momo.do_not_refresh', 'Do not refresh or close this window.')}
             </div>
           </div>
         )}
@@ -825,14 +825,14 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
                 <i className="fas fa-check" />
               </div>
               <h3 style={{ margin: '0 0 4px', fontSize: '1.3rem', color: '#fff' }}>
-                {mode === 'withdrawal' ? 'MoMo Cashout Sent! 💸' : 'Payment Confirmed! 🎉'}
+                {mode === 'withdrawal' ? t('momo.cashout_sent', 'MoMo Cashout Sent! 💸') : t('momo.payment_confirmed', 'Payment Confirmed! 🎉')}
               </h3>
               <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', margin: 0 }}>
                 {mode === 'withdrawal'
-                  ? `Funds transferred to ${formatDisplayPhone(phone)}`
+                  ? t('momo.funds_transferred', 'Funds transferred to {phone}').replace('{phone}', formatDisplayPhone(phone))
                   : mode === 'subscription'
-                  ? `Your ${planName} subscription is now ACTIVE!`
-                  : `Your tip has been transferred to ${artistName}!`}
+                  ? t('momo.sub_active', 'Your {plan} subscription is now ACTIVE!').replace('{plan}', planName || '')
+                  : t('momo.tip_transferred', 'Your tip has been transferred to {artist}!').replace('{artist}', artistName || '')}
               </p>
             </div>
 
@@ -848,31 +848,31 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.08)', paddingBottom: 10, marginBottom: 10 }}>
-                <span style={{ color: 'rgba(255,255,255,0.5)' }}>Transaction Ref:</span>
+                <span style={{ color: 'rgba(255,255,255,0.5)' }}>{t('momo.tx_ref', 'Transaction Ref:')}</span>
                 <span style={{ fontWeight: 700, color: '#FACC15', fontFamily: 'monospace' }}>
                   {txId || `MOMO-${Date.now()}`}
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span style={{ color: 'rgba(255,255,255,0.5)' }}>Network Operator:</span>
-                <span style={{ fontWeight: 600, color: '#fff' }}>🟡 MTN MoMo Cameroon</span>
+                <span style={{ color: 'rgba(255,255,255,0.5)' }}>{t('momo.net_operator', 'Network Operator:')}</span>
+                <span style={{ fontWeight: 600, color: '#fff' }}>{t('momo.momo_cm', '🟡 MTN MoMo Cameroon')}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span style={{ color: 'rgba(255,255,255,0.5)' }}>Amount Settled:</span>
+                <span style={{ color: 'rgba(255,255,255,0.5)' }}>{t('momo.amount_settled', 'Amount Settled:')}</span>
                 <span style={{ fontWeight: 800, color: '#10b981', fontSize: '0.95rem' }}>
                   {currentAmount.toLocaleString()} FCFA
                 </span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span style={{ color: 'rgba(255,255,255,0.5)' }}>Subscriber Phone:</span>
+                <span style={{ color: 'rgba(255,255,255,0.5)' }}>{t('momo.sub_phone', 'Subscriber Phone:')}</span>
                 <span style={{ fontWeight: 600, color: '#fff' }}>{formatDisplayPhone(phone)}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-                <span style={{ color: 'rgba(255,255,255,0.5)' }}>Date & Time:</span>
-                <span style={{ color: 'rgba(255,255,255,0.85)' }}>{txTimestamp || 'Just now'}</span>
+                <span style={{ color: 'rgba(255,255,255,0.5)' }}>{t('momo.date_time', 'Date & Time:')}</span>
+                <span style={{ color: 'rgba(255,255,255,0.85)' }}>{txTimestamp || t('momo.just_now', 'Just now')}</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                <span style={{ color: 'rgba(255,255,255,0.5)' }}>Status:</span>
+                <span style={{ color: 'rgba(255,255,255,0.5)' }}>{t('momo.receipt_status', 'Status:')}</span>
                 <span
                   style={{
                     display: 'inline-flex',
@@ -886,7 +886,7 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
                     fontSize: '0.75rem',
                   }}
                 >
-                  <i className="fas fa-check-circle" /> SUCCESSFUL
+                  <i className="fas fa-check-circle" /> {t('status.successful', 'SUCCESSFUL').toUpperCase()}
                 </span>
               </div>
             </div>
@@ -912,7 +912,7 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
                   gap: 8,
                 }}
               >
-                Done & Continue <i className="fas fa-arrow-right" />
+                {t('momo.done_continue', 'Done & Continue')} <i className="fas fa-arrow-right" />
               </button>
               <button
                 type="button"
@@ -934,7 +934,7 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
                 }}
               >
                 <i className={copied ? 'fas fa-check' : 'fas fa-copy'} />
-                {copied ? 'Reference Copied to Clipboard!' : 'Copy Transaction Reference'}
+                {copied ? t('momo.ref_copied', 'Reference Copied to Clipboard!') : t('momo.copy_ref', 'Copy Transaction Reference')}
               </button>
             </div>
           </div>

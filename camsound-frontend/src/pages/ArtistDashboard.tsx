@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Layout from '../components/Layout';
+import CommentsSection from '../components/CommentsSection';
 import { statsService, songsService, artistsService, notificationsService, subscriptionsService, paymentsService, withdrawalsService, artistsExtendedService, commentsService, notificationSettingsService, authService } from '../services/api';
 import { useSearchParams } from 'react-router-dom';
 import { useAudio } from '../context/AudioContext';
@@ -37,13 +38,13 @@ const ArtistDashboard: React.FC = () => {
   const [withdrawals, setWithdrawals] = useState<any[]>([]);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [subscriptionMessage, setSubscriptionMessage] = useState('');
-  const [isSubscribing, setIsSubscribing] = useState(false);
   const [withdrawalAmount, setWithdrawalAmount] = useState('');
   const [withdrawalMomoNumber, setWithdrawalMomoNumber] = useState('');
   const [withdrawalMessage, setWithdrawalMessage] = useState('');
-  const [isRequestingWithdrawal, setIsRequestingWithdrawal] = useState(false);
   const [artistComments, setArtistComments] = useState<any[]>([]);
   const [commentSongFilter, setCommentSongFilter] = useState('all');
+  const [selectedSocialSongId, setSelectedSocialSongId] = useState<string>('');
+  const [socialTab, setSocialTab] = useState<'tracks' | 'activity'>('tracks');
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyText, setReplyText] = useState('');
   const [notificationPrefs, setNotificationPrefs] = useState({ notif_new_followers: true, notif_comments: true, notif_stream_milestones: true, notif_revenue_updates: true, notif_marketing: false });
@@ -51,9 +52,10 @@ const ArtistDashboard: React.FC = () => {
   const [billingHistory, setBillingHistory] = useState<any[]>([]);
   const [showBilling, setShowBilling] = useState(false);
   const [revenueBalance, setRevenueBalance] = useState(0);
-  const [streamingTrend, setStreamingTrend] = useState<number[]>([]);
   const [editingSong, setEditingSong] = useState<any>(null);
   const [deletingSong, setDeletingSong] = useState<any>(null);
+  const [confirmDeleteSong, setConfirmDeleteSong] = useState<any>(null);
+  const [confirmDeleteComment, setConfirmDeleteComment] = useState<{ songId: string; commentId: string } | null>(null);
   const [editForm, setEditForm] = useState({ title: '', genre: '' });
 
   // Upload form
@@ -221,21 +223,26 @@ const ArtistDashboard: React.FC = () => {
   };
 
   useEffect(() => {
+    document.title = 'Artist Hub — CamSound';
     fetchStats();
     fetchProfile();
   }, []);
   const fetchPlans = async () => { try { const res = await subscriptionsService.getPlans(); if (res.data.success) setPlans(res.data.data); } catch {} };
   const fetchWithdrawals = async () => { try { const res = await withdrawalsService.getWithdrawals(); if (res.data.success) setWithdrawals(res.data.data); } catch {} };
   const fetchNotifications = async () => { try { const res = await notificationsService.getNotifications(); if (res.data.success) { setNotifications(res.data.data); } } catch {} };
-  const fetchArtistComments = async () => {
+  const fetchArtistComments = async (overrideArtistId?: string) => {
+    const artistId = overrideArtistId || profile?._id;
+    if (!artistId) {
+      setArtistComments([]);
+      return;
+    }
     try {
       const res = await commentsService.getRecentActivity();
       if (res.data.success) {
-        const ownArtistId = profile?._id;
         const filtered = res.data.data.filter((comment: any) => {
           const songArtist = comment.songId?.artistId;
           const songArtistId = typeof songArtist === 'string' ? songArtist : songArtist?._id;
-          return !ownArtistId || songArtistId === ownArtistId;
+          return songArtistId === artistId;
         });
         setArtistComments(filtered);
       }
@@ -308,87 +315,13 @@ const ArtistDashboard: React.FC = () => {
     }
   };
 
-  const handleSubscribe = async (plan: any) => {
-    if (!plan) return;
-    setSubscriptionMessage(`Processing payment for ${plan.name}...`);
-    setIsSubscribing(true);
-
-    const startDate = new Date();
-    const endDate = new Date(startDate);
-    endDate.setMonth(endDate.getMonth() + 1);
-
-    try {
-      const paymentRes = await paymentsService.createPayment({
-        amount: plan.price,
-        currency: 'XAF',
-        paymentMethod: 'MoMo',
-      });
-
-      if (!paymentRes.data.success) {
-        throw new Error(paymentRes.data.message || 'Payment initiation failed');
-      }
-
-      const subRes = await subscriptionsService.createSubscription({
-        planName: plan.name,
-        amount: plan.price,
-        startDate: startDate.toISOString(),
-        endDate: endDate.toISOString(),
-        status: 'active',
-      });
-
-      if (!subRes.data.success) {
-        throw new Error(subRes.data.message || 'Subscription creation failed');
-      }
-
-      setSubscriptionMessage(`Subscribed to ${plan.name}. Payment is pending review.`);
-    } catch (error: any) {
-      setSubscriptionMessage(error.response?.data?.message || error.message || 'Subscription failed.');
-    } finally {
-      setIsSubscribing(false);
-    }
-  };
-
-  const handleRequestWithdrawal = async () => {
-    if (!withdrawalAmount || !withdrawalMomoNumber) {
-      setWithdrawalMessage('Please enter both an amount and a mobile money number.');
-      return;
-    }
-    if (Number(withdrawalAmount) < 5000) {
-      setWithdrawalMessage('Minimum withdrawal is 5,000 FCFA.');
-      return;
-    }
-
-    setIsRequestingWithdrawal(true);
-    setWithdrawalMessage('');
-
-    try {
-      const res = await withdrawalsService.requestWithdrawal({
-        amount: Number(withdrawalAmount),
-        momoNumber: withdrawalMomoNumber,
-      });
-
-      if (!res.data.success) {
-        throw new Error(res.data.message || 'Withdrawal request failed');
-      }
-
-      setWithdrawalAmount('');
-      setWithdrawalMomoNumber('');
-      setWithdrawalMessage('Withdrawal request submitted successfully.');
-      await fetchWithdrawals();
-    } catch (error: any) {
-      setWithdrawalMessage(error.response?.data?.message || error.message || 'Withdrawal request failed.');
-    } finally {
-      setIsRequestingWithdrawal(false);
-    }
-  };
-
   useEffect(() => {
     if (activeView === 'profile') fetchProfile();
     else if (activeView === 'subscription') fetchPlans();
     else if (activeView === 'revenue') fetchWithdrawals();
     else if (activeView === 'notifications') { fetchNotifications(); fetchNotificationPrefs(); }
-    else if (activeView === 'social') fetchArtistComments();
-  }, [activeView]);
+    else if (activeView === 'social' && profile?._id) fetchArtistComments();
+  }, [activeView, profile?._id]);
 
   const handleReply = async (comment: any) => {
     if (!replyText.trim() || !comment.songId?._id) return;
@@ -419,29 +352,6 @@ const ArtistDashboard: React.FC = () => {
     setRevenueBalance(totalRoyalties - withdrawnAmount);
   }, [stats, withdrawals]);
 
-  // Calculate streaming trend data (simulated 30-day distribution)
-  useEffect(() => {
-    const totalPlays = stats?.totalPlays || 0;
-    if (totalPlays === 0) {
-      setStreamingTrend([]);
-      return;
-    }
-    // Generate a realistic trend with some variation
-    const trend: number[] = [];
-    let remaining = totalPlays;
-    for (let i = 0; i < 30; i++) {
-      const dailyPlays = Math.max(0, Math.floor((remaining / (30 - i)) * (0.8 + Math.random() * 0.4)));
-      trend.push(dailyPlays);
-      remaining -= dailyPlays;
-    }
-    // Ensure total matches
-    const trendTotal = trend.reduce((a, b) => a + b, 0);
-    if (trendTotal !== totalPlays) {
-      trend[0] += totalPlays - trendTotal;
-    }
-    setStreamingTrend(trend);
-  }, [stats?.totalPlays]);
-
   const handleEditSong = (song: any) => {
     setEditingSong(song);
     setEditForm({ title: song.title, genre: song.genre || 'Afrobeat' });
@@ -456,23 +366,36 @@ const ArtistDashboard: React.FC = () => {
         fetchStats();
       }
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to update song');
+      setUploadMessage(error.response?.data?.message || 'Failed to update song');
+      setUploadStatus('error');
     }
   };
 
-  const handleDeleteSong = async (song: any) => {
-    if (!confirm(`Are you sure you want to delete "${song.title}"?`)) return;
-    setDeletingSong(song);
+  const handleConfirmDeleteSong = async () => {
+    if (!confirmDeleteSong) return;
+    const target = confirmDeleteSong;
+    setDeletingSong(target);
     try {
-      const res = await songsService.deleteSong(song._id);
+      const res = await songsService.deleteSong(target._id);
       if (res.data.success) {
         fetchStats();
+        setConfirmDeleteSong(null);
       }
     } catch (error: any) {
-      alert(error.response?.data?.message || 'Failed to delete song');
+      setUploadMessage(error.response?.data?.message || 'Failed to delete song');
+      setUploadStatus('error');
     } finally {
       setDeletingSong(null);
     }
+  };
+
+  const handleConfirmDeleteComment = async () => {
+    if (!confirmDeleteComment) return;
+    try {
+      await commentsService.deleteComment(confirmDeleteComment.songId, confirmDeleteComment.commentId);
+      setConfirmDeleteComment(null);
+      fetchArtistComments();
+    } catch {}
   };
 
   const handleAudioDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -1044,7 +967,7 @@ const ArtistDashboard: React.FC = () => {
                     <i className="fas fa-edit" />
                   </button>
                   <button
-                    onClick={() => handleDeleteSong(song)}
+                    onClick={() => setConfirmDeleteSong(song)}
                     disabled={deletingSong?._id === song._id}
                     style={{ padding: '8px 12px', background: 'rgba(239, 68, 68, 0.15)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: 8, color: '#ef4444', cursor: 'pointer', fontSize: '0.8rem', opacity: deletingSong?._id === song._id ? 0.5 : 1 }}
                     title="Delete"
@@ -1257,49 +1180,15 @@ const ArtistDashboard: React.FC = () => {
                 </div>
               </div>
 
-              {/* Responsive SVG Spark/Area Line Chart */}
-              <div style={{ width: '100%', height: 180, position: 'relative' }}>
-                <svg viewBox="0 0 700 160" style={{ width: '100%', height: '100%', overflow: 'visible' }}>
-                  {/* Grid lines */}
-                  <line x1="0" y1="30" x2="700" y2="30" stroke="rgba(255,255,255,0.06)" strokeDasharray="4" />
-                  <line x1="0" y1="80" x2="700" y2="80" stroke="rgba(255,255,255,0.06)" strokeDasharray="4" />
-                  <line x1="0" y1="130" x2="700" y2="130" stroke="rgba(255,255,255,0.06)" strokeDasharray="4" />
-
-                  {streamingTrend.length > 0 ? (() => {
-                    const maxPlays = Math.max(...streamingTrend, 1);
-                    const points = streamingTrend.map((plays, i) => {
-                      const x = (i / (streamingTrend.length - 1)) * 700;
-                      const y = 150 - (plays / maxPlays) * 120;
-                      return `${x},${y}`;
-                    }).join(' ');
-                    
-                    const areaPath = `M 0,150 L ${points.replace(/ /g, ' L ')} L 700,150 Z`;
-                    const linePath = `M ${points.replace(/ /g, ' L ')}`;
-
-                    return (
-                      <>
-                        <path d={areaPath} fill="rgba(250, 204, 21, 0.2)" />
-                        <path d={linePath} fill="none" stroke="var(--accent-color)" strokeWidth="3" strokeLinecap="round" />
-                        {streamingTrend.filter((_, i) => i % 7 === 0 || i === streamingTrend.length - 1).map((plays, i) => {
-                          const idx = i === 0 ? 0 : (i * 7);
-                          const x = (idx / (streamingTrend.length - 1)) * 700;
-                          const y = 150 - (plays / maxPlays) * 120;
-                          return <circle key={idx} cx={x} cy={y} r="5" fill="#FACC15" stroke="#0B0F0C" strokeWidth="2" />;
-                        })}
-                      </>
-                    );
-                  })() : (
-                    <text x="350" y="80" textAnchor="middle" fill="rgba(255,255,255,0.3)" fontSize="0.9rem">
-                      No streaming data available yet
-                    </text>
-                  )}
-                </svg>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 8, fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                  <span>30 Days Ago</span>
-                  <span>2 Weeks Ago</span>
-                  <span>1 Week Ago</span>
-                  <span>Today</span>
+              {/* Total Streams Overview Card */}
+              <div style={{ textAlign: 'center', padding: '36px 16px', background: 'rgba(255,255,255,0.02)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.06)' }}>
+                <div style={{ fontSize: '3rem', fontWeight: 800, color: 'var(--accent-color)', letterSpacing: '-1px' }}>
+                  {stats?.totalPlays?.toLocaleString() ?? 0}
                 </div>
+                <div style={{ color: '#cbd5e1', marginTop: 6, fontSize: '0.95rem', fontWeight: 600 }}>Total Streams Across All Tracks</div>
+                <p style={{ fontSize: '0.82rem', color: '#64748b', marginTop: 12, maxWidth: 420, margin: '12px auto 0' }}>
+                  Real-time aggregated day-by-day streaming trend charts will be available in the upcoming analytics release.
+                </p>
               </div>
             </div>
 
@@ -1348,49 +1237,270 @@ const ArtistDashboard: React.FC = () => {
 
       {/* Social Interaction */}
       {activeView === 'social' && (
-        <div className="section-card">
-          <div className="section-header"><h2>Fan Interaction</h2></div>
-          <p style={{ color: 'var(--text-muted)' }}>You have {stats?.followers || 0} followers.</p>
-          <div style={{ marginTop: 24 }}>
-            <h3 style={{ color: 'var(--text-white)', marginBottom: 16 }}>Recent Comments & Feedback</h3>
-            <select className="search-input-db" value={commentSongFilter} onChange={e => setCommentSongFilter(e.target.value)} style={{ marginBottom: 16 }}>
-              <option value="all">All songs</option>
-              {[...new Map(artistComments.filter(c => c.songId?._id).map(c => [c.songId._id, c.songId])).values()].map((song: any) => <option key={song._id} value={song._id}>{song.title}</option>)}
-            </select>
-            {artistComments.length === 0 ? (
-              <div style={{ padding: 32, textAlign: 'center', background: 'var(--bg-tertiary)', borderRadius: 12 }}>
-                <i className="fas fa-comments" style={{ fontSize: '2rem', color: 'var(--text-muted)', marginBottom: 12 }} />
-                <p>No comments on your songs yet.</p>
+        <div>
+          <div className="section-card" style={{ marginBottom: 20 }}>
+            <div className="section-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
+              <div>
+                <h2>💬 Community & Fan Interaction</h2>
+                <p style={{ color: 'var(--text-muted)', margin: '4px 0 0', fontSize: '0.88rem' }}>
+                  Connect with your listeners across Cameroon and worldwide. Reply with your verified artist badge, pin meaningful feedback, and react to comments.
+                </p>
               </div>
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-                {artistComments.filter((c: any) => commentSongFilter === 'all' || c.songId?._id === commentSongFilter).map((c: any) => (
-                  <div key={c._id} style={{ padding: 14, background: 'var(--bg-tertiary)', borderRadius: 8 }}>
-                    <div style={{ fontWeight: 600, color: 'var(--text-white)' }}>{c.userId?.name || 'Anonymous Fan'}</div>
-                    <div style={{ fontSize: '0.9rem', marginTop: 4 }}>{c.content}</div>
-                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 4 }}>
-                      On song: {c.songId?.title || 'Unknown'} • {new Date(c.createdAt).toLocaleDateString()}
-                    </div>
-                    <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-                      <button className="btn-camsound-outline" style={{ padding: '4px 10px', fontSize: '0.75rem' }} onClick={async () => { if (c.songId?._id) { await commentsService.pinComment(c.songId._id, c._id, !c.isPinned); fetchArtistComments(); } }}>
-                        <i className="fas fa-thumbtack" /> {c.isPinned ? 'Unpin' : 'Pin'}
-                      </button>
-                      <button className="btn-camsound-outline" style={{ padding: '4px 10px', fontSize: '0.75rem' }} onClick={async () => { if (c.songId?._id) { await commentsService.deleteComment(c.songId._id, c._id); fetchArtistComments(); } }}>
-                        <i className="fas fa-trash" /> Delete
-                      </button>
-                      <button className="btn-camsound-outline" style={{ padding: '4px 10px', fontSize: '0.75rem' }} onClick={() => setReplyingTo(replyingTo === c._id ? null : c._id)}>
-                        <i className="fas fa-reply" /> Reply
-                      </button>
-                    </div>
-                    {replyingTo === c._id && <form onSubmit={e => { e.preventDefault(); void handleReply(c); }} style={{ display: 'flex', gap: 8, marginTop: 10 }}>
-                      <input className="search-input-db" value={replyText} onChange={e => setReplyText(e.target.value)} placeholder="Write a reply..." />
-                      <button className="btn-camsound-yellow" type="submit" disabled={!replyText.trim()}>Send</button>
-                    </form>}
-                  </div>
-                ))}
+              <div style={{ display: 'flex', gap: 8, background: 'var(--bg-tertiary)', padding: 4, borderRadius: 10 }}>
+                <button
+                  className={`btn-tab ${socialTab === 'tracks' ? 'btn-tab--active' : ''}`}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: 8,
+                    background: socialTab === 'tracks' ? 'var(--accent-color)' : 'transparent',
+                    color: socialTab === 'tracks' ? '#000' : 'var(--text-white)',
+                    fontWeight: 700,
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem'
+                  }}
+                  onClick={() => setSocialTab('tracks')}
+                >
+                  <i className="fas fa-compact-disc" style={{ marginRight: 6 }} /> Track Discussions
+                </button>
+                <button
+                  className={`btn-tab ${socialTab === 'activity' ? 'btn-tab--active' : ''}`}
+                  style={{
+                    padding: '8px 16px',
+                    borderRadius: 8,
+                    background: socialTab === 'activity' ? 'var(--accent-color)' : 'transparent',
+                    color: socialTab === 'activity' ? '#000' : 'var(--text-white)',
+                    fontWeight: 700,
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem'
+                  }}
+                  onClick={() => { setSocialTab('activity'); fetchArtistComments(); }}
+                >
+                  <i className="fas fa-stream" style={{ marginRight: 6 }} /> Activity Feed
+                </button>
               </div>
-            )}
+            </div>
           </div>
+
+          {socialTab === 'tracks' ? (
+            <div style={{ display: 'grid', gridTemplateColumns: 'minmax(240px, 320px) 1fr', gap: 20, alignItems: 'start' }}>
+              {/* Track Selector List */}
+              <div className="section-card" style={{ padding: 16 }}>
+                <h3 style={{ fontSize: '1rem', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <span>Select Track</span>
+                  <span style={{ fontSize: '0.78rem', color: 'var(--text-muted)' }}>{stats?.topSongs?.length || 0} tracks</span>
+                </h3>
+                {!stats?.topSongs?.length ? (
+                  <div style={{ textAlign: 'center', padding: '24px 8px', color: 'var(--text-muted)', fontSize: '0.85rem' }}>
+                    <i className="fas fa-music" style={{ fontSize: '1.8rem', opacity: 0.3, marginBottom: 8, display: 'block' }} />
+                    Upload tracks to see discussions.
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, maxHeight: '600px', overflowY: 'auto' }}>
+                    {stats.topSongs.map((song: any) => {
+                      const isSelected = (selectedSocialSongId || stats.topSongs[0]?._id) === song._id;
+                      return (
+                        <div
+                          key={song._id}
+                          onClick={() => setSelectedSocialSongId(song._id)}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 12,
+                            padding: '10px 12px',
+                            borderRadius: 10,
+                            background: isSelected ? 'rgba(250,204,21,0.12)' : 'var(--bg-tertiary)',
+                            border: `1px solid ${isSelected ? 'var(--accent-color)' : 'transparent'}`,
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                          }}
+                        >
+                          <div style={{ width: 40, height: 40, borderRadius: 8, overflow: 'hidden', background: '#242247', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {song.coverArt ? (
+                              <img src={song.coverArt} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              <i className="fas fa-music" style={{ color: 'var(--accent-color)', fontSize: '0.9rem' }} />
+                            )}
+                          </div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontWeight: 700, fontSize: '0.88rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: isSelected ? 'var(--accent-color)' : '#fff' }}>
+                              {song.title}
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)', marginTop: 2 }}>
+                              {song.genre || 'Afrobeat'} • {song.plays || 0} plays
+                            </div>
+                          </div>
+                          {isSelected && (
+                            <i className="fas fa-chevron-right" style={{ color: 'var(--accent-color)', fontSize: '0.8rem' }} />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Dedicated Discussion Area */}
+              <div className="section-card">
+                {(() => {
+                  const currentSongId = selectedSocialSongId || stats?.topSongs?.[0]?._id;
+                  const currentSong = stats?.topSongs?.find((s: any) => s._id === currentSongId);
+
+                  if (!currentSongId) {
+                    return (
+                      <div style={{ textAlign: 'center', padding: '48px 0', color: 'var(--text-muted)' }}>
+                        <i className="fas fa-comments" style={{ fontSize: '2.5rem', opacity: 0.3, display: 'block', marginBottom: 12 }} />
+                        <p>No track selected. Upload music to start receiving fan comments.</p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div>
+                      {currentSong && (
+                        <div style={{ display: 'flex', alignItems: 'center', gap: 14, paddingBottom: 16, marginBottom: 16, borderBottom: '1px solid var(--border-color)' }}>
+                          <div style={{ width: 48, height: 48, borderRadius: 10, overflow: 'hidden', background: '#242247', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            {currentSong.coverArt ? (
+                              <img src={currentSong.coverArt} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            ) : (
+                              <i className="fas fa-compact-disc" style={{ color: 'var(--accent-color)', fontSize: '1.4rem' }} />
+                            )}
+                          </div>
+                          <div>
+                            <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#fff' }}>{currentSong.title}</h3>
+                            <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                              Discussion thread • Replying as <strong style={{ color: 'var(--accent-color)' }}>{profile?.name || 'Verified Artist'}</strong>
+                            </span>
+                          </div>
+                        </div>
+                      )}
+                      <CommentsSection
+                        songId={currentSongId}
+                        artistUserId={profile?.userId?._id || profile?.userId || profile?._id}
+                        canModerate={true}
+                      />
+                    </div>
+                  );
+                })()}
+              </div>
+            </div>
+          ) : (
+            /* Activity Feed across all tracks */
+            <div className="section-card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
+                <h3 style={{ margin: 0, color: 'var(--text-white)' }}>Recent Activity Across All Songs</h3>
+                <select
+                  className="search-input-db"
+                  value={commentSongFilter}
+                  onChange={e => setCommentSongFilter(e.target.value)}
+                  style={{ width: 'auto', minWidth: 180 }}
+                >
+                  <option value="all">All tracks</option>
+                  {[...new Map(artistComments.filter(c => c.songId?._id).map(c => [c.songId._id, c.songId])).values()].map((song: any) => (
+                    <option key={song._id} value={song._id}>{song.title}</option>
+                  ))}
+                </select>
+              </div>
+
+              {artistComments.length === 0 ? (
+                <div style={{ padding: 48, textAlign: 'center', background: 'var(--bg-tertiary)', borderRadius: 12 }}>
+                  <i className="fas fa-comments" style={{ fontSize: '2.5rem', color: 'var(--text-muted)', opacity: 0.4, marginBottom: 12, display: 'block' }} />
+                  <p style={{ color: 'var(--text-muted)', margin: 0 }}>No comments on your songs yet.</p>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+                  {artistComments
+                    .filter((c: any) => commentSongFilter === 'all' || c.songId?._id === commentSongFilter)
+                    .map((c: any) => (
+                      <div key={c._id} style={{ padding: 16, background: 'var(--bg-tertiary)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 6 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                            <div style={{ width: 32, height: 32, borderRadius: '50%', background: 'var(--accent-color)', color: '#000', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.8rem' }}>
+                              {c.userId?.name?.charAt(0)?.toUpperCase() || 'F'}
+                            </div>
+                            <div>
+                              <span style={{ fontWeight: 700, color: 'var(--text-white)', fontSize: '0.9rem' }}>{c.userId?.name || 'Anonymous Fan'}</span>
+                              <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                                On track: <strong style={{ color: 'var(--accent-color)' }}>{c.songId?.title || 'Unknown'}</strong> • {new Date(c.createdAt).toLocaleDateString()}
+                              </div>
+                            </div>
+                          </div>
+                          {c.isPinned && (
+                            <span style={{ fontSize: '0.72rem', background: 'rgba(250,204,21,0.15)', color: 'var(--accent-color)', padding: '2px 8px', borderRadius: 6, fontWeight: 700 }}>
+                              <i className="fas fa-thumbtack" style={{ marginRight: 4 }} /> Pinned
+                            </span>
+                          )}
+                        </div>
+
+                        <div style={{ fontSize: '0.9rem', color: 'rgba(255,255,255,0.9)', margin: '8px 0 12px', paddingLeft: 40, lineHeight: 1.5 }}>
+                          {c.content}
+                        </div>
+
+                        <div style={{ display: 'flex', gap: 8, paddingLeft: 40, flexWrap: 'wrap', alignItems: 'center' }}>
+                          <button
+                            className="btn-camsound-outline"
+                            style={{ padding: '4px 12px', fontSize: '0.75rem', borderRadius: 20 }}
+                            onClick={() => {
+                              setSelectedSocialSongId(c.songId?._id);
+                              setSocialTab('tracks');
+                            }}
+                          >
+                            <i className="fas fa-comments" style={{ marginRight: 4 }} /> Open Full Thread
+                          </button>
+                          <button
+                            className="btn-camsound-outline"
+                            style={{ padding: '4px 12px', fontSize: '0.75rem', borderRadius: 20 }}
+                            onClick={async () => {
+                              if (c.songId?._id) {
+                                await commentsService.pinComment(c.songId._id, c._id, !c.isPinned);
+                                fetchArtistComments();
+                              }
+                            }}
+                          >
+                            <i className="fas fa-thumbtack" style={{ marginRight: 4 }} /> {c.isPinned ? 'Unpin' : 'Pin'}
+                          </button>
+                          <button
+                            className="btn-camsound-outline"
+                            style={{ padding: '4px 12px', fontSize: '0.75rem', borderRadius: 20 }}
+                            onClick={() => setReplyingTo(replyingTo === c._id ? null : c._id)}
+                          >
+                            <i className="fas fa-reply" style={{ marginRight: 4 }} /> Reply
+                          </button>
+                          <button
+                            className="btn-camsound-outline"
+                            style={{ padding: '4px 10px', fontSize: '0.75rem', borderRadius: 20, color: '#f87171' }}
+                            onClick={() => {
+                              if (c.songId?._id) setConfirmDeleteComment({ songId: c.songId._id, commentId: c._id });
+                            }}
+                          >
+                            <i className="fas fa-trash" />
+                          </button>
+                        </div>
+
+                        {replyingTo === c._id && (
+                          <form
+                            onSubmit={e => { e.preventDefault(); void handleReply(c); }}
+                            style={{ display: 'flex', gap: 8, marginTop: 12, paddingLeft: 40 }}
+                          >
+                            <input
+                              className="search-input-db"
+                              value={replyText}
+                              onChange={e => setReplyText(e.target.value)}
+                              placeholder={`Reply as ${profile?.name || 'Artist'}...`}
+                              autoFocus
+                            />
+                            <button className="btn-camsound-yellow" type="submit" disabled={!replyText.trim()}>
+                              Send
+                            </button>
+                          </form>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -1633,6 +1743,8 @@ const ArtistDashboard: React.FC = () => {
             </div>
           </div>
         </div>
+      )}
+
       {/* MoMo Withdrawal Simulation Modal */}
       {momoWithdrawModalOpen && (
         <MoMoPaymentModal
@@ -1663,6 +1775,68 @@ const ArtistDashboard: React.FC = () => {
             setSubscriptionMessage(`Subscribed to ${selectedSubPlan.name} plan via MTN MoMo 🎉`);
           }}
         />
+      )}
+      {/* Styled Song Delete Confirmation Modal */}
+      {confirmDeleteSong && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
+          <div style={{ background: '#121614', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, padding: '28px 32px', maxWidth: 440, width: '100%', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
+                <i className="fas fa-exclamation-triangle" />
+              </div>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff' }}>Delete Track</h3>
+            </div>
+            <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: 1.6, margin: '0 0 24px' }}>
+              Are you sure you want to delete <strong style={{ color: '#fff' }}>&ldquo;{confirmDeleteSong.title}&rdquo;</strong>? This action cannot be undone.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+              <button
+                onClick={() => setConfirmDeleteSong(null)}
+                style={{ padding: '10px 18px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#e2e8f0', cursor: 'pointer', fontWeight: 600, fontSize: '0.88rem' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDeleteSong}
+                disabled={deletingSong?._id === confirmDeleteSong._id}
+                style={{ padding: '10px 20px', background: '#ef4444', border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: '0.88rem' }}
+              >
+                {deletingSong?._id === confirmDeleteSong._id ? 'Deleting...' : 'Delete Track'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Styled Comment Delete Confirmation Modal */}
+      {confirmDeleteComment && (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 9999, padding: 20 }}>
+          <div style={{ background: '#121614', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 16, padding: '28px 32px', maxWidth: 440, width: '100%', boxShadow: '0 25px 50px -12px rgba(0,0,0,0.5)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
+              <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' }}>
+                <i className="fas fa-trash" />
+              </div>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: '#fff' }}>Delete Comment</h3>
+            </div>
+            <p style={{ color: '#94a3b8', fontSize: '0.9rem', lineHeight: 1.6, margin: '0 0 24px' }}>
+              Are you sure you want to delete this comment? This action cannot be undone.
+            </p>
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 12 }}>
+              <button
+                onClick={() => setConfirmDeleteComment(null)}
+                style={{ padding: '10px 18px', background: 'rgba(255,255,255,0.08)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, color: '#e2e8f0', cursor: 'pointer', fontWeight: 600, fontSize: '0.88rem' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmDeleteComment}
+                style={{ padding: '10px 20px', background: '#ef4444', border: 'none', borderRadius: 8, color: '#fff', cursor: 'pointer', fontWeight: 600, fontSize: '0.88rem' }}
+              >
+                Delete Comment
+              </button>
+            </div>
+          </div>
+        </div>
       )}
       </div>
     </Layout>

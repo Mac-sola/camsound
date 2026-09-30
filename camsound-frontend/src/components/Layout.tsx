@@ -3,8 +3,11 @@ import QuickStatsAccordion from './QuickStatsAccordion';
 import { useAuth } from '../context/AuthContext';
 import { useAudio } from '../context/AudioContext';
 import { usePlatformSettings } from '../context/SettingsContext';
+import { useLanguage } from '../context/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import SongPlayerModal from './SongPlayerModal';
+import LanguageToggle from './LanguageToggle';
+import MobileBottomNav from './MobileBottomNav';
 
 interface SidebarProps {
   navItems: { label?: string; icon?: string; view?: string; section?: string }[];
@@ -23,6 +26,27 @@ export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => 
   const { user } = useAuth();
   const { isPlaying } = useAudio();
   const { settings } = usePlatformSettings();
+  const { t } = useLanguage();
+
+  const getTranslatedSection = (sec?: string) => {
+    if (!sec) return '';
+    const s = sec.toUpperCase();
+    if (s === 'DISCOVER') return t('nav.discover_sec', sec);
+    if (s === 'MY MUSIC') return t('nav.my_music_sec', sec);
+    if (s === 'FOLLOWING') return t('nav.following_sec', sec);
+    if (s === 'ACCOUNT') return t('nav.account_sec', sec);
+    if (s === 'SYSTEM') return t('nav.system_sec', sec);
+    return sec;
+  };
+
+  const getTranslatedLabel = (label?: string, view?: string) => {
+    if (view && t(`nav.${view}`)) return t(`nav.${view}`);
+    if (label) {
+      const key = `nav.${label.toLowerCase().replace(/\s+/g, '_')}`;
+      return t(key, label);
+    }
+    return label || '';
+  };
 
   return (
     <>
@@ -34,9 +58,9 @@ export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
               width: 42, height: 42, borderRadius: '50%',
-              background: '#facc15',
+              background: 'var(--accent-color)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 0 16px rgba(250, 204, 21, 0.4)',
+              boxShadow: '0 0 16px var(--glow-accent)',
               overflow: 'hidden', flexShrink: 0
             }}>
               {settings.logoUrl ? (
@@ -46,7 +70,7 @@ export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => 
               )}
             </div>
             <div style={{ overflow: 'hidden' }}>
-              <h1 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 800, color: '#facc15', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              <h1 style={{ margin: 0, fontSize: '1.35rem', fontWeight: 800, color: 'var(--accent-color)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {settings.platformName || 'CamSound'}
               </h1>
               <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--accent-color)', fontWeight: 600, letterSpacing: 0.5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
@@ -65,7 +89,7 @@ export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => 
                   fontSize: '0.7rem', textTransform: 'uppercase', fontWeight: 700,
                   color: 'rgba(250, 204, 21, 0.7)', letterSpacing: 1.2
                 }}>
-                  {item.section}
+                  {getTranslatedSection(item.section)}
                 </div>
               );
             }
@@ -76,7 +100,7 @@ export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => 
                 onClick={() => { if(item.view) { onNavClick(item.view); onClose(); } }}
               >
                 <i className={`fas ${item.icon}`} style={{ width: 20, textAlign: 'center' }} />
-                <span>{item.label}</span>
+                <span>{getTranslatedLabel(item.label, item.view)}</span>
                 {item.label === 'My Music' && totalLikes > 0 && <span className="nav-badge">{totalLikes}</span>}
                 {item.label === 'Notifications' && notifCount > 0 && <span className="nav-badge">{notifCount}</span>}
               </button>
@@ -140,7 +164,20 @@ interface TopBarProps {
 export const TopBar: React.FC<TopBarProps> = ({
   onMenuToggle, searchValue, onSearchChange, notifCount, userName, userAvatar, onLogout, onNavClick, title, showSearch = true
 }) => {
+  const { t } = useLanguage();
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (!dropdownOpen) return;
+    const handleClickOutside = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [dropdownOpen]);
 
   return (
     <div className="top-bar" style={{ backdropFilter: 'blur(16px)', background: 'rgba(11, 15, 12, 0.85)', borderBottom: '1px solid rgba(255, 255, 255, 0.07)' }}>
@@ -158,7 +195,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           <input
             type="text"
             className="search-input-db"
-            placeholder="Search songs, artists, playlists..."
+            placeholder={t('common.search_placeholder', 'Search songs, artists, playlists...')}
             value={searchValue}
             onChange={e => onSearchChange(e.target.value)}
             style={{
@@ -179,6 +216,7 @@ export const TopBar: React.FC<TopBarProps> = ({
       </div>
 
       <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        <LanguageToggle />
         <button className="notif-btn" onClick={() => onNavClick?.('notifications')} title="Notifications" style={{ position: 'relative', width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer' }}>
           <i className="fas fa-bell" />
           {notifCount ? (
@@ -188,7 +226,7 @@ export const TopBar: React.FC<TopBarProps> = ({
           ) : null}
         </button>
 
-        <div style={{ position: 'relative' }}>
+        <div ref={dropdownRef} style={{ position: 'relative' }}>
           <button
             className="user-dropdown-btn"
             onClick={() => setDropdownOpen(o => !o)}
@@ -210,8 +248,8 @@ export const TopBar: React.FC<TopBarProps> = ({
               borderRadius: 14, padding: 6, zIndex: 999, boxShadow: '0 12px 30px rgba(0,0,0,0.5)', backdropFilter: 'blur(16px)'
             }}>
               {[
-                { label: 'Profile', icon: 'fa-user', view: 'profile' },
-                { label: 'Settings', icon: 'fa-cog', view: 'settings' },
+                { label: t('nav.profile', 'Profile'), icon: 'fa-user', view: 'profile' },
+                { label: t('nav.settings', 'Settings'), icon: 'fa-cog', view: 'settings' },
               ].map(item => (
                 <button
                   key={item.label}
@@ -232,7 +270,7 @@ export const TopBar: React.FC<TopBarProps> = ({
                 onMouseLeave={e => (e.currentTarget.style.background = 'none')}
               >
                 <i className="fas fa-sign-out-alt" style={{ width: 16 }} />
-                Logout
+                {t('landing.logout', 'Logout')}
               </button>
             </div>
           )}
@@ -263,7 +301,23 @@ const AudioEqualizer: React.FC<{ isPlaying: boolean }> = ({ isPlaying }) => (
 
 /* ─── Player Bar ─── */
 export const PlayerBar: React.FC = () => {
-  const { currentSong, isPlaying, progress, duration, togglePlay, seek, skipForward, skipBackward, volume, setVolume, isMuted, toggleMute } = useAudio();
+  const { t } = useLanguage();
+  const {
+    currentSong,
+    isPlaying,
+    progress,
+    duration,
+    togglePlay,
+    seek,
+    skipForward,
+    skipBackward,
+    openPlayer,
+    volume,
+    setVolume,
+    isMuted,
+    toggleMute,
+  } = useAudio();
+
   const pct = duration ? (progress / duration) * 100 : 0;
 
   const fmt = (s: number) => {
@@ -272,65 +326,126 @@ export const PlayerBar: React.FC = () => {
     return `${m}:${sec.toString().padStart(2, '0')}`;
   };
 
+  if (!currentSong) return null;
+
   return (
-    <div className="music-player-bar" style={{ background: 'rgba(15, 22, 18, 0.92)', backdropFilter: 'blur(16px)', borderTop: '1px solid rgba(250, 204, 21, 0.2)', boxShadow: '0 -8px 24px rgba(0, 0, 0, 0.5)' }}>
-      <div className="player-info">
-        <div className="player-cover-art" style={{ background: 'var(--bg-tertiary)', borderRadius: 10, width: 52, height: 52, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', boxShadow: '0 4px 12px rgba(0,0,0,0.3)' }}>
-          {currentSong?.coverArt
-            ? <img src={currentSong.coverArt} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            : <i className="fas fa-music" style={{ color: 'var(--accent-color)', fontSize: '1.3rem' }} />}
+    <div className="music-player-bar">
+      {/* Mobile Thin Progress Line on top of mini-player */}
+      <div className="mobile-player-progress-track">
+        <div className="mobile-player-progress-fill" style={{ width: `${pct}%` }} />
+      </div>
+
+      <div
+        className="player-info"
+        onClick={() => openPlayer()}
+        role="button"
+        tabIndex={0}
+        title="Tap to open full player"
+      >
+        <div className="player-cover-art">
+          {currentSong?.coverArt ? (
+            <img src={currentSong.coverArt} alt="" />
+          ) : (
+            <i className="fas fa-music" />
+          )}
         </div>
-        <div style={{ overflow: 'hidden', minWidth: 120 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span className="player-song-name" style={{ fontWeight: 700, color: '#fff', fontSize: '0.92rem' }}>
-              {currentSong?.title ?? 'No track selected'}
+        <div className="player-info-text">
+          <div className="player-title-row">
+            <span className="player-song-name">
+              {currentSong?.title ?? t('player.no_track', 'No track selected')}
             </span>
             {currentSong && <AudioEqualizer isPlaying={isPlaying} />}
           </div>
-          <div className="player-artist-name" style={{ color: 'var(--accent-color)', fontSize: '0.78rem', fontWeight: 500 }}>
-            {currentSong?.artistId?.name ?? 'Select a track to play'}
+          <div className="player-artist-name">
+            {currentSong?.artistId?.name ?? (currentSong as any)?.artist ?? t('player.select_track', 'Select a track to play')}
           </div>
         </div>
       </div>
 
-      <div className="player-controls" style={{ flex: 1, maxWidth: 540 }}>
-        <div className="control-buttons" style={{ gap: 16 }}>
-          <button className="ctrl-btn" onClick={skipBackward} disabled={!currentSong} style={{ opacity: currentSong ? 1 : 0.4 }}>
+      <div className="player-controls">
+        <div className="control-buttons">
+          <button
+            type="button"
+            className="ctrl-btn ctrl-prev"
+            onClick={skipBackward}
+            disabled={!currentSong}
+            aria-label="Previous track"
+          >
             <i className="fas fa-step-backward" />
           </button>
-          <button className="ctrl-btn play-main" onClick={togglePlay} disabled={!currentSong} style={{ width: 42, height: 42, borderRadius: '50%', background: 'var(--accent-color)', color: '#000', border: 'none', cursor: currentSong ? 'pointer' : 'default', opacity: currentSong ? 1 : 0.4, boxShadow: '0 4px 15px rgba(250, 204, 21, 0.4)' }}>
-            <i className={`fas ${isPlaying ? 'fa-pause' : 'fa-play'}`} style={{ marginLeft: isPlaying ? 0 : 2 }} />
+          <button
+            type="button"
+            className="ctrl-btn play-main"
+            onClick={(e) => {
+              e.stopPropagation();
+              togglePlay();
+            }}
+            disabled={!currentSong}
+            aria-label={isPlaying ? 'Pause' : 'Play'}
+          >
+            <i className={`fas ${isPlaying ? 'fa-pause' : 'fa-play'}`} />
           </button>
-          <button className="ctrl-btn" onClick={skipForward} disabled={!currentSong} style={{ opacity: currentSong ? 1 : 0.4 }}>
+          <button
+            type="button"
+            className="ctrl-btn ctrl-next"
+            onClick={(e) => {
+              e.stopPropagation();
+              skipForward();
+            }}
+            disabled={!currentSong}
+            aria-label="Next track"
+          >
             <i className="fas fa-step-forward" />
           </button>
         </div>
-        <div className="progress-row" style={{ display: 'flex', alignItems: 'center', gap: 10, width: '100%', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-          <span>{fmt(progress)}</span>
+        <div className="progress-row">
+          <span className="time-display">{fmt(progress)}</span>
           <div
             className="progress-bar-bg"
-            style={{ flex: 1, height: 6, borderRadius: 3, background: 'rgba(255,255,255,0.1)', cursor: currentSong ? 'pointer' : 'default', position: 'relative', overflow: 'hidden' }}
-            onClick={e => {
+            onClick={(e) => {
               if (!currentSong) return;
               const rect = e.currentTarget.getBoundingClientRect();
               seek(((e.clientX - rect.left) / rect.width) * 100);
             }}
           >
-            <div className="progress-bar-fill" style={{ width: `${pct}%`, height: '100%', background: '#facc15', borderRadius: 3 }} />
+            <div className="progress-bar-fill" style={{ width: `${pct}%` }} />
           </div>
-          <span>{fmt(duration)}</span>
+          <span className="time-display">{fmt(duration)}</span>
         </div>
       </div>
 
-      <div className="player-volume-area" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        <i className={`fas ${isMuted || volume === 0 ? 'fa-volume-mute' : volume < 0.5 ? 'fa-volume-down' : 'fa-volume-up'} vol-icon`} onClick={toggleMute} style={{ cursor: 'pointer', color: 'var(--accent-color)', fontSize: '1rem' }} />
-        <input 
-          type="range" min={0} max={1} step={0.01} 
-          value={isMuted ? 0 : volume} 
-          onChange={e => setVolume(parseFloat(e.target.value))} 
-          style={{ width: 84, accentColor: 'var(--accent-color)', cursor: 'pointer' }} 
+      <div className="player-volume-area">
+        <i
+          className={`fas ${
+            isMuted || volume === 0
+              ? 'fa-volume-mute'
+              : volume < 0.5
+              ? 'fa-volume-down'
+              : 'fa-volume-up'
+          } vol-icon`}
+          onClick={toggleMute}
+          title={isMuted ? 'Unmute' : 'Mute'}
+        />
+        <input
+          type="range"
+          min={0}
+          max={1}
+          step={0.01}
+          value={isMuted ? 0 : volume}
+          onChange={(e) => setVolume(parseFloat(e.target.value))}
+          aria-label="Volume control"
         />
       </div>
+
+      {/* Mobile Expand Button */}
+      <button
+        type="button"
+        className="mobile-expand-player-btn"
+        onClick={() => openPlayer()}
+        aria-label="Expand player"
+      >
+        <i className="fas fa-chevron-up" />
+      </button>
     </div>
   );
 };
@@ -349,10 +464,23 @@ interface LayoutProps {
   showQuickStats?: boolean;
   topbarTitle?: string;
   showSearch?: boolean;
+  showPlayer?: boolean;
 }
 
 const Layout: React.FC<LayoutProps> = ({
-  children, navItems, activeView, onNavClick, searchValue = '', onSearchChange = () => {}, notifCount = 0, totalPlays = 0, totalLikes = 0, showQuickStats = false, topbarTitle, showSearch = true
+  children,
+  navItems,
+  activeView,
+  onNavClick,
+  searchValue = '',
+  onSearchChange = () => {},
+  notifCount = 0,
+  totalPlays = 0,
+  totalLikes = 0,
+  showQuickStats = false,
+  topbarTitle,
+  showSearch = true,
+  showPlayer = true,
 }) => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -380,7 +508,7 @@ const Layout: React.FC<LayoutProps> = ({
 
       <div className="main-col">
         <TopBar
-          onMenuToggle={() => setSidebarOpen(o => !o)}
+          onMenuToggle={() => setSidebarOpen((o) => !o)}
           searchValue={searchValue}
           onSearchChange={onSearchChange}
           notifCount={notifCount}
@@ -392,12 +520,20 @@ const Layout: React.FC<LayoutProps> = ({
           showSearch={showSearch}
         />
 
-        <div className="content-area">
-          {children}
-        </div>
+        <div className="content-area">{children}</div>
 
-        <PlayerBar />
-        <SongPlayerModal />
+        {showPlayer && <PlayerBar />}
+        {showPlayer && <SongPlayerModal />}
+
+        {/* Mobile Bottom Tab Bar */}
+        <MobileBottomNav
+          activeView={activeView}
+          onNavClick={onNavClick}
+          onMenuToggle={() => setSidebarOpen((o) => !o)}
+          notifCount={notifCount}
+          totalLikes={totalLikes}
+          navItems={navItems}
+        />
       </div>
     </div>
   );

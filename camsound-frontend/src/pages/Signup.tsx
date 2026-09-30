@@ -2,10 +2,11 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { usePlatformSettings } from '../context/SettingsContext';
+import { useLanguage } from '../context/LanguageContext';
+import LanguageToggle from '../components/LanguageToggle';
 import { authService } from '../services/api';
 
 const Signup: React.FC = () => {
-  const [step, setStep] = useState(2);
   const [type, setType] = useState('fan');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
@@ -19,14 +20,15 @@ const Signup: React.FC = () => {
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const { login } = useAuth();
   const { settings } = usePlatformSettings();
+  const { t } = useLanguage();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
   useEffect(() => {
+    document.title = 'Sign Up — CamSound';
     const roleParam = searchParams.get('role');
     if (roleParam === 'artist') {
       setType('artist');
-      setStep(2);
     }
   }, [searchParams]);
 
@@ -83,7 +85,11 @@ const Signup: React.FC = () => {
         <div className="wave-anim" />
       </div>
 
-      <div className="auth-card auth-card-wide">
+      <div className="auth-card auth-card-wide" style={{ position: 'relative' }}>
+        <div style={{ position: 'absolute', top: 20, right: 20 }}>
+          <LanguageToggle />
+        </div>
+
         <div className="auth-logo">
           <h1 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
             {settings.logoUrl ? (
@@ -93,7 +99,7 @@ const Signup: React.FC = () => {
             )}
             {settings.platformName || 'CamSound'}
           </h1>
-          <p>Join the Cameroonian music revolution</p>
+          <p>{t('auth.signup_subtitle')}</p>
         </div>
 
         {error && (
@@ -102,64 +108,20 @@ const Signup: React.FC = () => {
           </div>
         )}
 
-        {step === 1 ? (
-          // Step 1: Role Selection
-          <div>
-            <div style={{ marginBottom: 20 }}>
-              <label className="auth-label">I want to...</label>
-              <div className="role-selection">
-                <div
-                  className={`role-option ${type === 'fan' ? 'selected' : ''}`}
-                  onClick={() => setType('fan')}
-                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setType('fan'); } }}
-                  role="radio"
-                  tabIndex={0}
-                  aria-checked={type === 'fan'}
-                >
-                  <div className="role-icon-circle"><i className="fas fa-headphones" /></div>
-                  <div className="role-info">
-                    <h5>Listen as a Fan</h5>
-                    <p>Discover and stream Cameroonian music</p>
-                  </div>
-                  {type === 'fan' && <i className="fas fa-check-circle" style={{ marginLeft: 'auto', color: 'var(--accent-color)', fontSize: '1.3rem' }} />}
-                </div>
-                <div
-                  className={`role-option ${type === 'artist' ? 'selected' : ''}`}
-                  onClick={() => setType('artist')}
-                  onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setType('artist'); } }}
-                  role="radio"
-                  tabIndex={0}
-                  aria-checked={type === 'artist'}
-                >
-                  <div className="role-icon-circle"><i className="fas fa-microphone" /></div>
-                  <div className="role-info">
-                    <h5>Join as an Artist</h5>
-                    <p>Upload music and build your fanbase</p>
-                  </div>
-                  {type === 'artist' && <i className="fas fa-check-circle" style={{ marginLeft: 'auto', color: 'var(--accent-color)', fontSize: '1.3rem' }} />}
-                </div>
-              </div>
-            </div>
-            <button className="btn-auth-submit" onClick={() => setStep(2)}>
-              Continue <i className="fas fa-arrow-right" />
-            </button>
+        <form onSubmit={handleSubmit}>
+          <div style={{ marginBottom: 20 }}>
+            <span style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>{t('auth.registering_as')} <strong style={{ color: type === 'artist' ? 'var(--accent-color)' : 'var(--text-white)' }}>{type === 'artist' ? t('auth.role_artist') : t('auth.role_fan')}</strong></span>
           </div>
-        ) : (
-          // Step 2: Account Details
-          <form onSubmit={handleSubmit}>
-            <div style={{ marginBottom: 20 }}>
-              <span style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>I am registering as <strong style={{ color: type === 'artist' ? 'var(--accent-color)' : 'var(--text-white)' }}>{type === 'artist' ? 'Artist' : 'Fan'}</strong></span>
-            </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
               <div className="auth-form-group" style={{ gridColumn: '1/-1' }}>
-                <label className="auth-label">{type === 'artist' ? 'Artist Name' : 'Full Name'}</label>
+                <label className="auth-label">{type === 'artist' ? t('auth.artist_name') : t('auth.full_name')}</label>
                 <div className="input-icon-wrap">
                   <i className="fas fa-user" />
                   <input
                     type="text"
                     className="auth-input"
-                    placeholder={type === 'artist' ? 'Your artist name' : 'Your full name'}
+                    placeholder={type === 'artist' ? t('auth.artist_name') : t('auth.full_name')}
                     value={name}
                     onChange={e => setName(e.target.value)}
                     required
@@ -168,13 +130,13 @@ const Signup: React.FC = () => {
               </div>
 
               <div className="auth-form-group" style={{ gridColumn: '1/-1' }}>
-                <label className="auth-label">Email Address</label>
+                <label className="auth-label">{t('auth.email')}</label>
                 <div className="input-icon-wrap">
                   <i className="fas fa-envelope" />
                   <input
                     type="email"
                     className="auth-input"
-                    placeholder="Enter your email"
+                    placeholder={t('auth.email_placeholder')}
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     required
@@ -183,13 +145,13 @@ const Signup: React.FC = () => {
               </div>
 
               <div className="auth-form-group" style={{ gridColumn: '1/-1' }}>
-                <label className="auth-label">Country</label>
+                <label className="auth-label">{t('auth.country')}</label>
                 <div className="input-icon-wrap">
                   <i className="fas fa-globe" />
                   <input
                     type="text"
                     className="auth-input"
-                    placeholder="Country"
+                    placeholder={t('auth.country_placeholder')}
                     value={country}
                     onChange={e => setCountry(e.target.value)}
                   />
@@ -197,13 +159,13 @@ const Signup: React.FC = () => {
               </div>
 
               <div className="auth-form-group" style={{ gridColumn: '1/-1' }}>
-                <label className="auth-label">Password</label>
+                <label className="auth-label">{t('auth.password')}</label>
                 <div className="input-icon-wrap" style={{ position: 'relative' }}>
                   <i className="fas fa-lock" />
                   <input
                     type={showPass ? 'text' : 'password'}
                     className="auth-input"
-                    placeholder="Create a password (min. 6 chars)"
+                    placeholder={t('auth.password_placeholder')}
                     value={password}
                     onChange={e => setPassword(e.target.value)}
                     required
@@ -237,7 +199,7 @@ const Signup: React.FC = () => {
                   return (
                     <div className="password-strength" style={{ marginTop: 8 }}>
                       <div className="strength-text" style={{ color, fontSize: '0.82rem', marginBottom: 4 }}>
-                        Password strength: {label}
+                        {t('auth.password_strength')}: {label}
                       </div>
                       <div className="strength-bar" style={{ height: 5, background: 'rgba(255,255,255,0.1)', borderRadius: 5, overflow: 'hidden' }}>
                         <div className="strength-fill" style={{ width: `${pct}%`, background: color, height: '100%', transition: 'width 0.3s ease' }} />
@@ -248,13 +210,13 @@ const Signup: React.FC = () => {
               </div>
 
               <div className="auth-form-group" style={{ gridColumn: '1/-1' }}>
-                <label className="auth-label">Confirm Password</label>
+                <label className="auth-label">{t('auth.confirm_password')}</label>
                 <div className="input-icon-wrap" style={{ position: 'relative' }}>
                   <i className="fas fa-lock" />
                   <input
                     type={showConfirmPass ? 'text' : 'password'}
                     className="auth-input"
-                    placeholder="Re-enter your password"
+                    placeholder={t('auth.confirm_password_placeholder')}
                     value={confirmPassword}
                     onChange={e => setConfirmPassword(e.target.value)}
                     required
@@ -276,8 +238,8 @@ const Signup: React.FC = () => {
 
             <div className="role-selection" style={{ marginBottom: 16 }}>
               {[
-                { value: 'fan', icon: 'fa-headphones', title: 'Fan', description: 'Discover and enjoy music from Cameroonian artists' },
-                { value: 'artist', icon: 'fa-microphone', title: 'Artist', description: 'Upload and share your music with the world' },
+                { value: 'fan', icon: 'fa-headphones', title: t('auth.role_fan'), description: t('auth.role_fan_desc') },
+                { value: 'artist', icon: 'fa-microphone', title: t('auth.role_artist'), description: t('auth.role_artist_desc') },
               ].map(role => (
                 <div key={role.value} className={`role-option ${type === role.value ? 'selected' : ''}`} onClick={() => setType(role.value)} role="radio" aria-checked={type === role.value} tabIndex={0}>
                   <div className="role-icon-circle"><i className={`fas ${role.icon}`} /></div>
@@ -289,26 +251,25 @@ const Signup: React.FC = () => {
 
             <label style={{ margin: '16px 0', fontSize: '0.83rem', color: 'var(--text-muted)', display: 'flex', gap: 10, alignItems: 'flex-start', cursor: 'pointer' }}>
               <input type="checkbox" checked={acceptedTerms} onChange={e => setAcceptedTerms(e.target.checked)} required style={{ marginTop: 3 }} />
-              <span>I agree to the <a href="#" onClick={e => e.preventDefault()} style={{ color: 'var(--secondary-color)' }}>Terms of Service</a> and <a href="#" onClick={e => e.preventDefault()} style={{ color: 'var(--secondary-color)' }}>Privacy Policy</a>.</span>
+              <span>{t('auth.agree_terms')} <Link to="/terms" target="_blank" style={{ color: 'var(--secondary-color)' }}>{t('common.terms')}</Link> {t('auth.and')} <Link to="/privacy" target="_blank" style={{ color: 'var(--secondary-color)' }}>{t('common.privacy')}</Link>.</span>
             </label>
 
             <button type="submit" className="btn-auth-submit" disabled={loading || !acceptedTerms}>
               {loading
-                ? <><i className="fas fa-spinner fa-spin" /> Creating account...</>
-                : <><i className="fas fa-user-plus" /> Create Account</>}
+                ? <><i className="fas fa-spinner fa-spin" /> {t('auth.creating_account')}</>
+                : <><i className="fas fa-user-plus" /> {t('auth.signup_button')}</>}
             </button>
           </form>
-        )}
 
-        <div className="auth-divider"><span>Or sign up with</span></div>
+        <div className="auth-divider"><span>{t('auth.or_signup_with')}</span></div>
         <div className="social-buttons">
           <button type="button" className="btn-social" onClick={() => setError('Google signup is currently disabled in test environment.')}><i className="fab fa-google" /> Google</button>
           <button type="button" className="btn-social" onClick={() => setError('Facebook signup is currently disabled in test environment.')}><i className="fab fa-facebook-f" /> Facebook</button>
         </div>
 
         <div className="auth-footer-links">
-          <p>Already have an account? <Link to="/login">Login</Link></p>
-          <p><Link to="/"><i className="fas fa-home" style={{ marginRight: 4 }} />Back to Home</Link></p>
+          <p>{t('auth.have_account')} <Link to="/login">{t('auth.login_link')}</Link></p>
+          <p><Link to="/"><i className="fas fa-home" style={{ marginRight: 4 }} />{t('auth.back_to_home')}</Link></p>
         </div>
       </div>
     </div>

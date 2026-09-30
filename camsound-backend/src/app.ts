@@ -69,7 +69,11 @@ app.use('/media', express.static(path.resolve(__dirname, '../public/uploads')));
 app.use('/api', apiLimiter);
 
 // ── CSRF Protection ───────────────────────────────────────────────────────────
-app.use('/api', verifyCsrf);
+app.use('/api', (req, res, next) => {
+    const safeMethods = ['GET', 'HEAD', 'OPTIONS'];
+    if (safeMethods.includes(req.method)) return next();
+    return verifyCsrf(req, res, next);
+});
 
 // ── Database Connection ───────────────────────────────────────────────────────
 mongoose.connect(process.env.MONGODB_URI!)

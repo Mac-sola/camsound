@@ -131,3 +131,24 @@ export const getTrendingComments = async (req: Request, res: Response) => {
         res.status(500).json({ success: false, message: error.message });
     }
 };
+
+export const likeComment = async (req: Request, res: Response) => {
+    try {
+        const comment = await Comment.findById(req.params.commentId);
+        if (!comment) return res.status(404).json({ success: false, message: 'Comment not found' });
+
+        const userId = req.user?.id;
+        const alreadyLiked = comment.likes.some((id) => id.toString() === userId);
+
+        if (alreadyLiked) {
+            comment.likes = comment.likes.filter((id) => id.toString() !== userId) as any;
+        } else {
+            comment.likes.push(userId as any);
+        }
+
+        await comment.save();
+        res.json({ success: true, liked: !alreadyLiked, likesCount: comment.likes.length });
+    } catch (error: any) {
+        res.status(500).json({ success: false, message: error.message });
+    }
+};

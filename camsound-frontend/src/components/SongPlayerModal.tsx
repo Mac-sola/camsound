@@ -1,9 +1,11 @@
 import React from 'react';
 import Modal from './Modal';
 import { useAudio } from '../context/AudioContext';
+import { useLanguage } from '../context/LanguageContext';
 import { getMusicImage } from '../utils/musicImages';
 
 const SongPlayerModal: React.FC = () => {
+  const { t } = useLanguage();
   const {
     currentSong,
     isPlaying,
@@ -59,11 +61,11 @@ const SongPlayerModal: React.FC = () => {
   };
 
   const progressPercent = duration > 0 ? (progress / duration) * 100 : 0;
-  const artistName = currentSong.artistId?.name || (currentSong as any).artist || 'Unknown Artist';
+  const artistName = currentSong.artistId?.name || (currentSong as any).artist || t('player.unknown_artist', 'Unknown Artist');
   const coverUrl = currentSong.coverArt || getMusicImage(currentSong._id || currentSong.title);
 
   return (
-    <Modal isOpen={isPlayerOpen} title="Now Playing" size="md" onClose={closePlayer}>
+    <Modal isOpen={isPlayerOpen} title={t('player.now_playing', 'Now Playing')} size="md" onClose={closePlayer}>
       <div className="now-playing-modal-body">
         {/* Cover Art */}
         <div className="now-playing-cover">
@@ -111,8 +113,8 @@ const SongPlayerModal: React.FC = () => {
             type="button"
             className="np-btn-control np-btn-prev"
             onClick={previousSong}
-            title="Previous track"
-            aria-label="Previous track"
+            title={t('player.prev_track', 'Previous track')}
+            aria-label={t('player.prev_track', 'Previous track')}
           >
             <i className="fas fa-step-backward" />
           </button>
@@ -121,8 +123,8 @@ const SongPlayerModal: React.FC = () => {
             type="button"
             className="np-btn-play"
             onClick={togglePlay}
-            title={isPlaying ? 'Pause' : 'Play'}
-            aria-label={isPlaying ? 'Pause' : 'Play'}
+            title={isPlaying ? t('player.pause', 'Pause') : t('player.play', 'Play')}
+            aria-label={isPlaying ? t('player.pause', 'Pause') : t('player.play', 'Play')}
           >
             <i className={`fas ${isPlaying ? 'fa-pause' : 'fa-play'}`} />
           </button>
@@ -131,8 +133,8 @@ const SongPlayerModal: React.FC = () => {
             type="button"
             className="np-btn-control np-btn-next"
             onClick={nextSong}
-            title="Next track"
-            aria-label="Next track"
+            title={t('player.next_track', 'Next track')}
+            aria-label={t('player.next_track', 'Next track')}
           >
             <i className="fas fa-step-forward" />
           </button>
@@ -144,8 +146,8 @@ const SongPlayerModal: React.FC = () => {
             type="button"
             className="np-volume-btn"
             onClick={toggleMute}
-            aria-label={isMuted ? 'Unmute' : 'Mute'}
-            title={isMuted ? 'Unmute' : 'Mute'}
+            aria-label={isMuted ? t('player.unmute', 'Unmute') : t('player.mute', 'Mute')}
+            title={isMuted ? t('player.unmute', 'Unmute') : t('player.mute', 'Mute')}
           >
             <i
               className={`fas ${
@@ -168,7 +170,7 @@ const SongPlayerModal: React.FC = () => {
             style={{
               background: `linear-gradient(to right, #3b82f6 ${(isMuted ? 0 : volume) * 100}%, rgba(255, 255, 255, 0.2) ${(isMuted ? 0 : volume) * 100}%)`,
             }}
-            aria-label="Volume slider"
+            aria-label={t('player.volume', 'Volume slider')}
           />
         </div>
 
@@ -178,9 +180,9 @@ const SongPlayerModal: React.FC = () => {
             type="button"
             className="np-download-btn"
             onClick={handleDownload}
-            title="Download track"
+            title={t('player.download', 'Download track')}
           >
-            <i className="fas fa-download" /> Download
+            <i className="fas fa-download" /> {t('player.download', 'Download')}
           </button>
         </div>
 

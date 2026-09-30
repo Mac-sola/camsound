@@ -6,6 +6,7 @@ export interface IComment extends Document {
     content: string;
     parentId?: Types.ObjectId;
     isPinned: boolean;
+    likes: Types.ObjectId[];
 }
 
 const CommentSchema = new Schema<IComment>(
@@ -15,6 +16,7 @@ const CommentSchema = new Schema<IComment>(
         content: { type: String, required: true, trim: true },
         parentId: { type: Schema.Types.ObjectId, ref: 'Comment', default: null },
         isPinned: { type: Boolean, default: false },
+        likes: [{ type: Schema.Types.ObjectId, ref: 'User', default: [] }],
     },
     { timestamps: true }
 );

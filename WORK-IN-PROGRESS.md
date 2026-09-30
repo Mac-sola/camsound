@@ -2,61 +2,111 @@
 
 > **Current source of truth:** The dated continuation checkpoint below is authoritative. Older sections in this file are historical notes from earlier sessions and may describe work as complete before the PHP-to-React parity audit was finished.
 
+## CONTINUATION CHECKPOINT - 2026-09-30
+
+### Suggested Commit Message
+
+```text
+feat: multilingual i18n (EN/FR), mobile navigation, public artist profiles & cultural genres expansion
+
+- Multilingual Architecture (English & French):
+  - Complete `LanguageContext.tsx` with dual-language dictionary covering landing, navigation, player, dashboards, genres, and payment flows.
+  - Interactive `LanguageToggle.tsx` component with instant language switching and persistence in localStorage.
+  - Integrated language selector into navbar, header, mobile navigation, and settings across all pages.
+- Mobile Navigation:
+  - Responsive `MobileBottomNav.tsx` component providing native app-like bottom navigation dock on touch devices.
+  - Context-aware navigation tabs for fans, artists, admins, and unauthenticated guests.
+- Public Artist Profile & Legal Pages:
+  - Created standalone public artist view (`ArtistPage.tsx` and `ArtistProfilePage.tsx`) supporting direct links (`/artists/:id`).
+  - Added dedicated legal policy views (`LegalPage.tsx`) for `/terms`, `/privacy`, and `/cookies`.
+- Cameroonian Cultural Genre Immersion:
+  - Deep-dive genre explorer in `FanGenres.tsx` featuring Makossa, Bikutsi, Assiko, Mangambeu, Benskin, Bend Skin, Mbolé, Gospel, and Hip-Hop with historical context, traditional instruments, and regional origins.
+- Build & Type Integrity:
+  - Resolved missing i18n/settings imports in `Browse.tsx`.
+  - Added discriminated union typing for `FAN_NAV_DEF` in `FanDashboard.tsx`.
+  - Verified clean production build (`npm run build` and `npx tsc --noEmit` with 0 errors).
+```
+
+### What Was Completed Today
+
+1. **Bilingual Localization (EN & FR):**
+   - Implemented `LanguageContext.tsx` supporting English and French with extensive translation keys for the entire streaming ecosystem.
+   - Built modern toggle button `LanguageToggle.tsx` styled to match the emerald-gold glassmorphism theme.
+   - Wired translations across `Landing.tsx`, `Browse.tsx`, `FanDashboard.tsx`, `ArtistDashboard.tsx`, `AdminDashboard.tsx`, `MoMoPaymentModal.tsx`, and `Layout.tsx`.
+
+2. **Mobile-First Experience:**
+   - Implemented `MobileBottomNav.tsx` docked to the viewport bottom on smaller screens with smooth active indicators.
+   - Integrated with all user roles and guest views.
+
+3. **Artist Profile & Legal Suite:**
+   - Standalone `/artists/:id` route showing artist bio, discography, follower counts, verified badges, and social media links.
+   - `/terms`, `/privacy`, and `/cookies` compliance routes with localized Cameroonian digital commerce clauses.
+
+4. **Cameroonian Cultural Genre Exploration:**
+   - Fully expanded `FanGenres.tsx` with rich cultural cards, sound origins, and native instrument breakdowns.
+
+5. **Typecheck & Production Build Verification:**
+   - `camsound-frontend`: `npm run build` built successfully with 0 errors in 7.52s.
+   - `camsound-backend`: `npx tsc --noEmit` passed with 0 errors.
+
+---
+
 ## CONTINUATION CHECKPOINT - 2026-09-18
 
 ### Suggested Commit Message
 
 ```text
-feat: implement MTN MoMo simulation engine and dynamic platform branding
+feat: social comments system & fan-artist interactive community hub
 
-- Add reusable `MoMoPaymentModal` supporting 4 modes: subscription, withdrawal, tip, and test.
-- Integrate MoMo simulation across all payment interfaces:
-  - Fan subscription checkout with simulated USSD PIN screen and receipts.
-  - Landing page pricing CTAs with instant MoMo checkout.
-  - Artist revenue withdrawals with 2% MTN network fee calculation and live payout simulation.
-  - Artist Pro plan subscription upgrade via MoMo.
-  - Fan-to-artist direct tipping via MoMo in artist details modal.
-  - Fan settings linked MTN MoMo phone number management.
-  - Admin dashboard payments test bench and 1-click MoMo payout simulation on pending withdrawals.
-- Expand backend MoMo routes (`/api/momo/initiate`, `/api/momo/verify`, `/api/momo/disburse`, `/api/momo/webhook`).
-- Implement dynamic platform branding system (platformName, platformDesc, logoUrl, logoIcon) synced in real-time across Landing, Login, Signup, Browse, Layout, and Admin Dashboard.
-- Fix subscription plan features array/string split type safety in Admin Dashboard.
+- Build master `CommentsSection.tsx` component with modern social media architecture (YouTube/Instagram style):
+  - 2-level threaded nested replies between fans and verified artists.
+  - Per-comment interactive like count with instant optimistic toggling.
+  - Verified `Artist` badge with checkmark indicator on verified artist comments and replies.
+  - Pinning standout comments to the top with pinned banner badge.
+  - Quick emoji reaction bar (👍, ❤️, 🔥, 🎵, 😍, 🙌, 💯, 😂) and keyboard shortcuts (Ctrl+Enter).
+  - Relative humanized timestamps ("just now", "2m ago", "1h ago", "3d ago").
+  - Deterministic colored avatar initial badges with image fallback.
+  - Author and moderator comment deletion with confirmation.
+- Add `likes` array to MongoDB `Comment` schema and backend `likeComment` controller endpoint (`POST /api/songs/:songId/comments/:id/like`).
+- Embed `CommentsSection` directly inside the Fan Dashboard song details modal.
+- Upgrade Artist Dashboard Social Interaction view into a dual-mode community hub:
+  - Track Discussions: Per-track selector chips with direct threaded discussions and artist moderation.
+  - Activity Feed: Aggregated recent comments across all tracks with inline reply composer and pin/delete tools.
+- Create dedicated fan spotlight carousel `FanSpotlightCarousel.tsx` to differentiate fan dashboard from landing hero.
 ```
 
 ### What Was Completed Today
 
-1. **MTN Mobile Money (MoMo) Simulation Engine:**
-   - Created master `MoMoPaymentModal.tsx` component with dark emerald & gold glassmorphism aesthetic.
-   - Built realistic multi-step simulation flow:
-     - Phone validation for Cameroon MTN prefixes (`67X`, `68X`, `650-659`).
-     - Interactive USSD push screen with simulated phone keypad (4-digit PIN input, `1-9`, `0`, `Clear`, `OK`, and `Auto-Approve`).
-     - Animated network handshake with progressive validation steps.
-     - Official electronic MoMo transaction receipt with copyable transaction reference.
-   - Connected MoMo simulation to:
-     - **Subscription Checkout (`/subscription`)**: Upgrades fan tier to `premium` or `vip` and saves subscription record.
-     - **Landing Page Pricing (`/`)**: Directly opens MoMo checkout on plan buttons.
-     - **Artist Revenue & Cashout (`/artist` -> Revenue)**: Calculates 2% MTN fee, simulates payout, updates balance, and logs withdrawal.
-     - **Artist Subscriptions (`/artist` -> Subscriptions)**: Subscribes to Artist Pro plans.
-     - **Artist Tipping (`ArtistDetailsModal.tsx`)**: Allows tipping artists with custom or preset amounts (500, 1000, 2500, 5000 FCFA).
-     - **Fan Account Settings (`FanSettings.tsx`)**: Linked MTN MoMo Number settings card.
-     - **Admin Payments & Withdrawals (`AdminDashboard.tsx`)**: "⚡ Run MoMo Test Transaction" test tool and "⚡ MoMo Payout" one-click disbursement simulation.
+1. **Social Comments & Community Engagement Engine:**
+   - **Data Model**: Updated `Comment.ts` to include `likes: [{ type: Schema.Types.ObjectId, ref: 'User' }]`.
+   - **Backend API**: Added `likeComment` controller in `commentsController.ts` and route `POST /api/songs/:songId/comments/:id/like` in `routes/comments.ts`.
+   - **Master Component (`CommentsSection.tsx`)**:
+     - Built a complete social commenting interface with optimistic state management.
+     - **Nested Threaded Replies**: Artists can reply directly to fans and fans can reply back in clean indented bubbles.
+     - **Verified Artist Badge**: Badges displayed whenever an artist replies to their listeners.
+     - **Pinned Comments**: Pinned comments sticky at the top of the discussion.
+     - **Like Reactions**: Like counts that can be toggled by any authenticated user.
+     - **Emoji Bar & Hotkeys**: Instant reaction emojis and Ctrl+Enter to submit.
+   - **Fan Dashboard Integration (`Dashboard.tsx`)**: Replaced the previous flat comment box with `CommentsSection` inside the Song Modal.
+   - **Artist Dashboard Social Hub (`ArtistDashboard.tsx`)**:
+     - Added track selection tabs for artists to dive into discussions track-by-track.
+     - Added cross-track activity feed for rapid fan engagement and replies.
 
-2. **Backend MoMo Integration (`camsound-backend`):**
-   - Implemented `momoService.ts` and `routes/momo.ts` with `/api/momo/initiate`, `/api/momo/verify`, `/api/momo/disburse`, and `/api/momo/webhook`.
-   - Linked payment completion directly with MongoDB `Subscription`, `Payment`, and `Withdrawal` models.
+2. **Differentiated Fan Dashboard Carousel (`FanSpotlightCarousel.tsx`):**
+   - Created dedicated fan spotlight carousel featuring top Cameroonian tracks and artists instead of replicating the landing page marketing hero.
 
-3. **Dynamic Platform Branding & Admin Control:**
-   - Created public settings API endpoints at `/api/settings` and `/api/platform/settings`.
-   - Updated `SettingsContext.tsx` with multi-endpoint fallback and `localStorage` caching.
-   - Integrated live branding across `Landing.tsx`, `Login.tsx`, `Signup.tsx`, `Browse.tsx`, `Layout.tsx`, and `AdminDashboard.tsx`.
-   - Fixed `(p.features || "").split is not a function` error in `AdminDashboard.tsx`.
+3. **MTN Mobile Money (MoMo) Simulation Engine:**
+   - Master `MoMoPaymentModal.tsx` component with USSD PIN simulator, network handshake, auto-approve, and receipts.
+   - Connected across Fan subscriptions, Landing pricing CTAs, Artist withdrawals (with 2% fee math), Artist Pro subscriptions, Artist tips, Fan settings, and Admin test bench.
+
+4. **Dynamic Platform Branding & Admin Control:**
+   - Public platform settings API (`/api/settings`, `/api/platform/settings`), `SettingsContext.tsx` live cache, and synchronization across all pages.
 
 ### Verification Completed
 
-- `npx tsc --noEmit` executed cleanly on both `camsound-frontend` and `camsound-backend` (**0 errors**).
-- Backend running on `http://localhost:5000` with live MongoDB connection.
-- Frontend running on `http://localhost:5173`.
-- Tested interactive USSD keypad, auto-approve, withdrawal fee math, and admin test bench.
+- `npm run build` executed with **0 errors** (Vite bundle built successfully).
+- `npx tsc --noEmit` executed with **0 errors** on backend.
+- Full server and client running seamlessly in dev mode.
 
 ---
 

@@ -8,5 +8,6 @@ router.get('/', comments.getComments);
 router.post('/', protect, comments.createComment);
 router.delete('/:commentId', protect, comments.deleteComment);
 router.put('/:commentId/pin', protect, comments.pinComment);
+router.post('/:commentId/like', protect, comments.likeComment);
 
 export default router;

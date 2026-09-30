@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { songsService, artistsService, favoritesService } from '../services/api';
 import SongCard, { type SongItem } from './SongCard';
 import ArtistCard, { type ArtistItem } from './ArtistCard';
-import ArtistDetailsModal from './ArtistDetailsModal';
+import { useLanguage } from '../context/LanguageContext';
 
 const GENRES = ['All', 'Makossa', 'Bikutsi', 'Afrobeat', 'Traditional', 'Assiko', 'Gospel', 'Hip Hop', 'R&B'];
 
@@ -18,7 +19,12 @@ export const FanBrowse: React.FC<FanBrowseProps> = ({ initialQuery = '' }) => {
   const [loading, setLoading] = useState(false);
   const [genreFilter, setGenreFilter] = useState('All');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [selectedArtist, setSelectedArtist] = useState<any>(null);
+  const navigate = useNavigate();
+  const { t } = useLanguage();
+
+  const handleArtistClick = (artist: { _id?: string }) => {
+    if (artist._id) navigate(`/artists/${artist._id}`);
+  };
 
   useEffect(() => {
     setQuery(initialQuery);
@@ -95,7 +101,7 @@ export const FanBrowse: React.FC<FanBrowseProps> = ({ initialQuery = '' }) => {
         <input
           type="text"
           className="fan-search-input"
-          placeholder="Search songs, artists, genres..."
+        placeholder={t('browse.search_placeholder')}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           id="fan-browse-search-input"
@@ -123,7 +129,7 @@ export const FanBrowse: React.FC<FanBrowseProps> = ({ initialQuery = '' }) => {
       {loading ? (
         <div className="fan-loading" style={{ padding: 40 }}>
           <i className="fas fa-spinner fa-spin" />
-          <span>Searching tracks and artists...</span>
+          <span>{t('browse.searching')}</span>
         </div>
       ) : (
         <>
@@ -136,8 +142,8 @@ export const FanBrowse: React.FC<FanBrowseProps> = ({ initialQuery = '' }) => {
                     <i className="fas fa-microphone" />
                   </div>
                   <div>
-                    <div className="fan-section-title-premium">Discover Artists</div>
-                    <div className="fan-section-subtitle-premium">Browse Cameroonian music creators</div>
+                    <div className="fan-section-title-premium">{t('browse.discover_artists')}</div>
+                    <div className="fan-section-subtitle-premium">{t('browse.discover_artists_sub')}</div>
                   </div>
                 </div>
               </div>
@@ -146,7 +152,7 @@ export const FanBrowse: React.FC<FanBrowseProps> = ({ initialQuery = '' }) => {
                   <ArtistCard
                     key={artist._id}
                     artist={artist}
-                    onArtistClick={setSelectedArtist}
+                    onArtistClick={handleArtistClick}
                   />
                 ))}
               </div>
@@ -161,10 +167,10 @@ export const FanBrowse: React.FC<FanBrowseProps> = ({ initialQuery = '' }) => {
                   <i className="fas fa-music" />
                 </div>
                 <div>
-                  <div className="fan-section-title-premium">Browse All Music</div>
+                  <div className="fan-section-title-premium">{t('browse.all_music')}</div>
                   <div className="fan-section-subtitle-premium">
-                    {songs.length} {songs.length === 1 ? 'track' : 'tracks'} available
-                    {debouncedQuery && ` matching "${debouncedQuery}"`}
+                    {songs.length} {songs.length === 1 ? t('browse.track_singular') : t('browse.tracks_available')}
+                    {debouncedQuery && ` ${t('browse.matching')} "${debouncedQuery}"`}
                   </div>
                 </div>
               </div>
@@ -173,8 +179,8 @@ export const FanBrowse: React.FC<FanBrowseProps> = ({ initialQuery = '' }) => {
             {songs.length === 0 ? (
               <div className="fan-empty-state">
                 <i className="fas fa-search" />
-                <h4>No tracks found</h4>
-                <p>Try a different search term or genre filter</p>
+                <h4>{t('browse.no_tracks_found')}</h4>
+                <p>{t('browse.no_tracks_try')}</p>
               </div>
             ) : (
               <div className="cards-grid">
@@ -185,7 +191,7 @@ export const FanBrowse: React.FC<FanBrowseProps> = ({ initialQuery = '' }) => {
                     playlist={songs}
                     isFavorite={favoriteIds.has(song._id)}
                     onFavoriteToggle={handleFavoriteToggle}
-                    onArtistClick={setSelectedArtist}
+                    onArtistClick={handleArtistClick}
                   />
                 ))}
               </div>
@@ -194,7 +200,6 @@ export const FanBrowse: React.FC<FanBrowseProps> = ({ initialQuery = '' }) => {
         </>
       )}
 
-      <ArtistDetailsModal artist={selectedArtist} onClose={() => setSelectedArtist(null)} />
     </div>
   );
 };

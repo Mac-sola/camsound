@@ -27,6 +27,7 @@ interface AudioContextType {
   nextSong: () => void;
   previousSong: () => void;
   isPlayerOpen: boolean;
+  openPlayer: () => void;
   closePlayer: () => void;
   volume: number;
   setVolume: (v: number) => void;
@@ -174,6 +175,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (previous) playSong(previous, songQueue);
   };
 
+  const openPlayer = () => setIsPlayerOpen(true);
   const closePlayer = () => setIsPlayerOpen(false);
 
   const setVolume = (v: number) => {
@@ -209,7 +211,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [togglePlay]);
 
   return (
-    <AudioContext.Provider value={{ currentSong, isPlaying, progress, duration, audioError, playSong, togglePlay, seek, skipForward, skipBackward, nextSong, previousSong, isPlayerOpen, closePlayer, volume, setVolume, isMuted, toggleMute }}>
+    <AudioContext.Provider value={{ currentSong, isPlaying, progress, duration, audioError, playSong, togglePlay, seek, skipForward, skipBackward, nextSong, previousSong, isPlayerOpen, openPlayer, closePlayer, volume, setVolume, isMuted, toggleMute }}>
       {children}
     </AudioContext.Provider>
   );

@@ -30,9 +30,16 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>(null);
-  const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-  const [csrfToken, setCsrfToken] = useState<string | null>(localStorage.getItem('csrfToken'));
+  const [user, setUser] = useState<User | null>(() => {
+    try {
+      const savedUser = sessionStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [token, setToken] = useState<string | null>(() => sessionStorage.getItem('token'));
+  const [csrfToken, setCsrfToken] = useState<string | null>(() => sessionStorage.getItem('csrfToken'));
   const [isLoading, setIsLoading] = useState(true);
   const navigateRef = useRef<((path: string) => void) | undefined>(undefined);
 
@@ -42,18 +49,37 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   useEffect(() => {
     const validateToken = async () => {
+      const currentToken = sessionStorage.getItem('token');
+      if (!currentToken) {
+        setUser(null);
+        setToken(null);
+        setIsLoading(false);
+        return;
+      }
+
       try {
         const response = await authService.getSession();
         const data = response.data;
         if (data.success && data.data?.user) {
           setUser(data.data.user);
+          sessionStorage.setItem('user', JSON.stringify(data.data.user));
           if (data.data.csrfToken) {
             setCsrfToken(data.data.csrfToken);
-            localStorage.setItem('csrfToken', data.data.csrfToken);
+            sessionStorage.setItem('csrfToken', data.data.csrfToken);
           }
+        } else {
+          sessionStorage.removeItem('token');
+          sessionStorage.removeItem('user');
+          sessionStorage.removeItem('csrfToken');
+          setUser(null);
+          setToken(null);
         }
       } catch {
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
+        sessionStorage.removeItem('csrfToken');
         setUser(null);
+        setToken(null);
       }
       setIsLoading(false);
     };
@@ -62,10 +88,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = (newToken: string, newUser: User, newCsrfToken?: string) => {
-    localStorage.setItem('token', newToken);
-    localStorage.setItem('user', JSON.stringify(newUser));
+    sessionStorage.setItem('token', newToken);
+    sessionStorage.setItem('user', JSON.stringify(newUser));
+    // Clear shared localStorage legacy tokens to avoid cross-tab bleed
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     if (newCsrfToken) {
-      localStorage.setItem('csrfToken', newCsrfToken);
+      sessionStorage.setItem('csrfToken', newCsrfToken);
       setCsrfToken(newCsrfToken);
     }
     setToken(newToken);
@@ -73,7 +102,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateUser = (updatedUser: User) => {
-    localStorage.setItem('user', JSON.stringify(updatedUser));
+    sessionStorage.setItem('user', JSON.stringify(updatedUser));
     setUser(updatedUser);
   };
 
@@ -83,6 +112,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch {
       // Clear local state even if the server is unavailable.
     } finally {
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
+      sessionStorage.removeItem('csrfToken');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       localStorage.removeItem('csrfToken');

@@ -37,7 +37,7 @@ const ADMIN_NAV = [
   { label: 'Platform Settings', icon: 'fa-cog', view: 'settings' },
 ];
 
-const CHART_COLORS = ['#facc15', '#10b981', '#c084fc', '#60a5fa', '#f87171', '#34d399'];
+const CHART_COLORS = ['#f59e0b', '#10b981', '#c084fc', '#60a5fa', '#f87171', '#34d399'];
 const GENRES = ['All', 'Makossa', 'Bikutsi', 'Afrobeat', 'Assiko', 'Traditional', 'Gospel', 'Bend Skin', 'Hip Hop', 'R&B'];
 
 function exportCSV(rows: (string | number)[][], filename: string) {
@@ -58,7 +58,7 @@ const Pill: React.FC<{ status: string }> = ({ status }) => {
     verified: { bg: 'rgba(16, 185, 129, 0.12)', color: '#34d399', border: 'rgba(16, 185, 129, 0.25)' },
     completed: { bg: 'rgba(16, 185, 129, 0.12)', color: '#34d399', border: 'rgba(16, 185, 129, 0.25)' },
     resolved: { bg: 'rgba(16, 185, 129, 0.12)', color: '#34d399', border: 'rgba(16, 185, 129, 0.25)' },
-    pending: { bg: 'rgba(250, 204, 21, 0.12)', color: '#facc15', border: 'rgba(250, 204, 21, 0.25)' },
+    pending: { bg: 'rgba(245, 158, 11, 0.12)', color: '#f59e0b', border: 'rgba(245, 158, 11, 0.25)' },
     blocked: { bg: 'rgba(239, 68, 68, 0.12)', color: '#f87171', border: 'rgba(239, 68, 68, 0.25)' },
     rejected: { bg: 'rgba(239, 68, 68, 0.12)', color: '#f87171', border: 'rgba(239, 68, 68, 0.25)' },
     failed: { bg: 'rgba(239, 68, 68, 0.12)', color: '#f87171', border: 'rgba(239, 68, 68, 0.25)' },
@@ -236,9 +236,14 @@ const AdminDashboard: React.FC = () => {
   };
 
   useEffect(() => {
+    document.title = 'Admin Center — CamSound';
     setLoading(true);
-    statsService.getGlobalStats().then(res => {
-      if (res.data.success) setStats((prev: any) => ({ ...prev, ...res.data.data }));
+    Promise.all([
+      statsService.getGlobalStats(),
+      adminService.getSongs(),
+    ]).then(([statsRes, songsRes]) => {
+      if (statsRes.data.success) setStats((prev: any) => ({ ...prev, ...statsRes.data.data }));
+      if (songsRes.data.success) setSongs(songsRes.data.data);
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
@@ -345,10 +350,10 @@ const AdminDashboard: React.FC = () => {
       {/* Primary KPI Stats */}
       <div className="admin-stat-grid">
         {[
-          { label: 'Total Users', value: stats.totalUsers, icon: 'fa-users', color: '#60a5fa', trend: '+12.4% this mo' },
-          { label: 'Total Artists', value: stats.totalArtists, icon: 'fa-microphone', color: '#10b981', trend: '+8.1% this mo' },
-          { label: 'Total Songs', value: stats.totalSongs, icon: 'fa-music', color: '#c084fc', trend: '+15.2% this mo' },
-          { label: 'Total Revenue', value: `XAF ${(stats.totalRevenue ?? 0).toLocaleString()}`, icon: 'fa-dollar-sign', color: '#facc15', trend: 'Live MoMo' },
+          { label: 'Total Users', value: stats.totalUsers, icon: 'fa-users', color: '#60a5fa', sub: 'Registered accounts' },
+          { label: 'Total Artists', value: stats.totalArtists, icon: 'fa-microphone', color: '#10b981', sub: 'Active creators' },
+          { label: 'Total Songs', value: stats.totalSongs, icon: 'fa-music', color: '#c084fc', sub: 'Catalog tracks' },
+          { label: 'Total Revenue', value: `XAF ${(stats.totalRevenue ?? 0).toLocaleString()}`, icon: 'fa-dollar-sign', color: '#f59e0b', sub: 'MoMo gross' },
         ].map(s => (
           <div key={s.label} className="admin-stat-card">
             <div className="admin-stat-icon" style={{ color: s.color, background: `${s.color}18`, border: `1px solid ${s.color}35` }}>
@@ -357,7 +362,7 @@ const AdminDashboard: React.FC = () => {
             <div>
               <div className="admin-stat-label">{s.label}</div>
               <div className="admin-stat-value">{loading ? '…' : s.value?.toLocaleString?.() ?? s.value ?? 0}</div>
-              <div className="admin-stat-trend up"><i className="fas fa-arrow-up" style={{ fontSize: '0.65rem' }} /> {s.trend}</div>
+              <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.4)', marginTop: 4 }}>{s.sub}</div>
             </div>
           </div>
         ))}
@@ -394,7 +399,7 @@ const AdminDashboard: React.FC = () => {
               <XAxis dataKey="name" tick={{ fill: 'rgba(255,255,255,0.45)', fontSize: 11 }} />
               <YAxis tick={{ fill: 'rgba(255,255,255,0.45)', fontSize: 11 }} />
               <Tooltip contentStyle={{ background: 'rgba(18, 26, 22, 0.95)', border: '1px solid var(--accent-color)', borderRadius: 10, color: '#fff' }} />
-              <Line type="monotone" dataKey="Users" stroke="#facc15" strokeWidth={3} dot={{ fill: '#facc15', r: 4 }} activeDot={{ r: 7 }} />
+              <Line type="monotone" dataKey="Users" stroke="#f59e0b" strokeWidth={3} dot={{ fill: '#f59e0b', r: 4 }} activeDot={{ r: 7 }} />
             </LineChart>
           </ResponsiveContainer>
         </div>
@@ -405,8 +410,8 @@ const AdminDashboard: React.FC = () => {
           </div>
           <ResponsiveContainer width="100%" height={240}>
             <PieChart>
-              <Pie data={genreData.length ? genreData : [{ name: 'Afrobeat', value: 40, fill: '#facc15' }, { name: 'Makossa', value: 30, fill: '#10b981' }, { name: 'Bikutsi', value: 20, fill: '#c084fc' }]} cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={4} dataKey="value">
-                {(genreData.length ? genreData : [{ fill: '#facc15' }, { fill: '#10b981' }]).map((entry: any, i: number) => <Cell key={i} fill={entry.fill} />)}
+              <Pie data={genreData.length ? genreData : [{ name: 'Afrobeat', value: 40, fill: '#f59e0b' }, { name: 'Makossa', value: 30, fill: '#10b981' }, { name: 'Bikutsi', value: 20, fill: '#c084fc' }]} cx="50%" cy="50%" innerRadius={50} outerRadius={85} paddingAngle={4} dataKey="value">
+                {(genreData.length ? genreData : [{ fill: '#f59e0b' }, { fill: '#10b981' }]).map((entry: any, i: number) => <Cell key={i} fill={entry.fill} />)}
               </Pie>
               <Tooltip contentStyle={{ background: 'rgba(18, 26, 22, 0.95)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: 10, color: '#fff' }} />
               <Legend wrapperStyle={{ color: 'rgba(255,255,255,0.7)', fontSize: 12 }} />
@@ -469,7 +474,7 @@ const AdminDashboard: React.FC = () => {
   );
 
   return (
-    <Layout navItems={ADMIN_NAV} activeView={activeView} onNavClick={setActiveView} topbarTitle="CamSound Administration Center">
+    <Layout navItems={ADMIN_NAV} activeView={activeView} onNavClick={setActiveView} topbarTitle="CamSound Administration Center" showPlayer={false}>
       {toastMessage && (
         <div className="admin-toast">
           <i className="fas fa-check-circle" style={{ color: 'var(--accent-color)' }} />
@@ -523,7 +528,7 @@ const AdminDashboard: React.FC = () => {
                     <tr key={u._id}>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                          <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(250,204,21,0.15)', color: '#facc15', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.85rem', border: '1px solid rgba(250,204,21,0.3)' }}>
+                          <div style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(245,158,11,0.15)', color: '#f59e0b', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.85rem', border: '1px solid rgba(245,158,11,0.3)' }}>
                             {u.name?.charAt(0) || 'U'}
                           </div>
                           <div>
@@ -955,7 +960,7 @@ const AdminDashboard: React.FC = () => {
                     <tr key={p._id}>
                       <td style={{ color: 'rgba(255,255,255,0.6)' }}>{new Date(p.createdAt).toLocaleDateString()}</td>
                       <td style={{ color: 'var(--accent-color)', fontWeight: 800 }}>XAF {(p.amount || 0).toLocaleString()}</td>
-                      <td><span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600 }}><i className="fas fa-mobile-alt" style={{ color: '#facc15' }} /> {p.paymentMethod || 'MTN MoMo'}</span></td>
+                      <td><span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontWeight: 600 }}><i className="fas fa-mobile-alt" style={{ color: '#f59e0b' }} /> {p.paymentMethod || 'MTN MoMo'}</span></td>
                       <td>{p.user?.name || p.user?.email || '—'}</td>
                       <td><Pill status={p.status || 'completed'} /></td>
                       <td>
@@ -1064,7 +1069,7 @@ const AdminDashboard: React.FC = () => {
                           <div className="admin-action-group">
                             <button
                               className="admin-btn-action"
-                              style={{ border: '1px solid #facc15', color: '#facc15', fontWeight: 700 }}
+                              style={{ border: '1px solid #f59e0b', color: '#f59e0b', fontWeight: 700 }}
                               onClick={() => setAdminWithdrawalToProcess(w)}
                             >
                               <i className="fas fa-bolt" /> ⚡ MoMo Payout
@@ -1360,7 +1365,7 @@ const AdminDashboard: React.FC = () => {
       {/* Add User Modal */}
       {showAddUser && (
         <Modal title="Create New CamSound User" onClose={() => setShowAddUser(false)}>
-          {addUserMsg && <div style={{ marginBottom: 12, padding: 10, background: 'rgba(250,204,21,0.1)', color: '#facc15', borderRadius: 8, fontSize: '0.85rem' }}>{addUserMsg}</div>}
+          {addUserMsg && <div style={{ marginBottom: 12, padding: 10, background: 'rgba(245,158,11,0.1)', color: '#f59e0b', borderRadius: 8, fontSize: '0.85rem' }}>{addUserMsg}</div>}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <Field label="First Name"><Input placeholder="John" value={addUserForm.firstName} onChange={e => setAddUserForm(f => ({ ...f, firstName: e.target.value }))} /></Field>
             <Field label="Last Name"><Input placeholder="Doe" value={addUserForm.lastName} onChange={e => setAddUserForm(f => ({ ...f, lastName: e.target.value }))} /></Field>
@@ -1412,7 +1417,7 @@ const AdminDashboard: React.FC = () => {
       {/* Reset Password Modal */}
       {showResetPassword && (
         <Modal title={`Reset Password for ${showResetPassword.name}`} onClose={() => setShowResetPassword(null)}>
-          {resetPwMsg && <div style={{ marginBottom: 12, padding: 10, background: 'rgba(250,204,21,0.1)', color: '#facc15', borderRadius: 8, fontSize: '0.85rem' }}>{resetPwMsg}</div>}
+          {resetPwMsg && <div style={{ marginBottom: 12, padding: 10, background: 'rgba(245,158,11,0.1)', color: '#f59e0b', borderRadius: 8, fontSize: '0.85rem' }}>{resetPwMsg}</div>}
           <Field label="New Password"><Input type="password" placeholder="Enter new strong password" value={resetPwNew} onChange={e => setResetPwNew(e.target.value)} /></Field>
           <Field label="Confirm New Password"><Input type="password" placeholder="Re-enter password" value={resetPwConfirm} onChange={e => setResetPwConfirm(e.target.value)} /></Field>
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 16 }}>
@@ -1420,7 +1425,7 @@ const AdminDashboard: React.FC = () => {
             <button className="btn-camsound-yellow" onClick={async () => {
               if (!resetPwNew || resetPwNew !== resetPwConfirm) { setResetPwMsg('Passwords do not match'); return; }
               try {
-                await adminService.resetUserPassword(showResetPassword._id, resetPwNew);
+                await adminService.resetPassword(showResetPassword._id, resetPwNew);
                 showToast(`Password updated for ${showResetPassword.name}`);
                 setShowResetPassword(null);
               } catch {

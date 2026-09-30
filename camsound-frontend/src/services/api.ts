@@ -10,8 +10,8 @@ const api = axios.create({
 // Add a request interceptor to inject the token and CSRF header
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('token');
-    const csrfToken = localStorage.getItem('csrfToken');
+    const token = sessionStorage.getItem('token') || localStorage.getItem('token');
+    const csrfToken = sessionStorage.getItem('csrfToken') || localStorage.getItem('csrfToken');
     if (token) {
       config.headers = config.headers || {};
       config.headers['Authorization'] = `Bearer ${token}`;
@@ -28,16 +28,29 @@ api.interceptors.request.use(
 
 // Add a response interceptor to handle auth errors and network issues
 let isRedirecting = false;
+
+// Public routes where a 401 should NOT redirect to login
+const PUBLIC_PATHS = ['/', '/browse', '/login', '/signup', '/artists', '/terms', '/privacy', '/cookies'];
+const isPublicPage = () => PUBLIC_PATHS.some(p => window.location.pathname === p || window.location.pathname.startsWith(p + '/'));
+
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Reset the redirect flag on any successful response
+    isRedirecting = false;
+    return response;
+  },
   (error) => {
     // Handle 401 - token invalid or expired
     if (error.response?.status === 401) {
+      sessionStorage.removeItem('token');
+      sessionStorage.removeItem('user');
+      sessionStorage.removeItem('csrfToken');
       localStorage.removeItem('token');
       localStorage.removeItem('user');
       localStorage.removeItem('csrfToken');
       window.dispatchEvent(new CustomEvent('camsound:unauthorized'));
-      if (window.location.pathname !== '/login' && !isRedirecting) {
+      // Don't redirect if already on login page, already redirecting, or on a public page
+      if (window.location.pathname !== '/login' && !isRedirecting && !isPublicPage()) {
         isRedirecting = true;
         window.location.href = '/login';
       }
@@ -148,11 +161,9 @@ export const statsService = {
 // --- Admin ---
 export const adminService = {
   getUsers: (params?: any) => api.get('/api/admin/users', { params }),
-  addUser: (data: any) => api.post('/api/admin/users', data),
   createUser: (data: any) => api.post('/api/admin/users', data),
   updateUserStatus: (id: string, status: string) => api.put(`/api/admin/users/${id}/status`, { status }),
   updateUserRole: (id: string, type: string) => api.put(`/api/admin/users/${id}/role`, { type }),
-  resetUserPassword: (id: string, newPassword: string) => api.put(`/api/admin/users/${id}/reset-password`, { newPassword }),
   resetPassword: (id: string, newPassword: string) => api.put(`/api/admin/users/${id}/reset-password`, { newPassword }),
   deleteUser: (id: string) => api.delete(`/api/admin/users/${id}`),
   getSongs: (params?: any) => api.get('/api/admin/songs', { params }),
@@ -245,6 +256,7 @@ export const commentsService = {
   postComment: (songId: string, content: string, parentId?: string) => api.post(`/api/songs/${songId}/comments`, { content, parentId }),
   deleteComment: (songId: string, commentId: string) => api.delete(`/api/songs/${songId}/comments/${commentId}`),
   pinComment: (songId: string, commentId: string, pin: boolean) => api.put(`/api/songs/${songId}/comments/${commentId}/pin`, { pin }),
+  likeComment: (songId: string, commentId: string) => api.post(`/api/songs/${songId}/comments/${commentId}/like`),
   getRecentActivity: () => api.get('/api/community/comments'),
   getTrendingTopics: () => api.get('/api/comments/trending'),
 };

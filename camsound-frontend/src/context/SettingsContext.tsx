@@ -31,14 +31,15 @@ const CACHE_KEY = 'camsound_platform_settings';
 
 const SettingsContext = createContext<SettingsContextType>({
   settings: DEFAULT_SETTINGS,
-  refreshSettings: async () => {},
+  refreshSettings: async () => { },
   loading: false,
 });
 
 function mapSettings(d: Record<string, string>): PlatformSettings {
+  const desc = d.platformDesc || d.platform_desc;
   return {
     platformName: d.platformName || d.platform_name || DEFAULT_SETTINGS.platformName,
-    platformDesc: d.platformDesc || d.platform_desc || DEFAULT_SETTINGS.platformDesc,
+    platformDesc: (desc && desc.trim().toLowerCase() !== 'ok') ? desc : DEFAULT_SETTINGS.platformDesc,
     logoUrl: d.logoUrl || d.logo_url || '',
     logoIcon: d.logoIcon || d.logo_icon || DEFAULT_SETTINGS.logoIcon,
     supportEmail: d.supportEmail || d.support_email || DEFAULT_SETTINGS.supportEmail,
@@ -50,15 +51,21 @@ function mapSettings(d: Record<string, string>): PlatformSettings {
 function loadCached(): PlatformSettings | null {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
-    if (raw) return JSON.parse(raw);
-  } catch {}
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (parsed.platformDesc && parsed.platformDesc.trim().toLowerCase() === 'ok') {
+        parsed.platformDesc = DEFAULT_SETTINGS.platformDesc;
+      }
+      return parsed;
+    }
+  } catch { }
   return null;
 }
 
 function saveCache(s: PlatformSettings) {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(s));
-  } catch {}
+  } catch { }
 }
 
 export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -67,8 +74,8 @@ export const SettingsProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const [loading, setLoading] = useState<boolean>(true);
 
   const refreshSettings = async () => {
-    // Try authenticated admin endpoint first, then public endpoint
-    const endpoints = ['/api/admin/settings', '/api/settings', '/api/platform/settings'];
+    // Try public endpoint first, then platform alias, then admin (admin-only, used when authenticated)
+    const endpoints = ['/api/settings', '/api/platform/settings', '/api/admin/settings'];
 
     for (const endpoint of endpoints) {
       try {

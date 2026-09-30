@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { notificationsService } from '../services/api';
+import { useLanguage } from '../context/LanguageContext';
 
 interface Notification {
   _id: string;
@@ -25,6 +26,7 @@ const FanNotifications: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [markingAll, setMarkingAll] = useState(false);
   const [readSet, setReadSet] = useState<Set<string>>(new Set());
+  const { t } = useLanguage();
 
   const fetchNotifications = useCallback(async () => {
     setLoading(true);
@@ -80,18 +82,18 @@ const FanNotifications: React.FC = () => {
       <div style={{ marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
         <div>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', background: 'rgba(250, 204, 21, 0.15)', border: '1px solid rgba(250, 204, 21, 0.3)', borderRadius: 20, color: 'var(--accent-color)', fontSize: '0.78rem', fontWeight: 700, marginBottom: 8 }}>
-            <i className="fas fa-bell" /> UPDATES & ALERTS
+            <i className="fas fa-bell" /> {t('notif.updates_alerts')}
           </div>
           <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff', margin: 0, display: 'flex', alignItems: 'center', gap: 12 }}>
-            Notifications
+            {t('notif.title')}
             {unreadCount > 0 && (
               <span style={{ background: '#ef4444', color: '#fff', fontSize: '0.8rem', fontWeight: 800, padding: '2px 10px', borderRadius: 20, boxShadow: '0 0 10px rgba(239, 68, 68, 0.5)' }}>
-                {unreadCount} new
+                {unreadCount} {t('notif.new_badge')}
               </span>
             )}
           </h2>
           <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', margin: '4px 0 0 0' }}>
-            Stay up to date with new track releases, social activity, and platform alerts
+            {t('notif.stay_updated')}
           </p>
         </div>
         {unreadCount > 0 && (
@@ -105,7 +107,7 @@ const FanNotifications: React.FC = () => {
             }}
           >
             <i className={`fas ${markingAll ? 'fa-spinner fa-spin' : 'fa-check-double'}`} />
-            {markingAll ? 'Marking...' : 'Mark All Read'}
+            {markingAll ? t('notif.marking') : t('notif.mark_all_read')}
           </button>
         )}
       </div>
@@ -113,13 +115,13 @@ const FanNotifications: React.FC = () => {
       {loading ? (
         <div className="fan-loading">
           <i className="fas fa-spinner fa-spin" />
-          <span>Loading notifications...</span>
+          <span>{t('notif.loading')}</span>
         </div>
       ) : notifications.length === 0 ? (
         <div className="fan-empty-state" style={{ background: 'rgba(18, 26, 22, 0.6)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.06)' }}>
           <i className="fas fa-bell-slash" style={{ color: 'var(--accent-color)', opacity: 0.4 }} />
-          <h4 style={{ color: '#fff' }}>You're all caught up!</h4>
-          <p>No new notifications at the moment.</p>
+          <h4 style={{ color: '#fff' }}>{t('notif.all_caught_up')}</h4>
+          <p>{t('notif.no_new')}</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
