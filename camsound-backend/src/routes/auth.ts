@@ -1,5 +1,5 @@
 import express from 'express';
-import * as authController from '../controllers/authcontroller';
+import authController from '../controllers/AuthController';
 import { protect } from '../middleware/auth';
 import { authLimiter } from '../middleware/rateLimiter';
 
