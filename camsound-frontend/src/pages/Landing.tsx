@@ -63,14 +63,14 @@ const Landing: React.FC = () => {
       <nav className="navbar-camsound" style={{ boxShadow: scrolled ? '0 2px 20px rgba(0,0,0,0.5)' : undefined }}>
         <div className="container">
           <div className="navbar-inner">
-            <a href="/" className="navbar-brand" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Link to="/" className="navbar-brand" style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               {settings.logoUrl ? (
                 <img src={settings.logoUrl} alt={settings.platformName} style={{ width: 32, height: 32, borderRadius: '50%', objectFit: 'cover' }} />
               ) : (
                 <i className={`fas ${settings.logoIcon || 'fa-drum'}`} style={{ color: 'var(--accent-color, #facc15)', fontSize: '1.2rem' }} />
               )}
               <span>{settings.platformName || 'CamSound'}</span>
-            </a>
+            </Link>
 
             {/* Mobile Hamburger Toggle */}
             <button
@@ -84,7 +84,7 @@ const Landing: React.FC = () => {
 
             {/* Desktop Navigation */}
             <ul className="navbar-nav d-none d-lg-flex" style={{ display: 'flex', alignItems: 'center', gap: 32, listStyle: 'none' }}>
-              <li><a className="nav-link active" href="/">{t('landing.home')}</a></li>
+              <li><Link className="nav-link active" to="/">{t('landing.home')}</Link></li>
               <li><Link className="nav-link" to="/browse">{t('landing.discover')}</Link></li>
               <li><a className="nav-link" href="#songs">{t('landing.trending_songs')}</a></li>
               <li><a className="nav-link" href="#artists">{t('landing.artists')}</a></li>
@@ -110,7 +110,7 @@ const Landing: React.FC = () => {
               <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('common.language')}</span>
               <LanguageToggle />
             </div>
-            <a className="nav-link" href="/" onClick={() => setMobileMenuOpen(false)}>{t('landing.home')}</a>
+            <Link className="nav-link" to="/" onClick={() => setMobileMenuOpen(false)}>{t('landing.home')}</Link>
             <Link className="nav-link" to="/browse" onClick={() => setMobileMenuOpen(false)}>{t('landing.discover')}</Link>
             <a className="nav-link" href="#songs" onClick={() => setMobileMenuOpen(false)}>{t('landing.trending_songs')}</a>
             <a className="nav-link" href="#artists" onClick={() => setMobileMenuOpen(false)}>{t('landing.artists')}</a>

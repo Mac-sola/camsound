@@ -44,8 +44,9 @@ router.post('/initiate', async (req: Request, res: Response) => {
 
         res.json({
             success: true,
+            transactionId: tx,
             message: `MTN MoMo prompt initiated for ${phone}`,
-            data: { payment, checkout, planName, reason }
+            data: { transactionId: tx, payment, checkout, planName, reason }
         });
     } catch (err: any) {
         res.status(500).json({ success: false, message: err.message });

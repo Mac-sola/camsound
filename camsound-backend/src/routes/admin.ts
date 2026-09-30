@@ -1,11 +1,15 @@
 import express from 'express';
 import * as admin from '../controllers/adminController';
+import * as stats from '../controllers/statsController';
 import { protect, restrictTo } from '../middleware/auth';
 
 const router = express.Router();
 
 // All admin routes require authentication + admin role
 router.use(protect, restrictTo('admin'));
+
+// Platform Overview Statistics
+router.get('/stats', stats.getGlobalStats);
 
 // Users
 router.get('/users', admin.getUsers);

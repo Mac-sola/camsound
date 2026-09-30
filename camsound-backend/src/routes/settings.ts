@@ -5,5 +5,6 @@ const router = express.Router();
 
 // Public platform settings - no auth required
 router.get('/', adminController.getSettings);
+router.get('/public', adminController.getSettings);
 
 export default router;

@@ -52,19 +52,21 @@ function relativeTime(iso: string): string {
   return new Date(iso).toLocaleDateString();
 }
 
-function avatarColor(name: string): string {
+function avatarColor(name?: string): string {
+  const safeName = name && name.trim() ? name.trim() : "User";
   const colors = ["#FACC15", "#f97316", "#10b981", "#3b82f6", "#a855f7", "#ec4899", "#14b8a6"];
   let hash = 0;
-  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  for (let i = 0; i < safeName.length; i++) hash = safeName.charCodeAt(i) + ((hash << 5) - hash);
   return colors[Math.abs(hash) % colors.length];
 }
 
-function Avatar({ user, size = 36 }: { user: CommentUser; size?: number }) {
-  if (user.avatar) {
+function Avatar({ user, size = 36 }: { user?: CommentUser | null; size?: number }) {
+  const userName = user?.name && user.name.trim() ? user.name.trim() : "User";
+  if (user?.avatar) {
     return (
       <img
         src={user.avatar}
-        alt={user.name}
+        alt={userName}
         style={{ width: size, height: size, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }}
       />
     );
@@ -73,12 +75,12 @@ function Avatar({ user, size = 36 }: { user: CommentUser; size?: number }) {
     <div
       style={{
         width: size, height: size, borderRadius: "50%", flexShrink: 0,
-        background: avatarColor(user.name), color: "#000",
+        background: avatarColor(userName), color: "#000",
         display: "flex", alignItems: "center", justifyContent: "center",
         fontWeight: 800, fontSize: size * 0.4,
       }}
     >
-      {user.name.charAt(0).toUpperCase()}
+      {userName.charAt(0).toUpperCase()}
     </div>
   );
 }
