@@ -22,3 +22,6 @@ Thumbs.db
 
 # VS Code
 .vscode/
+
+# Uploads
+camsound-backend/public/uploads/

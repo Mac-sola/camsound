@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { notificationsService } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
+import { useToast } from '../context/ToastContext';
 
 interface Notification {
   _id: string;
@@ -26,7 +27,9 @@ const FanNotifications: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [markingAll, setMarkingAll] = useState(false);
   const [readSet, setReadSet] = useState<Set<string>>(new Set());
+  const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const { t } = useLanguage();
+  const toast = useToast();
 
   const fetchNotifications = useCallback(async () => {
     setLoading(true);
@@ -49,6 +52,7 @@ const FanNotifications: React.FC = () => {
     setReadSet(prev => new Set(prev).add(id));
     try {
       await notificationsService.markRead(id);
+      toast.info('Notification marked as read');
     } catch {}
   };
 
@@ -57,14 +61,21 @@ const FanNotifications: React.FC = () => {
     try {
       await notificationsService.markAllRead();
       setReadSet(new Set(notifications.map(n => n._id)));
+      toast.success(t('notif.all_marked_read', 'All notifications marked as read'));
     } catch {
       setReadSet(new Set(notifications.map(n => n._id)));
+      toast.success(t('notif.all_marked_read', 'All notifications marked as read'));
     } finally {
       setMarkingAll(false);
     }
   };
 
   const unreadCount = notifications.filter(n => !readSet.has(n._id)).length;
+
+  const displayedNotifications = notifications.filter(n => {
+    if (filter === 'unread') return !readSet.has(n._id);
+    return true;
+  });
 
   const formatTime = (iso?: string) => {
     if (!iso) return '';
@@ -78,7 +89,7 @@ const FanNotifications: React.FC = () => {
   const getMeta = (type?: string) => TYPE_META[type ?? 'default'] ?? TYPE_META.default;
 
   return (
-    <div className="fan-notifs-container">
+    <div className="fan-notifs-container view-enter">
       <div style={{ marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
         <div>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', background: 'rgba(250, 204, 21, 0.15)', border: '1px solid rgba(250, 204, 21, 0.3)', borderRadius: 20, color: 'var(--accent-color)', fontSize: '0.78rem', fontWeight: 700, marginBottom: 8 }}>
@@ -96,20 +107,47 @@ const FanNotifications: React.FC = () => {
             {t('notif.stay_updated')}
           </p>
         </div>
-        {unreadCount > 0 && (
-          <button
-            onClick={handleMarkAllRead}
-            disabled={markingAll}
-            style={{
-              display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px',
-              background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)',
-              color: '#fff', borderRadius: 20, fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer'
-            }}
-          >
-            <i className={`fas ${markingAll ? 'fa-spinner fa-spin' : 'fa-check-double'}`} />
-            {markingAll ? t('notif.marking') : t('notif.mark_all_read')}
-          </button>
-        )}
+        
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+          {/* Quick Filter Pill */}
+          <div style={{ display: 'inline-flex', background: 'rgba(255,255,255,0.06)', borderRadius: 20, padding: 3 }}>
+            <button
+              onClick={() => setFilter('all')}
+              style={{
+                padding: '6px 14px', borderRadius: 16, border: 'none', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700,
+                background: filter === 'all' ? 'var(--accent-color)' : 'transparent',
+                color: filter === 'all' ? '#000' : 'rgba(255,255,255,0.7)'
+              }}
+            >
+              All ({notifications.length})
+            </button>
+            <button
+              onClick={() => setFilter('unread')}
+              style={{
+                padding: '6px 14px', borderRadius: 16, border: 'none', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 700,
+                background: filter === 'unread' ? 'var(--accent-color)' : 'transparent',
+                color: filter === 'unread' ? '#000' : 'rgba(255,255,255,0.7)'
+              }}
+            >
+              Unread ({unreadCount})
+            </button>
+          </div>
+
+          {unreadCount > 0 && (
+            <button
+              onClick={handleMarkAllRead}
+              disabled={markingAll}
+              style={{
+                display: 'inline-flex', alignItems: 'center', gap: 8, padding: '8px 16px',
+                background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.15)',
+                color: '#fff', borderRadius: 20, fontWeight: 600, fontSize: '0.85rem', cursor: 'pointer'
+              }}
+            >
+              <i className={`fas ${markingAll ? 'fa-spinner fa-spin' : 'fa-check-double'}`} />
+              {markingAll ? t('notif.marking') : t('notif.mark_all_read')}
+            </button>
+          )}
+        </div>
       </div>
 
       {loading ? (
@@ -117,15 +155,15 @@ const FanNotifications: React.FC = () => {
           <i className="fas fa-spinner fa-spin" />
           <span>{t('notif.loading')}</span>
         </div>
-      ) : notifications.length === 0 ? (
+      ) : displayedNotifications.length === 0 ? (
         <div className="fan-empty-state" style={{ background: 'rgba(18, 26, 22, 0.6)', borderRadius: 20, border: '1px solid rgba(255,255,255,0.06)' }}>
           <i className="fas fa-bell-slash" style={{ color: 'var(--accent-color)', opacity: 0.4 }} />
-          <h4 style={{ color: '#fff' }}>{t('notif.all_caught_up')}</h4>
-          <p>{t('notif.no_new')}</p>
+          <h4 style={{ color: '#fff' }}>{filter === 'unread' ? 'No unread notifications' : t('notif.all_caught_up')}</h4>
+          <p>{filter === 'unread' ? 'You have read all your alerts!' : t('notif.no_new')}</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {notifications.map(notif => {
+          {displayedNotifications.map(notif => {
             const isRead = readSet.has(notif._id);
             const meta = getMeta(notif.type);
             return (
@@ -137,7 +175,9 @@ const FanNotifications: React.FC = () => {
                   background: isRead ? 'rgba(18, 26, 22, 0.5)' : 'rgba(24, 34, 28, 0.85)',
                   border: `1px solid ${isRead ? 'rgba(255, 255, 255, 0.06)' : 'rgba(250, 204, 21, 0.3)'}`,
                   borderRadius: 16, backdropFilter: 'blur(10px)', cursor: isRead ? 'default' : 'pointer',
-                  transition: 'all 0.2s ease', position: 'relative'
+                  transition: 'all 0.25s cubic-bezier(0.16, 1, 0.3, 1)', position: 'relative',
+                  transform: isRead ? 'none' : 'translateY(-1px)',
+                  boxShadow: isRead ? 'none' : '0 4px 16px rgba(0,0,0,0.2)'
                 }}
               >
                 <div style={{
@@ -152,8 +192,13 @@ const FanNotifications: React.FC = () => {
                   <div style={{ color: isRead ? 'rgba(255,255,255,0.7)' : '#fff', fontSize: '0.88rem', lineHeight: 1.4 }}>{notif.message ?? notif.title}</div>
                   <div style={{ fontSize: '0.75rem', color: 'rgba(255,255,255,0.45)', marginTop: 4 }}>{formatTime(notif.createdAt)}</div>
                 </div>
-                {!isRead && (
-                  <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--accent-color)', boxShadow: '0 0 10px rgba(250, 204, 21, 0.8)', flexShrink: 0 }} />
+                {!isRead ? (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <span style={{ fontSize: '0.75rem', color: 'var(--accent-color)', fontWeight: 600 }}>Mark read</span>
+                    <div style={{ width: 10, height: 10, borderRadius: '50%', background: 'var(--accent-color)', boxShadow: '0 0 10px rgba(250, 204, 21, 0.8)', flexShrink: 0 }} />
+                  </div>
+                ) : (
+                  <i className="fas fa-check" style={{ color: 'rgba(255,255,255,0.25)', fontSize: '0.85rem' }} />
                 )}
               </div>
             );

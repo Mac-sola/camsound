@@ -1,11 +1,15 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { useAudio } from '../context/AudioContext';
 import { useLanguage } from '../context/LanguageContext';
+import { useToast } from '../context/ToastContext';
+import { favoritesService } from '../services/api';
 import { getMusicImage } from '../utils/musicImages';
 
 const SongPlayerModal: React.FC = () => {
   const { t } = useLanguage();
+  const toast = useToast();
+  const [isFav, setIsFav] = useState(false);
   const {
     currentSong,
     isPlaying,
@@ -24,6 +28,15 @@ const SongPlayerModal: React.FC = () => {
     toggleMute,
   } = useAudio();
 
+  useEffect(() => {
+    if (!currentSong?._id) return;
+    favoritesService.getFavorites().then(res => {
+      const favList: any[] = res.data?.data ?? res.data ?? [];
+      const favSet = new Set(favList.map((f: any) => f._id || f.id || f.songId?._id));
+      setIsFav(favSet.has(currentSong._id));
+    }).catch(() => {});
+  }, [currentSong?._id]);
+
   if (!currentSong) return null;
 
   const formatTime = (seconds: number) => {
@@ -33,10 +46,37 @@ const SongPlayerModal: React.FC = () => {
     return `${minutes}:${remainder}`;
   };
 
+  const handleFavoriteToggle = async () => {
+    if (!currentSong?._id) return;
+    try {
+      if (isFav) {
+        await favoritesService.unlikeSong(currentSong._id);
+        setIsFav(false);
+        toast.info(`Removed "${currentSong.title}" from favorites`);
+      } else {
+        await favoritesService.likeSong(currentSong._id);
+        setIsFav(true);
+        toast.music(`Added "${currentSong.title}" to favorites!`);
+      }
+    } catch {
+      toast.error('Unable to update favorite status');
+    }
+  };
+
+  const handleShare = () => {
+    const text = `Listening to "${currentSong.title}" on CamSound! 🎵`;
+    navigator.clipboard?.writeText?.(text);
+    toast.success('Track info copied to clipboard!');
+  };
+
   const handleDownload = async (e: React.MouseEvent) => {
     e.stopPropagation();
     const fileUrl = currentSong.filePath || currentSong.fileUrl;
-    if (!fileUrl) return;
+    if (!fileUrl) {
+      toast.warning('Audio file is not available for download');
+      return;
+    }
+    toast.info(`Starting download for "${currentSong.title}"...`);
 
     try {
       const response = await fetch(fileUrl);
@@ -174,12 +214,49 @@ const SongPlayerModal: React.FC = () => {
           />
         </div>
 
-        {/* Action Row with Download Button */}
-        <div className="now-playing-actions-row">
+        {/* Action Row with Favorite, Share, and Download Buttons */}
+        <div className="now-playing-actions-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
+          <button
+            type="button"
+            className={`np-action-btn ${isFav ? 'favorited' : ''}`}
+            onClick={handleFavoriteToggle}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px',
+              background: isFav ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255, 255, 255, 0.08)',
+              border: `1px solid ${isFav ? 'rgba(239, 68, 68, 0.4)' : 'rgba(255, 255, 255, 0.12)'}`,
+              color: isFav ? '#ef4444' : '#fff', borderRadius: 20, cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+              transition: 'all 0.2s ease'
+            }}
+            title={isFav ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            <i className={`${isFav ? 'fas' : 'far'} fa-heart`} /> {isFav ? 'Favorited' : 'Favorite'}
+          </button>
+
+          <button
+            type="button"
+            className="np-action-btn"
+            onClick={handleShare}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px',
+              background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.12)',
+              color: '#fff', borderRadius: 20, cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+              transition: 'all 0.2s ease'
+            }}
+            title="Share track"
+          >
+            <i className="fas fa-share-nodes" /> Share
+          </button>
+
           <button
             type="button"
             className="np-download-btn"
             onClick={handleDownload}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px',
+              background: 'rgba(250, 204, 21, 0.15)', border: '1px solid rgba(250, 204, 21, 0.3)',
+              color: 'var(--accent-color)', borderRadius: 20, cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+              transition: 'all 0.2s ease'
+            }}
             title={t('player.download', 'Download track')}
           >
             <i className="fas fa-download" /> {t('player.download', 'Download')}

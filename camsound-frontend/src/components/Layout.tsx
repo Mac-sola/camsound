@@ -101,8 +101,12 @@ export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => 
               >
                 <i className={`fas ${item.icon}`} style={{ width: 20, textAlign: 'center' }} />
                 <span>{getTranslatedLabel(item.label, item.view)}</span>
-                {item.label === 'My Music' && totalLikes > 0 && <span className="nav-badge">{totalLikes}</span>}
-                {item.label === 'Notifications' && notifCount > 0 && <span className="nav-badge">{notifCount}</span>}
+                {(item.view === 'favorites' || item.label === 'Favorites' || item.label === 'Favoris' || item.label === 'My Music') && totalLikes > 0 && (
+                  <span className="nav-badge" style={{ background: '#ef4444', color: '#fff' }}>{totalLikes}</span>
+                )}
+                {(item.view === 'notifications' || item.label === 'Notifications') && notifCount > 0 && (
+                  <span className="nav-badge">{notifCount}</span>
+                )}
               </button>
             );
           })}
@@ -217,14 +221,25 @@ export const TopBar: React.FC<TopBarProps> = ({
 
       <div className="top-bar-right" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
         <LanguageToggle />
-        <button className="notif-btn" onClick={() => onNavClick?.('notifications')} title="Notifications" style={{ position: 'relative', width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: '#fff', cursor: 'pointer' }}>
-          <i className="fas fa-bell" />
+        <button
+          className={`notif-btn${notifCount ? ' notif-btn--has-unread' : ''}`}
+          onClick={() => onNavClick?.('notifications')}
+          title="Notifications"
+          aria-label={notifCount ? `${notifCount} unread notifications` : 'Notifications'}
+          style={{ position: 'relative', width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.05)', border: `1px solid ${notifCount ? 'rgba(239,68,68,0.4)' : 'rgba(255,255,255,0.1)'}`, color: '#fff', cursor: 'pointer', transition: 'all 0.2s ease' }}
+        >
+          <i className={`fas fa-bell${notifCount ? ' notif-bell-shake' : ''}`} />
           {notifCount ? (
-            <span className="notif-badge" style={{ position: 'absolute', top: -2, right: -2, background: '#ef4444', color: '#fff', fontSize: '0.65rem', fontWeight: 800, padding: '2px 6px', borderRadius: 10, boxShadow: '0 0 10px rgba(239, 68, 68, 0.6)' }}>
-              {notifCount}
-            </span>
+            <>
+              {/* Pulse ring */}
+              <span style={{ position: 'absolute', inset: -3, borderRadius: '50%', border: '2px solid rgba(239,68,68,0.5)', animation: 'notif-pulse 1.8s ease-in-out infinite', pointerEvents: 'none' }} />
+              <span className="notif-badge" style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: '#fff', fontSize: '0.6rem', fontWeight: 800, minWidth: 18, height: 18, borderRadius: 9, display: 'flex', alignItems: 'center', justifyContent: 'center', boxShadow: '0 0 10px rgba(239, 68, 68, 0.7)', border: '2px solid #0B0F0C' }}>
+                {notifCount > 99 ? '99+' : notifCount}
+              </span>
+            </>
           ) : null}
         </button>
+
 
         <div ref={dropdownRef} style={{ position: 'relative' }}>
           <button

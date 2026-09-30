@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { commentsService, favoritesService, songsService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
 
 interface Post {
   _id: string;
@@ -27,8 +28,11 @@ const TRENDING_TOPICS = [
   { label: 'Yaoundé Underground', count: 55 },
 ];
 
+const QUICK_REACTIONS = ['🔥', '❤️', '🎵', '👏'];
+
 const FanCommunity: React.FC = () => {
   const { user } = useAuth();
+  const toast = useToast();
   const [activeTab, setActiveTab] = useState<Tab>('All');
   const [posts, setPosts] = useState<Post[]>([]);
   const [loading, setLoading] = useState(false);
@@ -40,6 +44,8 @@ const FanCommunity: React.FC = () => {
   const [replyingTo, setReplyingTo] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
   const [likedSongIds, setLikedSongIds] = useState<Set<string>>(new Set());
+  const [postReactions, setPostReactions] = useState<Record<string, Record<string, number>>>({});
+  const [myReactions, setMyReactions] = useState<Record<string, string>>({});
 
   // Load recent community activity
   useEffect(() => {
@@ -67,21 +73,23 @@ const FanCommunity: React.FC = () => {
   const handlePost = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!postContent.trim()) return;
+    if (!selectedSongId) {
+      toast.warning('Please select a song to attach your discussion to');
+      setSubmitMsg('Select a song to link your post to a track.');
+      setTimeout(() => setSubmitMsg(''), 3000);
+      return;
+    }
     setSubmitting(true);
     setSubmitMsg('');
     try {
-      if (!selectedSongId) {
-        setSubmitMsg('Select a song before posting.');
-        return;
-      }
       await commentsService.postComment(selectedSongId, postContent.trim());
       setPostContent('');
       setSelectedSongId('');
-      setSubmitMsg('Post shared! ✅');
+      toast.success('Your thought has been shared with the community!');
       const res = await commentsService.getRecentActivity();
       setPosts(res.data?.data ?? res.data ?? []);
     } catch {
-      setSubmitMsg('Unable to share post. Please try again.');
+      toast.error('Unable to share post. Please try again.');
     } finally {
       setSubmitting(false);
       setTimeout(() => setSubmitMsg(''), 3000);
@@ -104,15 +112,20 @@ const FanCommunity: React.FC = () => {
     if (!songId) return;
     const isLiked = likedSongIds.has(songId);
     try {
-      if (isLiked) await favoritesService.unlikeSong(songId);
-      else await favoritesService.likeSong(songId);
+      if (isLiked) {
+        await favoritesService.unlikeSong(songId);
+        toast.info('Removed track from favorites');
+      } else {
+        await favoritesService.likeSong(songId);
+        toast.music('Track saved to your favorites!');
+      }
       setLikedSongIds(current => {
         const next = new Set(current);
         if (isLiked) next.delete(songId); else next.add(songId);
         return next;
       });
     } catch {
-      setSubmitMsg('Unable to update favorite. Please try again.');
+      toast.error('Unable to update favorite');
     }
   };
 
@@ -123,11 +136,44 @@ const FanCommunity: React.FC = () => {
       await commentsService.postComment(songId, replyContent.trim(), post._id);
       setReplyContent('');
       setReplyingTo(null);
+      toast.success('Reply submitted to conversation!');
       const res = await commentsService.getRecentActivity();
       setPosts(res.data?.data ?? res.data ?? []);
     } catch {
-      setSubmitMsg('Unable to post reply. Please try again.');
+      toast.error('Unable to post reply. Please try again.');
     }
+  };
+
+  const handleReact = (postId: string, emoji: string) => {
+    setPostReactions(prev => {
+      const current = { ...(prev[postId] || {}) };
+      const currentEmoji = myReactions[postId];
+      
+      if (currentEmoji === emoji) {
+        // Toggle off
+        current[emoji] = Math.max(0, (current[emoji] || 1) - 1);
+        setMyReactions(r => {
+          const next = { ...r };
+          delete next[postId];
+          return next;
+        });
+      } else {
+        // Remove previous if any
+        if (currentEmoji && current[currentEmoji]) {
+          current[currentEmoji] = Math.max(0, current[currentEmoji] - 1);
+        }
+        current[emoji] = (current[emoji] || 0) + 1;
+        setMyReactions(r => ({ ...r, [postId]: emoji }));
+        toast.success(`Reacted with ${emoji}!`);
+      }
+      return { ...prev, [postId]: current };
+    });
+  };
+
+  const handleSharePost = (post: Post) => {
+    const text = `CamSound Fan Lounge: "${post.content.slice(0, 80)}..."`;
+    navigator.clipboard?.writeText?.(text);
+    toast.success('Post link copied to clipboard!');
   };
 
   return (
@@ -234,21 +280,56 @@ const FanCommunity: React.FC = () => {
                     </div>
                   </div>
                   <div style={{ fontSize: '0.92rem', color: 'rgba(255,255,255,0.85)', lineHeight: 1.5, marginBottom: 12 }}>{post.content}</div>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 16, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: 10, flexWrap: 'wrap' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+                      <button
+                        onClick={() => handleLike(post)}
+                        disabled={!getSongId(post)}
+                        style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 6 }}
+                      >
+                        <i className="far fa-heart" style={{ color: getSongId(post) && likedSongIds.has(getSongId(post)!) ? '#ef4444' : 'inherit' }} />
+                        {getSongId(post) && likedSongIds.has(getSongId(post)!) ? 'Liked' : 'Like'}
+                      </button>
+                      <button
+                        onClick={() => setReplyingTo(replyingTo === post._id ? null : post._id)}
+                        disabled={!getSongId(post)}
+                        style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.7)', cursor: 'pointer', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 6 }}
+                      >
+                        <i className="far fa-comment" /> Reply
+                      </button>
+
+                      {/* Quick Emoji Reactions */}
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,0.04)', borderRadius: 16, padding: '2px 6px' }}>
+                        {QUICK_REACTIONS.map(emoji => {
+                          const count = postReactions[post._id]?.[emoji] || 0;
+                          const isMine = myReactions[post._id] === emoji;
+                          return (
+                            <button
+                              key={emoji}
+                              onClick={() => handleReact(post._id, emoji)}
+                              style={{
+                                background: isMine ? 'rgba(250, 204, 21, 0.25)' : 'none',
+                                border: isMine ? '1px solid rgba(250, 204, 21, 0.4)' : '1px solid transparent',
+                                borderRadius: 12, padding: '2px 6px', fontSize: '0.8rem', cursor: 'pointer',
+                                display: 'inline-flex', alignItems: 'center', gap: 3, transition: 'transform 0.15s ease',
+                                transform: isMine ? 'scale(1.08)' : 'scale(1)'
+                              }}
+                              title={`React ${emoji}`}
+                            >
+                              <span>{emoji}</span>
+                              {count > 0 && <span style={{ fontSize: '0.72rem', color: '#fff', fontWeight: 700 }}>{count}</span>}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
                     <button
-                      onClick={() => handleLike(post)}
-                      disabled={!getSongId(post)}
-                      style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 6 }}
+                      onClick={() => handleSharePost(post)}
+                      style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', cursor: 'pointer', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 6 }}
+                      title="Share post"
                     >
-                      <i className="far fa-heart" style={{ color: getSongId(post) && likedSongIds.has(getSongId(post)!) ? '#ef4444' : 'inherit' }} />
-                      {getSongId(post) && likedSongIds.has(getSongId(post)!) ? 'Liked' : 'Like'}
-                    </button>
-                    <button
-                      onClick={() => setReplyingTo(replyingTo === post._id ? null : post._id)}
-                      disabled={!getSongId(post)}
-                      style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.6)', cursor: 'pointer', fontSize: '0.82rem', display: 'flex', alignItems: 'center', gap: 6 }}
-                    >
-                      <i className="far fa-comment" /> Reply
+                      <i className="fas fa-share-nodes" /> Share
                     </button>
                   </div>
                   {replyingTo === post._id && (

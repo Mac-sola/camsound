@@ -567,7 +567,7 @@ const ArtistDashboard: React.FC = () => {
           { label: 'Total Plays', value: loading ? '...' : stats?.totalPlays?.toLocaleString() ?? 0, icon: 'fa-headphones', color: 'var(--accent-color)' },
           { label: 'Total Tracks', value: loading ? '...' : stats?.totalSongs ?? 0, icon: 'fa-compact-disc', color: '#10b981' },
           { label: 'Followers', value: loading ? '...' : stats?.followers ?? 0, icon: 'fa-users', color: '#c084fc' },
-          { label: 'Pending Revenue', value: 'XAF 0', icon: 'fa-wallet', color: '#60a5fa' },
+          { label: 'Pending Revenue', value: loading ? '...' : `XAF ${revenueBalance.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })}`, icon: 'fa-wallet', color: '#60a5fa' },
         ].map(s => (
           <div key={s.label} className="stat-card-premium">
             <div className="stat-card-icon" style={{ color: s.color, borderColor: `${s.color}35`, background: `${s.color}15` }}>

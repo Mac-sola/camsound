@@ -2,10 +2,13 @@ import React, { useEffect, useState, useCallback } from 'react';
 import Modal from './Modal';
 import { playlistsService } from '../services/api';
 import { useAudio } from '../context/AudioContext';
+import { useToast } from '../context/ToastContext';
 import PlaylistCard, { type PlaylistItem } from './PlaylistCard';
+import ScrollReveal from './ScrollReveal';
 
 export const FanPlaylists: React.FC = () => {
   const { playSong } = useAudio();
+  const toast = useToast();
   const [playlists, setPlaylists] = useState<PlaylistItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -43,11 +46,13 @@ export const FanPlaylists: React.FC = () => {
       });
       const created = res.data?.data ?? res.data;
       setPlaylists((current) => [created, ...current]);
+      toast.success(`Playlist "${name.trim()}" created successfully!`);
       setName('');
       setDescription('');
       setIsCreateOpen(false);
     } catch {
       setMessage('Unable to create playlist. Please try again.');
+      toast.error('Unable to create playlist. Please try again.');
     } finally {
       setSaving(false);
     }
@@ -56,31 +61,36 @@ export const FanPlaylists: React.FC = () => {
   const handlePlayPlaylist = (playlist: PlaylistItem) => {
     if (playlist.songs && playlist.songs.length > 0) {
       playSong(playlist.songs[0], playlist.songs);
+      toast.music(`Playing playlist "${playlist.name}"`);
+    } else {
+      toast.info(`Playlist "${playlist.name}" is currently empty`);
     }
   };
 
   return (
     <div className="fan-playlists-container view-enter">
-      <div style={{ marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
-        <div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', background: 'rgba(250, 204, 21, 0.15)', border: '1px solid rgba(250, 204, 21, 0.3)', borderRadius: 20, color: 'var(--accent-color)', fontSize: '0.78rem', fontWeight: 700, marginBottom: 8 }}>
-            <i className="fas fa-list" /> PERSONAL COLLECTIONS
+      <ScrollReveal direction="up" delay={50}>
+        <div style={{ marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
+          <div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', background: 'rgba(250, 204, 21, 0.15)', border: '1px solid rgba(250, 204, 21, 0.3)', borderRadius: 20, color: 'var(--accent-color)', fontSize: '0.78rem', fontWeight: 700, marginBottom: 8 }}>
+              <i className="fas fa-list" /> PERSONAL COLLECTIONS
+            </div>
+            <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+              Playlists
+            </h2>
+            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', margin: '4px 0 0 0' }}>
+              Group your favorite Cameroonian tracks into custom playlists
+            </p>
           </div>
-          <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff', margin: 0 }}>
-            Playlists
-          </h2>
-          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', margin: '4px 0 0 0' }}>
-            Group your favorite Cameroonian tracks into custom playlists
-          </p>
+          <button
+            onClick={() => setIsCreateOpen(true)}
+            className="btn-camsound-yellow"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
+          >
+            <i className="fas fa-plus" /> Create Playlist
+          </button>
         </div>
-        <button
-          onClick={() => setIsCreateOpen(true)}
-          className="btn-camsound-yellow"
-          style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}
-        >
-          <i className="fas fa-plus" /> Create Playlist
-        </button>
-      </div>
+      </ScrollReveal>
 
       {message && (
         <div className="fan-submit-msg" role="alert" style={{ marginBottom: 20 }}>
@@ -100,15 +110,17 @@ export const FanPlaylists: React.FC = () => {
           <p>Create your first custom playlist to group your favorite songs together.</p>
         </div>
       ) : (
-        <div className="cards-grid">
-          {playlists.map((playlist) => (
-            <PlaylistCard
-              key={playlist._id}
-              playlist={playlist}
-              onPlayPlaylist={handlePlayPlaylist}
-            />
-          ))}
-        </div>
+        <ScrollReveal direction="up" delay={120}>
+          <div className="cards-grid">
+            {playlists.map((playlist) => (
+              <PlaylistCard
+                key={playlist._id}
+                playlist={playlist}
+                onPlayPlaylist={handlePlayPlaylist}
+              />
+            ))}
+          </div>
+        </ScrollReveal>
       )}
 
       <Modal isOpen={isCreateOpen} title="Create New Playlist" onClose={() => !saving && setIsCreateOpen(false)} size="sm">
@@ -157,3 +169,4 @@ export const FanPlaylists: React.FC = () => {
 };
 
 export default FanPlaylists;
+

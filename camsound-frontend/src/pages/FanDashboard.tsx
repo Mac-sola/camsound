@@ -12,7 +12,7 @@ import FanNotifications from '../components/FanNotifications';
 import FanSettings from '../components/FanSettings';
 import FanFavorites from '../components/FanFavorites';
 import FanPlaylists from '../components/FanPlaylists';
-import { notificationsService } from '../services/api';
+import { notificationsService, favoritesService } from '../services/api';
 import { useLanguage } from '../context/LanguageContext';
 
 type FanNavItemDef =
@@ -27,7 +27,7 @@ const FAN_NAV_DEF: FanNavItemDef[] = [
   { labelKey: 'nav.genres',        icon: 'fa-music',         view: 'genres' },
   { labelKey: 'nav.community',     icon: 'fa-users',         view: 'community' },
   { section: 'nav.my_music_sec' },
-  { labelKey: 'nav.my_music',      icon: 'fa-music',         view: 'favorites' },
+  { labelKey: 'nav.favorites',     icon: 'fa-heart',         view: 'favorites' },
   { labelKey: 'nav.playlists',     icon: 'fa-list',          view: 'playlists' },
   { labelKey: 'nav.history',       icon: 'fa-history',       view: 'history' },
   { section: 'nav.following_sec' },
@@ -45,12 +45,20 @@ const FanDashboard: React.FC = () => {
   const [activeView, setActiveView] = useState('home');
   const [searchQuery, setSearchQuery] = useState('');
   const [unreadCount, setUnreadCount] = useState(0);
+  const [totalFavorites, setTotalFavorites] = useState(0);
 
   // Resolve nav items with translated labels
   const FAN_NAV = FAN_NAV_DEF.map(item => {
     if ('section' in item) return { section: t(item.section) };
     return { ...item, label: t(item.labelKey) };
   });
+
+  const fetchFavoritesCount = () => {
+    favoritesService.getFavorites().then(response => {
+      const list = response.data?.data ?? response.data ?? [];
+      setTotalFavorites(Array.isArray(list) ? list.length : 0);
+    }).catch(() => setTotalFavorites(0));
+  };
 
   useEffect(() => {
     document.title = 'Music Lounge — CamSound';
@@ -60,9 +68,17 @@ const FanDashboard: React.FC = () => {
       }).catch(() => setUnreadCount(0));
     };
     fetchUnread();
-    const interval = setInterval(fetchUnread, 30000);
+    fetchFavoritesCount();
+    const interval = setInterval(() => {
+      fetchUnread();
+      fetchFavoritesCount();
+    }, 30000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    fetchFavoritesCount();
+  }, [activeView]);
 
   const handleSearchChange = (value: string) => {
     setSearchQuery(value);
@@ -71,7 +87,7 @@ const FanDashboard: React.FC = () => {
 
   const renderView = () => {
     switch (activeView) {
-      case 'home':          return <FanHome />;
+      case 'home':          return <FanHome onNavClick={handleNavClick} />;
       case 'browse':        return <FanBrowse initialQuery={searchQuery} />;
       case 'genres':        return <FanGenres />;
       case 'community':     return <FanCommunity />;
@@ -110,6 +126,7 @@ const FanDashboard: React.FC = () => {
       onSearchChange={handleSearchChange}
       showQuickStats
       notifCount={unreadCount}
+      totalLikes={totalFavorites}
     >
       <div key={activeView} className="view-fade-in">
         {renderView()}

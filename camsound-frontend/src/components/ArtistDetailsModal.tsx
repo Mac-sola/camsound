@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { artistsService, followsService } from '../services/api';
+import { useToast } from '../context/ToastContext';
 import ArtistSocialLinks from './ArtistSocialLinks';
 import Modal from './Modal';
 import MoMoPaymentModal from './MoMoPaymentModal';
@@ -10,6 +11,7 @@ interface ArtistDetailsModalProps {
 }
 
 const ArtistDetailsModal: React.FC<ArtistDetailsModalProps> = ({ artist, onClose }) => {
+  const toast = useToast();
   const [details, setDetails] = useState<any>(artist);
   const [isFollowing, setIsFollowing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -38,9 +40,16 @@ const ArtistDetailsModal: React.FC<ArtistDetailsModalProps> = ({ artist, onClose
     if (!details?._id) return;
     setFollowLoading(true);
     try {
-      if (isFollowing) await followsService.unfollowArtist(details._id);
-      else await followsService.followArtist(details._id);
+      if (isFollowing) {
+        await followsService.unfollowArtist(details._id);
+        toast.info(`Unfollowed ${details.name}`);
+      } else {
+        await followsService.followArtist(details._id);
+        toast.success(`You are now following ${details.name}!`);
+      }
       setIsFollowing(value => !value);
+    } catch {
+      toast.error(`Unable to update follow for ${details.name}`);
     } finally {
       setFollowLoading(false);
     }

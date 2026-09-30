@@ -1,7 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { followsService, songsService } from '../services/api';
+import { useToast } from '../context/ToastContext';
 import ArtistCard, { type ArtistItem } from './ArtistCard';
+import ScrollReveal from './ScrollReveal';
+import ScrollRow from './ScrollRow';
 
 interface Song {
   _id: string;
@@ -16,6 +19,7 @@ export const FanFollowing: React.FC<{ onNavClick?: (view: string) => void }> = (
   const [loading, setLoading] = useState(false);
   const [latestSongs, setLatestSongs] = useState<Song[]>([]);
   const navigate = useNavigate();
+  const toast = useToast();
 
   const handleArtistClick = (artist: { _id?: string }) => {
     if (artist._id) navigate(`/artists/${artist._id}`);
@@ -55,29 +59,33 @@ export const FanFollowing: React.FC<{ onNavClick?: (view: string) => void }> = (
     try {
       await followsService.unfollowArtist(artist._id);
       setFollowing((prev) => prev.filter((a) => a._id !== artist._id));
+      toast.info(`Unfollowed ${artist.name}`);
     } catch {
       fetchFollowing();
+      toast.error(`Unable to unfollow ${artist.name}`);
     }
   };
 
   return (
     <div className="fan-following-container view-enter">
-      <div style={{ marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
-        <div>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', background: 'rgba(168, 85, 247, 0.15)', border: '1px solid rgba(168, 85, 247, 0.3)', borderRadius: 20, color: '#c084fc', fontSize: '0.78rem', fontWeight: 700, marginBottom: 8 }}>
-            <i className="fas fa-users" /> SUBSCRIPTIONS
+      <ScrollReveal direction="up" delay={50}>
+        <div style={{ marginBottom: 28, display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: 16 }}>
+          <div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 12px', background: 'rgba(168, 85, 247, 0.15)', border: '1px solid rgba(168, 85, 247, 0.3)', borderRadius: 20, color: '#c084fc', fontSize: '0.78rem', fontWeight: 700, marginBottom: 8 }}>
+              <i className="fas fa-users" /> SUBSCRIPTIONS
+            </div>
+            <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff', margin: 0 }}>
+              Following
+            </h2>
+            <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', margin: '4px 0 0 0' }}>
+              Artists you follow on CamSound to get new release updates
+            </p>
           </div>
-          <h2 style={{ fontSize: '1.8rem', fontWeight: 800, color: '#fff', margin: 0 }}>
-            Following
-          </h2>
-          <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.95rem', margin: '4px 0 0 0' }}>
-            Artists you follow on CamSound to get new release updates
-          </p>
+          <div className="glass-badge" style={{ fontSize: '0.88rem', padding: '8px 16px' }}>
+            {following.length} artist{following.length !== 1 ? 's' : ''} followed
+          </div>
         </div>
-        <div className="glass-badge" style={{ fontSize: '0.88rem', padding: '8px 16px' }}>
-          {following.length} artist{following.length !== 1 ? 's' : ''} followed
-        </div>
-      </div>
+      </ScrollReveal>
 
       {loading ? (
         <div className="fan-loading" style={{ padding: 40 }}>
@@ -99,68 +107,92 @@ export const FanFollowing: React.FC<{ onNavClick?: (view: string) => void }> = (
         </div>
       ) : (
         <>
-          <div className="cards-grid">
-            {following.map((artist) => (
-              <ArtistCard
-                key={artist._id}
-                artist={artist}
-                isFollowing={true}
-                onFollowToggle={handleUnfollow}
-                onArtistClick={handleArtistClick}
-              />
-            ))}
-          </div>
-
-          <div className="section-card" style={{ marginTop: 32 }}>
-            <div className="section-header">
-              <h2>Latest from Followed Artists</h2>
-            </div>
-            {latestSongs.length === 0 ? (
-              <p style={{ color: 'var(--text-muted)' }}>No recent releases from followed artists.</p>
+          <ScrollReveal direction="up" delay={100}>
+            {following.length > 4 ? (
+              <ScrollRow
+                title="Artists You Follow"
+                subtitle={`${following.length} creator${following.length === 1 ? '' : 's'}`}
+                icon="fa-users"
+                iconBg="rgba(168, 85, 247, 0.15)"
+                iconColor="#c084fc"
+              >
+                {following.map((artist) => (
+                  <ArtistCard
+                    key={artist._id}
+                    artist={artist}
+                    isFollowing={true}
+                    onFollowToggle={handleUnfollow}
+                    onArtistClick={handleArtistClick}
+                  />
+                ))}
+              </ScrollRow>
             ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                {latestSongs.map((song) => (
-                  <div
-                    key={song._id}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 12,
-                      padding: 12,
-                      background: 'var(--bg-tertiary)',
-                      borderRadius: 10,
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: 44,
-                        height: 44,
-                        borderRadius: 8,
-                        overflow: 'hidden',
-                        background: 'var(--bg-secondary)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                      }}
-                    >
-                      {song.coverArt ? (
-                        <img src={song.coverArt} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                      ) : (
-                        <i className="fas fa-music" style={{ color: 'var(--accent-color)' }} />
-                      )}
-                    </div>
-                    <div>
-                      <strong style={{ color: '#fff', fontSize: '0.95rem' }}>{song.title}</strong>
-                      <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
-                        {song.artistId?.name || 'Unknown Artist'}
-                        {song.genre ? ` • ${song.genre}` : ''}
-                      </div>
-                    </div>
-                  </div>
+              <div className="cards-grid">
+                {following.map((artist) => (
+                  <ArtistCard
+                    key={artist._id}
+                    artist={artist}
+                    isFollowing={true}
+                    onFollowToggle={handleUnfollow}
+                    onArtistClick={handleArtistClick}
+                  />
                 ))}
               </div>
             )}
-          </div>
+          </ScrollReveal>
+
+          <ScrollReveal direction="up" delay={160}>
+            <div className="section-card" style={{ marginTop: 32 }}>
+              <div className="section-header">
+                <h2>Latest from Followed Artists</h2>
+              </div>
+              {latestSongs.length === 0 ? (
+                <p style={{ color: 'var(--text-muted)' }}>No recent releases from followed artists.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                  {latestSongs.map((song) => (
+                    <div
+                      key={song._id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 12,
+                        padding: 12,
+                        background: 'var(--bg-tertiary)',
+                        borderRadius: 10,
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: 44,
+                          height: 44,
+                          borderRadius: 8,
+                          overflow: 'hidden',
+                          background: 'var(--bg-secondary)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                        }}
+                      >
+                        {song.coverArt ? (
+                          <img src={song.coverArt} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          <i className="fas fa-music" style={{ color: 'var(--accent-color)' }} />
+                        )}
+                      </div>
+                      <div>
+                        <strong style={{ color: '#fff', fontSize: '0.95rem' }}>{song.title}</strong>
+                        <div style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>
+                          {song.artistId?.name || 'Unknown Artist'}
+                          {song.genre ? ` • ${song.genre}` : ''}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </ScrollReveal>
         </>
       )}
     </div>
@@ -168,3 +200,4 @@ export const FanFollowing: React.FC<{ onNavClick?: (view: string) => void }> = (
 };
 
 export default FanFollowing;
+

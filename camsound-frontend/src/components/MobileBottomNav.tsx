@@ -33,7 +33,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
     primaryTabs = [
       { label: t('nav.home', 'Home'), icon: 'fa-home', view: 'home' },
       { label: t('nav.browse', 'Search'), icon: 'fa-search', view: 'browse' },
-      { label: t('nav.my_music', 'My Music'), icon: 'fa-music', view: 'favorites', badge: totalLikes },
+      { label: t('nav.favorites', 'Favorites'), icon: 'fa-heart', view: 'favorites', badge: totalLikes },
       { label: t('nav.subscription', 'Premium'), icon: 'fa-crown', view: 'subscription' },
     ];
   } else if (hasView('music') && hasView('revenue')) {

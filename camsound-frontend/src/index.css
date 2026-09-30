@@ -9944,3 +9944,134 @@ select:disabled {
   }
 }
 
+/* ============================================================
+   Scroll-Driven Animations & Smooth Carousel Rows
+   ============================================================ */
+
+.scroll-reveal-container {
+  transition-property: opacity, transform;
+}
+
+.scroll-row-section {
+  position: relative;
+}
+
+.scroll-row-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.scroll-arrow-btn {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  padding: 0;
+}
+
+.scroll-arrow-btn:hover:not(:disabled) {
+  background: var(--accent-color, #F59E0B);
+  color: #000;
+  border-color: var(--accent-color, #F59E0B);
+  transform: scale(1.08);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.35);
+}
+
+.scroll-arrow-btn.disabled,
+.scroll-arrow-btn:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+  pointer-events: none;
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.scroll-track-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.scroll-row-track {
+  display: flex;
+  gap: 18px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 6px 2px 18px 2px;
+  -webkit-overflow-scrolling: touch;
+  user-select: none;
+}
+
+.scroll-row-track.is-dragging {
+  cursor: grabbing;
+  scroll-snap-type: none;
+  scroll-behavior: auto;
+}
+
+.scroll-row-track > * {
+  flex: 0 0 200px;
+  min-width: 200px;
+  scroll-snap-align: start;
+}
+
+/* Custom minimal scrollbar for track */
+.scroll-row-track::-webkit-scrollbar {
+  height: 6px;
+}
+
+.scroll-row-track::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 9999px;
+}
+
+.scroll-row-track::-webkit-scrollbar-thumb {
+  background: rgba(250, 204, 21, 0.25);
+  border-radius: 9999px;
+  transition: background 0.2s;
+}
+
+.scroll-row-track::-webkit-scrollbar-thumb:hover {
+  background: var(--accent-color, #F59E0B);
+}
+
+.scroll-edge-fade {
+  position: absolute;
+  top: 0;
+  bottom: 18px;
+  width: 40px;
+  pointer-events: none;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.scroll-edge-left {
+  left: 0;
+  background: linear-gradient(to right, var(--bg-primary, #0B0F0C) 0%, transparent 100%);
+}
+
+.scroll-edge-right {
+  right: 0;
+  background: linear-gradient(to left, var(--bg-primary, #0B0F0C) 0%, transparent 100%);
+}
+
+.scroll-edge-fade.visible {
+  opacity: 1;
+}
+
+@media (max-width: 768px) {
+  .scroll-row-track > * {
+    flex: 0 0 160px;
+    min-width: 160px;
+  }
+}
+
+
