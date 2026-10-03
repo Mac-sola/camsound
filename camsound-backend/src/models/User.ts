@@ -11,7 +11,7 @@ export interface IUser extends Document {
     lastName?: string;
     type: 'fan' | 'artist' | 'admin';
     status: 'active' | 'pending' | 'blocked';
-    subscriptionStatus: 'free' | 'premium' | 'artist';
+    subscriptionStatus: 'free' | 'premium' | 'vip' | 'artist';
     accountNotes?: string;
     avatar?: string;
     bio?: string;
@@ -30,7 +30,7 @@ const UserSchema = new Schema<IUser>(
         lastName: { type: String, trim: true },
         type: { type: String, enum: ['fan', 'artist', 'admin'], default: 'fan' },
         status: { type: String, enum: ['active', 'pending', 'blocked'], default: 'active' },
-        subscriptionStatus: { type: String, enum: ['free', 'premium', 'artist'], default: 'free' },
+        subscriptionStatus: { type: String, enum: ['free', 'premium', 'vip', 'artist'], default: 'free' },
         accountNotes: { type: String, default: '' },
         avatar: { type: String, default: '' },
         bio: { type: String, default: '' },

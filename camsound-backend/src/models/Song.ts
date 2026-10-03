@@ -13,6 +13,8 @@ export interface ISong extends Document {
     coverArt?: string;
     cloudinaryAudioId?: string;
     cloudinaryImageId?: string;
+    isPremium: boolean;
+    premiumTier: 'free' | 'premium' | 'vip';
     status: 'active' | 'pending' | 'blocked';
     moderationStatus: 'pending' | 'approved' | 'rejected';
     moderationNotes?: string;
@@ -34,6 +36,8 @@ const SongSchema = new Schema<ISong>(
         coverArt: { type: String },
         cloudinaryAudioId: { type: String },
         cloudinaryImageId: { type: String },
+        isPremium: { type: Boolean, default: false },
+        premiumTier: { type: String, enum: ['free', 'premium', 'vip'], default: 'free' },
         status: { type: String, enum: ['active', 'pending', 'blocked'], default: 'active' },
         moderationStatus: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
         moderationNotes: { type: String },

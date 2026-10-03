@@ -76,8 +76,18 @@ app.use('/api', (req, res, next) => {
 });
 
 // ── Database Connection ───────────────────────────────────────────────────────
+import { startSubscriptionChecker } from './services/subscriptionService';
+import { getPaymentGateway } from './services/gatewayFactory';
+
 mongoose.connect(process.env.MONGODB_URI!)
-    .then(() => console.log('✅ MongoDB Connected'))
+    .then(() => {
+        console.log('✅ MongoDB Connected');
+        // Start subscription expiry checker (runs every hour)
+        startSubscriptionChecker();
+        // Log active payment gateway
+        const gw = getPaymentGateway();
+        console.log(`💳 Payment Gateway: ${gw.name} (simulated: ${gw.isSimulated})`);
+    })
     .catch(err => console.error('❌ MongoDB Error:', err));
 
 // ── API Routes ────────────────────────────────────────────────────────────────

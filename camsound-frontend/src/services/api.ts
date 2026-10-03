@@ -230,6 +230,12 @@ export const subscriptionsService = {
   getSubscriptions: () => api.get('/api/subscriptions'),
   getSubscription: (id: string) => api.get(`/api/subscriptions/${id}`),
   createSubscription: (data: any) => api.post('/api/subscriptions', data),
+  // Active subscription & premium status
+  getMyActive: () => api.get('/api/subscriptions/my-active'),
+  cancelSubscription: (reason?: string) => api.post('/api/subscriptions/cancel', { reason }),
+  getMyPayments: () => api.get('/api/subscriptions/my-payments'),
+  // Admin
+  getRevenueStats: () => api.get('/api/subscriptions/revenue-stats'),
   // Admin Plans CRUD
   createPlan: (data: any) => api.post('/api/subscriptions/plans', data),
   updatePlan: (id: string, data: any) => api.put(`/api/subscriptions/plans/${id}`, data),

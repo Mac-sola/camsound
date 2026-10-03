@@ -11,6 +11,7 @@ import {
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend
 } from 'recharts';
 import MoMoPaymentModal from '../components/MoMoPaymentModal';
+import AdminRevenuePanel from '../components/AdminRevenuePanel';
 
 const ADMIN_NAV = [
 
@@ -26,6 +27,7 @@ const ADMIN_NAV = [
   { label: 'Featured Content', icon: 'fa-star', view: 'featured' },
 
   { section: 'Monetization' },
+  { label: 'Revenue Dashboard', icon: 'fa-chart-line', view: 'revenue' },
   { label: 'Subscriptions', icon: 'fa-credit-card', view: 'subscriptions' },
   { label: 'Subscription Plans', icon: 'fa-crown', view: 'plans' },
   { label: 'Payments', icon: 'fa-dollar-sign', view: 'payments' },
@@ -470,6 +472,15 @@ const AdminDashboard: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Revenue Summary in Overview */}
+      <div className="admin-card" style={{ marginTop: 24 }}>
+        <div className="admin-card-header">
+          <h2 className="admin-card-title"><i className="fas fa-chart-line" /> Revenue Overview</h2>
+          <button className="admin-btn-action" onClick={() => setActiveView('revenue')}>Full Dashboard <i className="fas fa-arrow-right" /></button>
+        </div>
+        <AdminRevenuePanel />
+      </div>
     </div>
   );
 
@@ -485,6 +496,16 @@ const AdminDashboard: React.FC = () => {
       <div key={activeView} className="view-fade-in">
         {/* ─── 1. OVERVIEW ─── */}
         {activeView === 'overview' && <OverviewView />}
+
+        {/* ─── REVENUE DASHBOARD ─── */}
+        {activeView === 'revenue' && (
+          <div className="admin-card">
+            <div className="admin-card-header">
+              <h2 className="admin-card-title"><i className="fas fa-chart-line" /> Revenue Dashboard</h2>
+            </div>
+            <AdminRevenuePanel />
+          </div>
+        )}
 
         {/* ─── 2. USER MANAGEMENT ─── */}
         {activeView === 'users' && (

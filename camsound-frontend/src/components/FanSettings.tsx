@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { notificationSettingsService, authService } from '../services/api';
 import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
+import FanSubscriptionCard from './FanSubscriptionCard';
+import FanPaymentHistory from './FanPaymentHistory';
 
 interface NotifSettings {
   newReleases?: boolean;
@@ -153,6 +155,12 @@ const FanSettings: React.FC = () => {
         <label style={{ color: 'rgba(255,255,255,0.7)', fontSize: '0.85rem', marginTop: 14 }}>{t('settings.bio')}<textarea className="search-input-db" rows={3} value={accountForm.bio} onChange={e => setAccountForm(prev => ({ ...prev, bio: e.target.value }))} /></label>
         <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 14 }}><button className="btn-camsound-yellow" onClick={saveAccount} disabled={savingAccount}>{savingAccount ? t('common.saving') : t('settings.save_account')}</button>{accountMsg && <span style={{ color: 'var(--accent-color)' }}>{accountMsg}</span>}</div>
       </div>
+
+      {/* ── My Subscription ── */}
+      <FanSubscriptionCard />
+
+      {/* ── Payment History ── */}
+      <FanPaymentHistory />
 
       {/* ── MTN Mobile Money Account ── */}
       <div className="stat-card-premium" style={{ padding: 28, flexDirection: 'column', alignItems: 'stretch' }}>

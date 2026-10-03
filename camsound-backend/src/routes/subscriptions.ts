@@ -10,7 +10,15 @@ router.post('/plans', protect, restrictTo('admin'), subs.createPlan);
 router.put('/plans/:id', protect, restrictTo('admin'), subs.updatePlan);
 router.delete('/plans/:id', protect, restrictTo('admin'), subs.deletePlan);
 
-// Subscriptions
+// User's active subscription & premium status
+router.get('/my-active', protect, subs.getMyActiveSubscription);
+router.post('/cancel', protect, subs.cancelMySubscription);
+router.get('/my-payments', protect, subs.getMyPayments);
+
+// Admin revenue stats
+router.get('/revenue-stats', protect, restrictTo('admin'), subs.getRevenueStats);
+
+// Subscriptions CRUD
 router.get('/', protect, subs.getSubscriptions);
 router.post('/', protect, subs.createSubscription);
 router.get('/:id', protect, subs.getSubscription);
