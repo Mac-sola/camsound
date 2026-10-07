@@ -14,6 +14,8 @@ export interface SongItem {
   filePath?: string;
   fileUrl?: string;
   coverColor?: string;
+  isPremium?: boolean;
+  premiumTier?: 'free' | 'premium' | 'vip';
 }
 
 interface SongCardProps {
@@ -63,6 +65,32 @@ export const SongCard: React.FC<SongCardProps> = ({
       tabIndex={0}
     >
       <div className="song-cover">
+        {song.isPremium && (
+          <div
+            className="premium-badge-tag"
+            style={{
+              position: 'absolute',
+              top: 8,
+              left: 8,
+              zIndex: 3,
+              background: 'linear-gradient(135deg, #f59e0b, #d97706)',
+              color: '#000',
+              fontWeight: 800,
+              fontSize: '0.65rem',
+              padding: '3px 7px',
+              borderRadius: '12px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 4,
+              letterSpacing: '0.5px'
+            }}
+            title="Premium Track"
+          >
+            <i className="fas fa-crown" />
+            <span>VIP</span>
+          </div>
+        )}
         {coverUrl ? (
           <img src={coverUrl} alt={song.title} loading="lazy" />
         ) : (

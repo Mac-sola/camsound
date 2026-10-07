@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useState, useRef, useEffect } from 'react';
 import { songsService } from '../services/api';
+import { useAuth } from './AuthContext';
 
-interface Song {
+export interface Song {
   _id: string;
   title: string;
   filePath?: string;
@@ -11,6 +12,8 @@ interface Song {
   genre?: string;
   plays?: number;
   duration?: string;
+  isPremium?: boolean;
+  premiumTier?: 'free' | 'premium' | 'vip';
 }
 
 interface AudioContextType {
@@ -19,6 +22,9 @@ interface AudioContextType {
   progress: number;
   duration: number;
   audioError: string | null;
+  isPreviewMode: boolean;
+  previewEnded: boolean;
+  resetPreviewModal: () => void;
   playSong: (song: Song, queue?: Song[]) => void;
   togglePlay: () => void;
   seek: (percentage: number) => void;
@@ -38,6 +44,7 @@ interface AudioContextType {
 const AudioContext = createContext<AudioContextType | undefined>(undefined);
 
 export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { user } = useAuth();
   const [currentSong, setCurrentSong] = useState<Song | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -47,13 +54,32 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const [audioError, setAudioError] = useState<string | null>(null);
   const [songQueue, setSongQueue] = useState<Song[]>([]);
   const [isPlayerOpen, setIsPlayerOpen] = useState(false);
+  const [previewEnded, setPreviewEnded] = useState(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Check if current user has premium access
+  const isPremiumUser = user?.subscriptionStatus === 'premium' || user?.subscriptionStatus === 'vip' || user?.type === 'artist' || user?.type === 'admin';
+  const isPreviewMode = Boolean(currentSong?.isPremium && !isPremiumUser);
+
+  const resetPreviewModal = () => {
+    setPreviewEnded(false);
+  };
 
   useEffect(() => {
     audioRef.current = new Audio();
 
     const handleTimeUpdate = () => {
-      if (audioRef.current) setProgress(audioRef.current.currentTime);
+      if (audioRef.current) {
+        const time = audioRef.current.currentTime;
+        setProgress(time);
+
+        // Enforce 30-second preview limit for free users on premium songs
+        if (currentSong?.isPremium && !isPremiumUser && time >= 30) {
+          audioRef.current.pause();
+          setIsPlaying(false);
+          setPreviewEnded(true);
+        }
+      }
     };
 
     const handleLoadedMetadata = () => {
@@ -84,7 +110,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       audio.pause();
       audioRef.current = null;
     };
-  }, []);
+  }, [currentSong?.isPremium, isPremiumUser]);
 
   const getAudioSource = (url: string) => {
     return url || '';
@@ -211,7 +237,7 @@ export const AudioProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [togglePlay]);
 
   return (
-    <AudioContext.Provider value={{ currentSong, isPlaying, progress, duration, audioError, playSong, togglePlay, seek, skipForward, skipBackward, nextSong, previousSong, isPlayerOpen, openPlayer, closePlayer, volume, setVolume, isMuted, toggleMute }}>
+    <AudioContext.Provider value={{ currentSong, isPlaying, progress, duration, audioError, isPreviewMode, previewEnded, resetPreviewModal, playSong, togglePlay, seek, skipForward, skipBackward, nextSong, previousSong, isPlayerOpen, openPlayer, closePlayer, volume, setVolume, isMuted, toggleMute }}>
       {children}
     </AudioContext.Provider>
   );

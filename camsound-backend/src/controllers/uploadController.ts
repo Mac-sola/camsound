@@ -120,6 +120,10 @@ export const uploadSong = [
                 coverArtId = imageResult.public_id;
             }
 
+            // Check premium flags
+            const isPremium = req.body.isPremium === 'true' || req.body.isPremium === true;
+            const premiumTier = req.body.premiumTier === 'vip' ? 'vip' : isPremium ? 'premium' : 'free';
+
             // Create song document
             const song = await Song.create({
                 title: title.trim(),
@@ -130,6 +134,8 @@ export const uploadSong = [
                 coverArt: coverArtUrl,
                 cloudinaryAudioId: audioResult.public_id,
                 cloudinaryImageId: coverArtId,
+                isPremium,
+                premiumTier,
                 status: 'active',
                 moderationStatus: 'approved',
             });

@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { subscriptionsService } from '../services/api';
-import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 
 interface ActiveSubData {
@@ -20,7 +19,6 @@ interface ActiveSubData {
 }
 
 const FanSubscriptionCard: React.FC = () => {
-  const { user } = useAuth();
   const { t } = useLanguage();
   const [data, setData] = useState<ActiveSubData | null>(null);
   const [loading, setLoading] = useState(true);

@@ -62,6 +62,7 @@ const ArtistDashboard: React.FC = () => {
   const [title, setTitle] = useState('');
   const [genre, setGenre] = useState('');
   const [description, setDescription] = useState('');
+  const [isPremiumSong, setIsPremiumSong] = useState(false);
   const [songFile, setSongFile] = useState<File | null>(null);
   const [coverArt, setCoverArt] = useState<File | null>(null);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
@@ -456,6 +457,8 @@ const ArtistDashboard: React.FC = () => {
     fd.append('upload_type', 'song');
     fd.append('title', titleTrimmed);
     fd.append('genre', genre || 'Afrobeat');
+    fd.append('isPremium', isPremiumSong ? 'true' : 'false');
+    fd.append('premiumTier', isPremiumSong ? 'premium' : 'free');
     if (description.trim()) {
       fd.append('description', description.trim());
     }
@@ -873,6 +876,27 @@ const ArtistDashboard: React.FC = () => {
                 {fieldErrors.coverArt}
               </div>
             )}
+          </div>
+
+          {/* Premium Track Monetization Toggle */}
+          <div style={{ marginBottom: 20, padding: '14px 18px', borderRadius: 12, background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.08), rgba(217, 119, 6, 0.08))', border: '1px solid rgba(245, 158, 11, 0.3)' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: 12, cursor: 'pointer', margin: 0 }}>
+              <input
+                type="checkbox"
+                checked={isPremiumSong}
+                onChange={(e) => setIsPremiumSong(e.target.checked)}
+                style={{ width: 18, height: 18, accentColor: '#f59e0b', cursor: 'pointer' }}
+              />
+              <div>
+                <div style={{ color: '#f59e0b', fontWeight: 700, fontSize: '0.95rem', display: 'flex', alignItems: 'center', gap: 6 }}>
+                  <i className="fas fa-crown" />
+                  <span>Monetize as VIP / Premium Track</span>
+                </div>
+                <div style={{ color: 'rgba(255, 255, 255, 0.65)', fontSize: '0.82rem', marginTop: 2 }}>
+                  Free fans get a 30-second preview. Only paid subscribers can stream the full song, earning you higher streaming royalties.
+                </div>
+              </div>
+            </label>
           </div>
 
           {/* Submit Action */}

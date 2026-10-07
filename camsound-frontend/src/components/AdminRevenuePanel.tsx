@@ -149,7 +149,7 @@ const AdminRevenuePanel: React.FC = () => {
                     color: '#fff',
                     fontSize: '0.82rem',
                   }}
-                  formatter={(value: number) => [`${value.toLocaleString()} FCFA`, '']}
+                  formatter={(value: any) => [`${Number(value || 0).toLocaleString()} FCFA`, '']}
                 />
                 <Legend
                   wrapperStyle={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}

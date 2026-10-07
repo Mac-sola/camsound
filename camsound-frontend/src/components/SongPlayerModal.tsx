@@ -1,21 +1,30 @@
 import React, { useState, useEffect } from 'react';
 import Modal from './Modal';
 import { useAudio } from '../context/AudioContext';
+import { useAuth } from '../context/AuthContext';
 import { useLanguage } from '../context/LanguageContext';
 import { useToast } from '../context/ToastContext';
 import { favoritesService } from '../services/api';
 import { getMusicImage } from '../utils/musicImages';
+import MoMoPaymentModal from './MoMoPaymentModal';
 
 const SongPlayerModal: React.FC = () => {
   const { t } = useLanguage();
   const toast = useToast();
+  const { user, updateUser } = useAuth();
   const [isFav, setIsFav] = useState(false);
+  const [isUpgradeModalOpen, setIsUpgradeModalOpen] = useState(false);
+  const [isTipModalOpen, setIsTipModalOpen] = useState(false);
+
   const {
     currentSong,
     isPlaying,
     progress,
     duration,
     audioError,
+    isPreviewMode,
+    previewEnded,
+    resetPreviewModal,
     togglePlay,
     seek,
     nextSong,
@@ -27,6 +36,13 @@ const SongPlayerModal: React.FC = () => {
     isMuted,
     toggleMute,
   } = useAudio();
+
+  // Automatically trigger upgrade dialog when 30s preview finishes
+  useEffect(() => {
+    if (previewEnded) {
+      setIsUpgradeModalOpen(true);
+    }
+  }, [previewEnded]);
 
   useEffect(() => {
     if (!currentSong?._id) return;
@@ -214,17 +230,60 @@ const SongPlayerModal: React.FC = () => {
           />
         </div>
 
-        {/* Action Row with Favorite, Share, and Download Buttons */}
-        <div className="now-playing-actions-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 12, flexWrap: 'wrap', marginTop: 8 }}>
+        {/* Preview Alert Banner */}
+        {isPreviewMode && (
+          <div
+            style={{
+              marginTop: 12,
+              marginBottom: 8,
+              padding: '10px 14px',
+              borderRadius: 10,
+              background: 'linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(217, 119, 6, 0.15))',
+              border: '1px solid rgba(245, 158, 11, 0.35)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: 10
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#f59e0b', fontSize: '0.85rem', fontWeight: 600 }}>
+              <i className="fas fa-crown" />
+              <span>{previewEnded ? '30s Preview Finished' : '30s Free Preview Mode'}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsUpgradeModalOpen(true)}
+              style={{
+                background: '#f59e0b',
+                color: '#000',
+                border: 'none',
+                padding: '5px 12px',
+                borderRadius: 14,
+                fontSize: '0.78rem',
+                fontWeight: 700,
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 5
+              }}
+            >
+              <span>Unlock Full Track</span>
+              <i className="fas fa-arrow-right" style={{ fontSize: '0.7rem' }} />
+            </button>
+          </div>
+        )}
+
+        {/* Action Row with Favorite, Tip, Share, and Download Buttons */}
+        <div className="now-playing-actions-row" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, flexWrap: 'wrap', marginTop: 12 }}>
           <button
             type="button"
             className={`np-action-btn ${isFav ? 'favorited' : ''}`}
             onClick={handleFavoriteToggle}
             style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px',
+              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px',
               background: isFav ? 'rgba(239, 68, 68, 0.2)' : 'rgba(255, 255, 255, 0.08)',
               border: `1px solid ${isFav ? 'rgba(239, 68, 68, 0.4)' : 'rgba(255, 255, 255, 0.12)'}`,
-              color: isFav ? '#ef4444' : '#fff', borderRadius: 20, cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+              color: isFav ? '#ef4444' : '#fff', borderRadius: 20, cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem',
               transition: 'all 0.2s ease'
             }}
             title={isFav ? 'Remove from favorites' : 'Add to favorites'}
@@ -232,14 +291,31 @@ const SongPlayerModal: React.FC = () => {
             <i className={`${isFav ? 'fas' : 'far'} fa-heart`} /> {isFav ? 'Favorited' : 'Favorite'}
           </button>
 
+          {/* Tip Artist Button */}
+          <button
+            type="button"
+            className="np-action-btn"
+            onClick={() => setIsTipModalOpen(true)}
+            style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px',
+              background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.2))',
+              border: '1px solid rgba(16, 185, 129, 0.4)',
+              color: '#34d399', borderRadius: 20, cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem',
+              transition: 'all 0.2s ease'
+            }}
+            title="Tip this artist via MoMo"
+          >
+            <i className="fas fa-hand-holding-dollar" /> Tip Artist
+          </button>
+
           <button
             type="button"
             className="np-action-btn"
             onClick={handleShare}
             style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px',
+              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px',
               background: 'rgba(255, 255, 255, 0.08)', border: '1px solid rgba(255, 255, 255, 0.12)',
-              color: '#fff', borderRadius: 20, cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+              color: '#fff', borderRadius: 20, cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem',
               transition: 'all 0.2s ease'
             }}
             title="Share track"
@@ -252,9 +328,9 @@ const SongPlayerModal: React.FC = () => {
             className="np-download-btn"
             onClick={handleDownload}
             style={{
-              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 18px',
+              display: 'inline-flex', alignItems: 'center', gap: 6, padding: '8px 16px',
               background: 'rgba(250, 204, 21, 0.15)', border: '1px solid rgba(250, 204, 21, 0.3)',
-              color: 'var(--accent-color)', borderRadius: 20, cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem',
+              color: 'var(--accent-color)', borderRadius: 20, cursor: 'pointer', fontWeight: 600, fontSize: '0.82rem',
               transition: 'all 0.2s ease'
             }}
             title={t('player.download', 'Download track')}
@@ -269,6 +345,41 @@ const SongPlayerModal: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* MoMo Upgrade Modal */}
+      <MoMoPaymentModal
+        isOpen={isUpgradeModalOpen}
+        onClose={() => {
+          setIsUpgradeModalOpen(false);
+          resetPreviewModal();
+        }}
+        mode="subscription"
+        amount={2500}
+        planName="Pro Monthly"
+        planPeriod="/month"
+        onSuccess={(_data) => {
+          setIsUpgradeModalOpen(false);
+          resetPreviewModal();
+          toast.success('👑 Welcome to CamSound Premium! All songs unlocked.');
+          if (user) {
+            updateUser({ ...user, subscriptionStatus: 'premium' });
+          }
+        }}
+      />
+
+      {/* MoMo Tip Artist Modal */}
+      <MoMoPaymentModal
+        isOpen={isTipModalOpen}
+        onClose={() => setIsTipModalOpen(false)}
+        mode="tip"
+        amount={1000}
+        artistName={artistName}
+        artistId={currentSong.artistId?._id}
+        onSuccess={(data) => {
+          setIsTipModalOpen(false);
+          toast.success(`🎉 You sent ${data.amount} XAF tip to ${artistName}!`);
+        }}
+      />
     </Modal>
   );
 };

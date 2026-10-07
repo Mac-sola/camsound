@@ -142,17 +142,27 @@ router.post('/verify', async (req: Request, res: Response) => {
 
             // Update user's subscription status
             const isVIP = planName.toLowerCase().includes('vip') || planName.toLowerCase().includes('annual');
-            await User.findByIdAndUpdate(user._id || user.id, {
-                subscriptionStatus: isVIP ? 'vip' : 'premium',
+            const newStatus = isVIP ? 'vip' : 'premium';
+            const updatedUser = await User.findByIdAndUpdate(
+                user._id || user.id,
+                { subscriptionStatus: newStatus },
+                { new: true }
+            ).select('-password');
+
+            return res.json({
+                success: true,
+                message: 'MTN MoMo payment successfully verified and subscription activated!',
+                data: { result, payment, subscription, user: updatedUser },
             });
         }
 
+        const freshUser = user ? await User.findById(user._id || user.id).select('-password') : null;
         res.json({
             success: true,
             message: result.success
                 ? 'MTN MoMo payment successfully verified and completed!'
                 : 'Payment verification failed',
-            data: { result, payment, subscription },
+            data: { result, payment, subscription, user: freshUser },
         });
     } catch (err: any) {
         res.status(500).json({ success: false, message: err.message });
