@@ -3,6 +3,8 @@ camsound-backend/node_modules/
 camsound-frontend/node_modules/
 
 # Environment files
+.env
+.env*.local
 camsound-backend/.env
 camsound-frontend/.env
 
