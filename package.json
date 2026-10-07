@@ -1,10 +1,13 @@
 {
-  "name": "deep_seek",
+  "name": "camsound",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "CamSound - African & Cameroonian Music Streaming Platform",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "dev:backend": "npm --prefix camsound-backend run dev",
+    "dev:frontend": "npm --prefix camsound-frontend run dev",
+    "build:backend": "npm --prefix camsound-backend run build",
+    "build:frontend": "npm --prefix camsound-frontend run build",
+    "test:qa": "node tests/test_qa_suite.js"
   },
   "repository": {
     "type": "git",
