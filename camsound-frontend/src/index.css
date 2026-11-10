@@ -1018,6 +1018,18 @@ textarea:focus-visible {
   box-shadow: 0 0 20px rgba(250, 204, 21, 0.15);
   transition: var(--transition-fast);
   margin: 0 auto 20px;
+  position: relative;
+  z-index: 1;
+}
+
+.how-icon-wrapper i {
+  position: relative;
+  z-index: 1;
+}
+
+.how-it-works-card:hover .how-icon-wrapper {
+  transform: translateY(-2px) scale(1.04);
+  box-shadow: 0 0 25px rgba(250, 204, 21, 0.25);
 }
 
 .arrow-connector {
@@ -2565,6 +2577,98 @@ textarea:focus-visible {
   .footer-grid { grid-template-columns: 1fr; }
   .search-input-db { width: min(200px, calc(100vw - 180px)); min-width: 120px; }
   .cards-grid { grid-template-columns: repeat(2, 1fr); }
+
+  .navbar-camsound {
+    padding: 12px 0;
+  }
+
+  .navbar-brand {
+    font-size: 1.2rem;
+    padding: 6px 12px;
+  }
+
+  .container {
+    padding: 0 18px;
+  }
+
+  .camsound-hero-carousel {
+    min-height: auto;
+  }
+
+  .carousel-slide-content {
+    padding-top: 72px;
+    padding-bottom: 34px;
+  }
+
+  .carousel-slide-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .carousel-title {
+    font-size: clamp(2.2rem, 9vw, 3.1rem);
+    line-height: 1.08;
+  }
+
+  .carousel-description {
+    max-width: 100%;
+    font-size: 0.96rem;
+  }
+
+  .carousel-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .carousel-cta-btn,
+  .carousel-secondary-btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .how-it-works-grid {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .arrow-connector {
+    display: none;
+  }
+
+  .how-it-works-card {
+    padding: 26px 18px;
+  }
+
+  .how-it-works-card h4 {
+    font-size: 1.18rem;
+  }
+
+  .how-icon-wrapper {
+    width: 54px;
+    height: 54px;
+    font-size: 1.35rem;
+  }
+
+  .why-choose-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .feature-card {
+    padding: 18px 16px;
+  }
+
+  .cta-section h2,
+  .cta-heading {
+    font-size: clamp(2.2rem, 9vw, 3rem);
+  }
+
+  .auth-card {
+    padding: 28px 20px;
+    border-radius: 18px;
+  }
+
+  .auth-logo h1 {
+    font-size: 1.9rem;
+  }
 }
 
 @media (max-width: 480px) {
@@ -2572,6 +2676,126 @@ textarea:focus-visible {
   .hero-title { font-size: 2rem; }
   .cards-grid { grid-template-columns: 1fr; }
   .artists-grid { grid-template-columns: repeat(2, 1fr); }
+
+  .navbar-brand {
+    font-size: 1.05rem;
+    padding: 6px 10px;
+  }
+
+  .carousel-top-row {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .carousel-badge {
+    font-size: 0.68rem;
+    padding: 6px 10px;
+  }
+
+  .carousel-equalizer {
+    transform: scale(0.85);
+  }
+
+  .how-it-works-card {
+    padding: 22px 14px;
+  }
+
+  .how-it-works-card h4 {
+    font-size: 1.1rem;
+  }
+
+  .feature-card {
+    gap: 12px;
+  }
+
+  .feature-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+
+  .btn-camsound-yellow,
+  .btn-camsound-outline,
+  .btn-camsound-outline-green {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .auth-card {
+    padding: 24px 16px;
+  }
+
+  .auth-form-group {
+    margin-bottom: 16px;
+  }
+}
+
+@media (max-width: 600px) {
+  .auth-page-body {
+    padding: 16px 12px;
+  }
+
+  .auth-card {
+    max-width: 100%;
+    padding: 22px 16px 18px;
+    border-radius: 16px;
+  }
+
+  .auth-card-wide {
+    max-width: 100%;
+  }
+
+  .auth-logo {
+    margin-bottom: 18px;
+  }
+
+  .auth-logo h1 {
+    font-size: 1.7rem;
+  }
+
+  .auth-label {
+    font-size: 0.8rem;
+    margin-bottom: 7px;
+  }
+
+  .auth-form-group {
+    margin-bottom: 14px;
+  }
+
+  .role-selection {
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .role-option {
+    padding: 12px 14px;
+    border-radius: 10px;
+  }
+
+  .role-icon-circle {
+    width: 42px;
+    height: 42px;
+    margin-right: 10px;
+    font-size: 1.1rem;
+  }
+
+  .role-info h5 {
+    font-size: 0.95rem;
+  }
+
+  .role-info p {
+    font-size: 0.76rem;
+    line-height: 1.35;
+  }
+
+  .social-buttons {
+    gap: 8px;
+  }
+
+  .btn-social {
+    padding: 10px 8px;
+    font-size: 0.8rem;
+  }
 }
 
 html {
@@ -6443,6 +6667,18 @@ select:disabled {
   padding-top: 40px;
 }
 
+@media (max-width: 480px) {
+  .public-browse-links {
+    display: none;
+  }
+
+  .public-browse-nav .navbar-brand {
+    gap: 6px !important;
+    padding: 8px 10px !important;
+    font-size: 1.1rem;
+  }
+}
+
 .content-area {
   padding: 2.25rem 2.5rem !important;
   background: linear-gradient(180deg, var(--bg-primary) 0%, #0d1219 100%) !important;
@@ -9556,8 +9792,12 @@ select:disabled {
     letter-spacing: 0.2px;
     white-space: nowrap;
     overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 68px;
+    text-overflow: clip;
+    max-width: 100%;
+    min-width: 0;
+    font-size: 0.62rem;
+    text-align: center;
+    line-height: 1.1;
   }
 
   .mobile-nav-badge {
@@ -9795,6 +10035,55 @@ select:disabled {
 
   .user-dropdown-btn {
     padding: 4px 8px 4px 4px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .top-bar {
+    padding: 8px 10px !important;
+    min-height: 58px !important;
+  }
+
+  .top-bar-left {
+    gap: 8px !important;
+    min-width: 0;
+  }
+
+  .top-bar-title {
+    font-size: 1rem !important;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+  }
+
+  .search-wrap {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .search-input-db {
+    min-width: 0 !important;
+    width: 100% !important;
+    height: 34px !important;
+    font-size: 0.78rem !important;
+    padding-left: 34px !important;
+  }
+
+  .notif-btn {
+    width: 32px !important;
+    height: 32px !important;
+    font-size: 0.8rem !important;
+  }
+
+  .user-dropdown-btn {
+    padding: 4px 6px 4px 4px !important;
+  }
+
+  .user-avatar-sm {
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 0.72rem !important;
   }
 }
 
@@ -10074,4 +10363,447 @@ select:disabled {
   }
 }
 
+@media (max-width: 820px) {
+  .content-area > .view-fade-in {
+    min-width: 0;
+  }
 
+  .artist-revenue-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .artist-revenue-grid > *,
+  .artist-analytics-stats,
+  .artist-analytics-chart {
+    min-width: 0;
+  }
+
+  .artist-revenue-grid .section-card,
+  .artist-analytics-chart {
+    padding: 16px !important;
+  }
+
+  .artist-revenue-grid .search-input-db {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+
+  .artist-analytics-stats {
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
+  }
+
+  .artist-profile-layout {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 20px !important;
+  }
+
+  .artist-profile-layout .search-input-db {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+}
+
+@media (max-width: 480px) {
+  .fan-profile-container .hero-welcome {
+    padding: 24px 16px !important;
+  }
+
+  .fan-profile-container .hero-welcome > div:first-child > div:first-child {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .fan-profile-container .hero-welcome > div:first-child > div:first-child > div:last-child {
+    min-width: 0;
+    text-align: center;
+  }
+
+  .fan-profile-contact {
+    flex-wrap: wrap;
+    justify-content: center;
+    overflow-wrap: anywhere;
+  }
+
+  .artist-profile-contact-grid,
+  .artist-profile-social-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  .artist-uploaded-track {
+    display: grid !important;
+    grid-template-columns: 44px 44px minmax(0, 1fr) !important;
+    gap: 8px !important;
+    padding: 12px !important;
+  }
+
+  .artist-uploaded-track-status {
+    grid-column: 3;
+    justify-self: start;
+  }
+
+  .artist-uploaded-track-actions {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}
+
+
+/* ================================================================
+   MOBILE RESPONSIVENESS OVERHAUL — Comprehensive small-screen fixes
+   ================================================================ */
+
+/* ── 1. Landing Navbar — touch-target for hamburger ── */
+@media (max-width: 991px) {
+  .navbar-camsound .container { padding: 0 16px; }
+  .d-lg-none {
+    min-width: 44px;
+    min-height: 44px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+/* ── 2. Touch targets — 44 px minimum on all interactive controls ── */
+@media (max-width: 992px) {
+  .sidebar-nav-btn { min-height: 48px; }
+  .mobile-nav-item { min-height: 44px; }
+  .fan-genre-tag { padding: 8px 16px; }
+  .btn-camsound-yellow,
+  .btn-camsound-outline,
+  .btn-camsound-outline-green { min-height: 44px; }
+}
+
+/* ── 3. Landing page — small mobile (≤ 480 px) ── */
+@media (max-width: 480px) {
+  .container { padding: 0 16px; }
+
+  .artist-page-nav-actions { gap: 6px !important; }
+  .artist-page-nav-actions > .btn-camsound-outline,
+  .artist-page-nav-actions > .btn-camsound-yellow {
+    padding: 6px 8px !important;
+    font-size: 0.78rem !important;
+  }
+  .artist-page-logout,
+  .artist-page-signup { display: none !important; }
+
+  .auth-page-body {
+    padding: 16px;
+  }
+
+  .auth-card {
+    max-width: 100%;
+    padding: 24px 16px;
+  }
+
+  .auth-logo h1 {
+    font-size: 2rem;
+    line-height: 1.1;
+    gap: 8px;
+  }
+
+  .auth-logo p {
+    font-size: 0.8rem;
+  }
+
+  .auth-label {
+    font-size: 0.88rem;
+  }
+
+  .auth-input {
+    font-size: 0.92rem;
+  }
+
+  .btn-auth-submit {
+    font-size: 0.96rem;
+    padding: 14px 16px;
+  }
+
+  .social-buttons {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-carousel-section-full { min-height: 60vh;   }
+
+  .how-it-works-section { padding: 40px 0; }
+
+  .stat-big { font-size: 2.5rem; }
+
+  .footer-grid { gap: 24px; }
+
+  .cta-heading { font-size: var(--fs-3xl); }
+
+  /* Section cards */
+  .section-card { padding: 16px !important; }
+  .section-header h2 { font-size: 1rem !important; }
+
+  /* Testimonials */
+  .testimonials-section { padding: 40px 0; }
+  .testimonial-card { padding: 20px 16px; }
+
+  /* Auth pages */
+  .auth-card { padding: 24px 16px; }
+  .auth-logo h1 { font-size: 1.8rem; }
+
+  .carousel-slide-content {
+    padding-top: 28px;
+    padding-bottom: 30px;
+  }
+
+  .carousel-slide-grid {
+    display: block;
+  }
+
+  .carousel-slide-inner {
+    max-width: 100%;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+
+  .carousel-top-row {
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+
+  .carousel-title {
+    font-size: clamp(1.9rem, 8vw, 2.3rem);
+    line-height: 1.02;
+    letter-spacing: -0.04em;
+    margin-bottom: 10px;
+  }
+
+  .carousel-subtitle {
+    font-size: 0.82rem;
+    margin-bottom: 8px;
+  }
+
+  .carousel-description {
+    font-size: 0.9rem;
+    line-height: 1.46;
+    margin-bottom: 18px;
+  }
+
+  .carousel-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+
+  .carousel-cta-btn.glow-effect,
+  .carousel-secondary-btn {
+    width: 100%;
+    justify-content: center;
+    min-height: 48px;
+    font-size: 0.96rem;
+  }
+
+  .how-it-works-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .how-it-works-card {
+    padding: 22px 18px;
+  }
+
+  .how-it-works-card h4 {
+    font-size: 1.15rem;
+  }
+
+  .arrow-connector {
+    display: none;
+  }
+
+  .public-browse-hero {
+    padding: 72px 0 22px;
+  }
+
+  .public-browse-hero h1 {
+    font-size: clamp(2rem, 10vw, 2.7rem);
+    line-height: 1.06;
+  }
+
+  .public-browse-hero p {
+    font-size: 0.96rem;
+  }
+
+  .public-browse-content {
+    padding-top: 20px;
+  }
+
+  .fan-browse-search {
+    margin-bottom: 16px !important;
+    padding: 0 2px;
+  }
+
+  .fan-search-input,
+  .fan-search-input-premium {
+    font-size: 0.95rem;
+    padding: 12px 40px 12px 44px !important;
+  }
+
+  .fan-browse-filters,
+  .fan-filter-chips-premium {
+    gap: 8px;
+  }
+
+  .fan-filter-chip,
+  .fan-filter-chip-premium {
+    padding: 8px 12px;
+    font-size: 0.76rem;
+  }
+}
+
+@media (max-width: 360px) {
+  .artist-page-dashboard { display: none !important; }
+}
+
+/* ── 4. Genre image grid — mobile breakpoints ── */
+@media (max-width: 768px) {
+  .genre-image-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+  }
+}
+@media (max-width: 480px) {
+  .genre-image-grid {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+  .genre-image-card { height: 160px !important; }
+}
+
+/* ── 5. Dashboard — fan welcome banner stack ── */
+@media (max-width: 600px) {
+  .fan-welcome-banner {
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px 16px;
+  }
+  .fan-welcome-icon { font-size: 2rem; }
+  .fan-welcome-text h2 { font-size: 1.3rem; }
+}
+
+/* ── 6. Stats cards grid — 2-col then 1-col on very small screens ── */
+@media (max-width: 600px) {
+  .stats-cards-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px;
+  }
+  .stat-dash-card { padding: 14px 10px; }
+  .stat-dash-value { font-size: var(--fs-xl) !important; }
+}
+@media (max-width: 360px) {
+  .stats-cards-grid { grid-template-columns: 1fr !important; }
+}
+
+/* ── 7. Artist dashboard — upload & history form cards ── */
+@media (max-width: 768px) {
+  .upload-form-card { padding: 16px !important; }
+  .fan-history-container { padding: 16px !important; }
+}
+
+/* ── 9. Revenue / payments tables — horizontal scroll on mobile ── */
+@media (max-width: 768px) {
+  table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  th, td {
+    padding: 8px 10px !important;
+    font-size: 0.8rem !important;
+  }
+}
+
+/* ── 10. FanProfile & FanSettings — container padding + inline grid override ── */
+@media (max-width: 600px) {
+  .fan-profile-container,
+  .fan-settings-container { padding: 0 !important; }
+
+  div[style*="grid-template-columns: 1fr 1fr"],
+  div[style*="grid-template-columns: repeat(2"],
+  div[style*="grid-template-columns: 2fr"] {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .legal-page-header {
+    gap: 10px;
+    padding: 12px 14px !important;
+  }
+
+  .legal-page-header > a:first-child {
+    gap: 7px !important;
+    min-width: 0;
+  }
+
+  .legal-page-header > a:first-child span {
+    font-size: 0.96rem !important;
+    white-space: nowrap;
+  }
+
+  .legal-page-header > div {
+    gap: 0 !important;
+  }
+
+  .legal-page-header > div > a {
+    font-size: 0.75rem !important;
+    white-space: nowrap;
+  }
+
+  .legal-page-main {
+    padding: 24px 14px 56px !important;
+  }
+
+  .legal-page-tabs {
+    display: grid !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px !important;
+    width: 100%;
+    margin-bottom: 18px !important;
+  }
+
+  .legal-page-tabs a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    padding: 8px 4px !important;
+    font-size: 0.68rem !important;
+    line-height: 1.2;
+    text-align: center;
+  }
+
+  .legal-page-card {
+    padding: 22px 18px !important;
+    border-radius: 14px !important;
+  }
+
+  .legal-page-card h1 {
+    font-size: clamp(1.7rem, 7vw, 2rem) !important;
+    line-height: 1.15;
+  }
+
+  .legal-page-card h3 {
+    font-size: 1.05rem !important;
+  }
+
+  .legal-page-card p {
+    font-size: 0.9rem !important;
+    line-height: 1.65 !important;
+  }
+
+  .legal-page-card hr {
+    margin-bottom: 20px !important;
+  }
+
+  .legal-page-footer {
+    padding: 20px 14px !important;
+    font-size: 0.75rem !important;
+  }
+}

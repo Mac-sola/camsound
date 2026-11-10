@@ -96,7 +96,7 @@ const FanProfile: React.FC = () => {
               <h2 style={{ margin: 0, fontSize: '1.8rem', fontWeight: 800, color: '#fff' }}>
                 {user?.name ?? 'Music Lover'}
               </h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 8, color: 'rgba(255, 255, 255, 0.75)', fontSize: '0.88rem' }}>
+              <div className="fan-profile-contact" style={{ display: 'flex', alignItems: 'center', gap: 16, marginTop: 8, color: 'rgba(255, 255, 255, 0.75)', fontSize: '0.88rem' }}>
                 <span><i className="fas fa-envelope" style={{ color: 'var(--accent-color)', marginRight: 6 }} />{user?.email}</span>
                 <span><i className="fas fa-map-marker-alt" style={{ color: 'var(--accent-color)', marginRight: 6 }} />{user?.country || 'Cameroon'}</span>
               </div>
@@ -146,7 +146,7 @@ const FanProfile: React.FC = () => {
           )}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: 20 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))', gap: 20 }}>
           {/* Display Name */}
           <div>
             <label style={{ display: 'block', marginBottom: 8, fontSize: '0.85rem', fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>Display Name</label>
@@ -256,4 +256,3 @@ const FanProfile: React.FC = () => {
 };
 
 export default FanProfile;
-

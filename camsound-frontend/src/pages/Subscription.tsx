@@ -144,7 +144,7 @@ const Subscription: React.FC = () => {
         </div>
 
         {/* Pricing Cards Grid */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 24, marginBottom: 40 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 24, marginBottom: 40 }}>
           {plans.map((plan, idx) => (
             <div
               key={plan.name || idx}
@@ -249,7 +249,7 @@ const Subscription: React.FC = () => {
             {t('sub.faq_title')}
           </h3>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: 20 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 20 }}>
             <div>
               <h4 style={{ fontSize: '0.98rem', color: '#fff', marginBottom: 6 }}>{t('sub.faq_q1')}</h4>
               <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem', lineHeight: 1.6, margin: 0 }}>
@@ -293,4 +293,3 @@ const Subscription: React.FC = () => {
 };
 
 export default Subscription;
-

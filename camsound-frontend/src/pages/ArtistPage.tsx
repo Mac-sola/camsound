@@ -32,7 +32,7 @@ const ArtistPage: React.FC = () => {
     <div className="artist-page-wrapper">
       {/* Minimal Navbar */}
       <nav
-        className="navbar-camsound"
+        className="navbar-camsound artist-page-navbar"
         style={{ position: 'sticky', top: 0, zIndex: 100 }}
       >
         <div className="container">
@@ -59,7 +59,10 @@ const ArtistPage: React.FC = () => {
               </span>
             </Link>
 
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div
+              className="artist-page-nav-actions"
+              style={{ display: 'flex', alignItems: 'center', gap: 12 }}
+            >
               <Link
                 to="/browse"
                 className="btn-camsound-outline"
@@ -72,13 +75,13 @@ const ArtistPage: React.FC = () => {
                 <>
                   <Link
                     to={dashboardPath}
-                    className="btn-camsound-yellow"
+                    className="btn-camsound-yellow artist-page-dashboard"
                     style={{ padding: '7px 16px', fontSize: '0.88rem' }}
                   >
                     Dashboard
                   </Link>
                   <button
-                    className="btn-camsound-outline"
+                    className="btn-camsound-outline artist-page-logout"
                     style={{ padding: '7px 16px', fontSize: '0.88rem' }}
                     onClick={async () => {
                       await logout();
@@ -99,7 +102,7 @@ const ArtistPage: React.FC = () => {
                   </Link>
                   <Link
                     to="/signup"
-                    className="btn-camsound-yellow"
+                    className="btn-camsound-yellow artist-page-signup"
                     style={{ padding: '7px 16px', fontSize: '0.88rem' }}
                   >
                     Sign Up

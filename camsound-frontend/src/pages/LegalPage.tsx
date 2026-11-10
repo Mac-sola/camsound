@@ -28,9 +28,9 @@ const LegalPage: React.FC<LegalPageProps> = ({ type }) => {
   }, [type, title, platformName]);
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0a0a0f', color: '#e2e8f0', display: 'flex', flexDirection: 'column' }}>
+    <div className="legal-page" style={{ minHeight: '100vh', background: '#0a0a0f', color: '#e2e8f0', display: 'flex', flexDirection: 'column' }}>
       {/* Header / Nav */}
-      <header style={{
+      <header className="legal-page-header" style={{
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
@@ -66,8 +66,8 @@ const LegalPage: React.FC<LegalPageProps> = ({ type }) => {
       </header>
 
       {/* Main Content */}
-      <main style={{ flex: 1, maxWidth: 840, width: '100%', margin: '0 auto', padding: '48px 24px 80px' }}>
-        <div style={{
+      <main className="legal-page-main" style={{ flex: 1, maxWidth: 840, width: '100%', margin: '0 auto', padding: '48px 24px 80px' }}>
+        <div className="legal-page-tabs" style={{
           display: 'inline-flex',
           gap: 12,
           background: 'rgba(255, 255, 255, 0.04)',
@@ -123,7 +123,7 @@ const LegalPage: React.FC<LegalPageProps> = ({ type }) => {
           </Link>
         </div>
 
-        <div style={{
+        <div className="legal-page-card" style={{
           background: 'rgba(18, 18, 24, 0.6)',
           border: '1px solid rgba(255, 255, 255, 0.06)',
           borderRadius: 16,
@@ -181,7 +181,7 @@ const LegalPage: React.FC<LegalPageProps> = ({ type }) => {
       </main>
 
       {/* Footer */}
-      <footer style={{
+      <footer className="legal-page-footer" style={{
         padding: '24px 32px',
         borderTop: '1px solid rgba(255, 255, 255, 0.08)',
         textAlign: 'center',

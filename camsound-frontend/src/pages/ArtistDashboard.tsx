@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Layout from '../components/Layout';
 import CommentsSection from '../components/CommentsSection';
 import { statsService, songsService, artistsService, notificationsService, subscriptionsService, paymentsService, withdrawalsService, artistsExtendedService, commentsService, notificationSettingsService, authService } from '../services/api';
@@ -231,7 +231,7 @@ const ArtistDashboard: React.FC = () => {
   const fetchPlans = async () => { try { const res = await subscriptionsService.getPlans(); if (res.data.success) setPlans(res.data.data); } catch {} };
   const fetchWithdrawals = async () => { try { const res = await withdrawalsService.getWithdrawals(); if (res.data.success) setWithdrawals(res.data.data); } catch {} };
   const fetchNotifications = async () => { try { const res = await notificationsService.getNotifications(); if (res.data.success) { setNotifications(res.data.data); } } catch {} };
-  const fetchArtistComments = async (overrideArtistId?: string) => {
+  const fetchArtistComments = useCallback(async (overrideArtistId?: string) => {
     const artistId = overrideArtistId || profile?._id;
     if (!artistId) {
       setArtistComments([]);
@@ -248,7 +248,7 @@ const ArtistDashboard: React.FC = () => {
         setArtistComments(filtered);
       }
     } catch {}
-  };
+  }, [profile?._id]);
 
   const fetchNotificationPrefs = async () => {
     try {
@@ -322,7 +322,7 @@ const ArtistDashboard: React.FC = () => {
     else if (activeView === 'revenue') fetchWithdrawals();
     else if (activeView === 'notifications') { fetchNotifications(); fetchNotificationPrefs(); }
     else if (activeView === 'social' && profile?._id) fetchArtistComments();
-  }, [activeView, profile?._id]);
+  }, [activeView, profile?._id, fetchArtistComments]);
 
   const handleReply = async (comment: any) => {
     if (!replyText.trim() || !comment.songId?._id) return;
@@ -960,7 +960,7 @@ const ArtistDashboard: React.FC = () => {
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
             {stats.topSongs.map((song: any) => (
-              <div key={song._id} style={{ display: 'flex', gap: 14, alignItems: 'center', padding: '12px 16px', background: 'var(--bg-tertiary)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div key={song._id} className="artist-uploaded-track" style={{ display: 'flex', gap: 14, alignItems: 'center', padding: '12px 16px', background: 'var(--bg-tertiary)', borderRadius: 12, border: '1px solid rgba(255,255,255,0.05)' }}>
                 <button
                   onClick={() => playSong(song)}
                   style={{ width: 44, height: 44, borderRadius: 8, background: 'rgba(249, 115, 22, 0.15)', border: '1px solid rgba(249, 115, 22, 0.3)', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: currentSong?._id === song._id ? '#f97316' : '#fff' }}
@@ -979,10 +979,10 @@ const ArtistDashboard: React.FC = () => {
                   <div style={{ fontWeight: 700, fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', color: '#fff' }}>{song.title}</div>
                   <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)', marginTop: 2 }}>{song.genre || 'Afrobeat'} • {song.plays?.toLocaleString() ?? 0} plays</div>
                 </div>
-                <span style={{ fontSize: '0.75rem', background: 'rgba(34,197,94,0.12)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.25)', padding: '4px 12px', borderRadius: 999, fontWeight: 600, textTransform: 'capitalize' }}>
+                <span className="artist-uploaded-track-status" style={{ fontSize: '0.75rem', background: 'rgba(34,197,94,0.12)', color: '#4ade80', border: '1px solid rgba(34,197,94,0.25)', padding: '4px 12px', borderRadius: 999, fontWeight: 600, textTransform: 'capitalize' }}>
                   {song.status || 'active'}
                 </span>
-                <div style={{ display: 'flex', gap: 6 }}>
+                <div className="artist-uploaded-track-actions" style={{ display: 'flex', gap: 6 }}>
                   <button
                     onClick={() => handleEditSong(song)}
                     style={{ padding: '8px 12px', background: 'rgba(59, 130, 246, 0.15)', border: '1px solid rgba(59, 130, 246, 0.3)', borderRadius: 8, color: '#60a5fa', cursor: 'pointer', fontSize: '0.8rem' }}
@@ -1065,7 +1065,7 @@ const ArtistDashboard: React.FC = () => {
               )}
             </div>
           </div>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 32, marginTop: 16 }}>
+          <div className="artist-profile-layout" style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 32, marginTop: 16 }}>
             <div style={{ textAlign: 'center' }}>
               <div style={{ width: 160, height: 160, borderRadius: '50%', background: 'var(--bg-tertiary)', margin: '0 auto 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '4rem', color: 'var(--text-muted)', position: 'relative', overflow: 'hidden' }}>
                 {(profile.image || profile.userId?.avatar) ? (
@@ -1115,7 +1115,7 @@ const ArtistDashboard: React.FC = () => {
                   className="search-input-db"
                 />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="artist-profile-contact-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div className="form-field">
                   <label>Location</label>
                   <input type="text" placeholder="Douala, Cameroon" value={profileForm.location} onChange={e => setProfileForm(p => ({ ...p, location: e.target.value }))} className="search-input-db" />
@@ -1126,7 +1126,7 @@ const ArtistDashboard: React.FC = () => {
                 </div>
               </div>
               <h4 style={{ marginTop: 16, marginBottom: 12, color: 'var(--text-white)' }}>Social Media Handles</h4>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+              <div className="artist-profile-social-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
                 <div className="form-field">
                   <label><i className="fab fa-instagram" style={{ marginRight: 6, color: '#e1306c' }} />Instagram URL</label>
                   <input type="url" placeholder="https://instagram.com/artist" value={profileForm.instagramUrl} onChange={e => setProfileForm(p => ({ ...p, instagramUrl: e.target.value }))} className="search-input-db" />
@@ -1159,7 +1159,7 @@ const ArtistDashboard: React.FC = () => {
             <div className="section-header">
               <h2>📈 Streaming Performance & Analytics</h2>
             </div>
-            <div className="stats-cards-grid" style={{ marginBottom: 24 }}>
+            <div className="stats-cards-grid artist-analytics-stats" style={{ marginBottom: 24 }}>
               <div className="stat-dash-card">
                 <div className="stat-dash-icon"><i className="fas fa-headphones" /></div>
                 <div>
@@ -1191,7 +1191,7 @@ const ArtistDashboard: React.FC = () => {
             </div>
 
             {/* 30-Day Stream Trend Chart */}
-            <div style={{ background: 'var(--bg-tertiary)', borderRadius: 12, padding: 24, marginBottom: 24, border: '1px solid var(--border-color)' }}>
+            <div className="artist-analytics-chart" style={{ background: 'var(--bg-tertiary)', borderRadius: 12, padding: 24, marginBottom: 24, border: '1px solid var(--border-color)' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
                 <div>
                   <h3 style={{ margin: '0 0 4px', fontSize: '1.1rem', color: '#fff' }}>Streaming Trend (Last 30 Days)</h3>
@@ -1308,7 +1308,7 @@ const ArtistDashboard: React.FC = () => {
           </div>
 
           {socialTab === 'tracks' ? (
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))', gap: 24, alignItems: 'start' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap: 24, alignItems: 'start' }}>
               {/* Track Selector List (50% Equal Grid) */}
               <div className="section-card" style={{ padding: 20 }}>
                 <h3 style={{ fontSize: '1.05rem', marginBottom: 16, display: 'flex', alignItems: 'center', justifyContent: 'space-between', color: '#fff' }}>
@@ -1535,7 +1535,7 @@ const ArtistDashboard: React.FC = () => {
 
       {/* Revenue & Royalties */}
       {activeView === 'revenue' && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+        <div className="artist-revenue-grid" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
           <div className="section-card">
             <div className="section-header"><h2>Available Balance</h2></div>
             <h1 style={{ color: 'var(--accent-color)', fontSize: '2.5rem', margin: '0 0 8px' }}>XAF {revenueBalance.toLocaleString()}</h1>
@@ -1873,5 +1873,3 @@ const ArtistDashboard: React.FC = () => {
 };
 
 export default ArtistDashboard;
-
-

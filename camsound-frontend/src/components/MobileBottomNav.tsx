@@ -10,6 +10,27 @@ export interface MobileBottomNavProps {
   navItems?: { label?: string; icon?: string; view?: string; section?: string }[];
 }
 
+const MOBILE_LABEL_KEYS: Record<string, string> = {
+  dashboard: 'nav.home',
+  overview: 'nav.home',
+  music: 'nav.mobile_uploads',
+  analytics: 'nav.mobile_stats',
+  notifications: 'nav.mobile_alerts',
+  profile: 'nav.profile',
+  social: 'nav.mobile_social',
+  revenue: 'nav.mobile_revenue',
+  subscription: 'nav.mobile_premium',
+  moderation: 'nav.moderation',
+  reports: 'nav.mobile_reports',
+  users: 'nav.mobile_users',
+  settings: 'nav.mobile_config',
+  featured: 'nav.mobile_featured',
+  subscriptions: 'nav.mobile_plans',
+  payments: 'nav.mobile_payments',
+  adRevenue: 'nav.mobile_ads',
+  withdrawals: 'nav.mobile_payouts',
+};
+
 export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   activeView,
   onNavClick,
@@ -23,42 +44,56 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   // Filter out section headers
   const validItems = navItems.filter((item) => item.view);
 
-  // Determine top 4 quick access tabs based on available items
-  let primaryTabs: { label: string; icon: string; view: string; badge?: number }[] = [];
+  // Keep critical dashboard actions visible on mobile instead of hiding them behind the menu.
+  const preferredViews = [
+    'home', 'dashboard', 'overview',
+    'browse', 'discover',
+    'favorites', 'music', 'mymusic', 'playlists',
+    'notifications',
+    'profile', 'settings',
+    'analytics', 'revenue',
+    'users', 'songs', 'payments',
+    'subscription', 'community'
+  ];
 
-  const hasView = (view: string) => validItems.some((i) => i.view === view);
+  const resolveTab = (view: string) => {
+    const match = validItems.find((i) => i.view === view);
+    if (!match) return null;
+    return {
+      label: match.label || match.view || '',
+      icon: match.icon || 'fa-circle',
+      view: match.view || '',
+      badge:
+        view === 'notifications' ? notifCount :
+        view === 'favorites' ? totalLikes : undefined,
+    };
+  };
 
-  if (hasView('favorites')) {
-    // Fan dashboard
-    primaryTabs = [
-      { label: t('nav.home', 'Home'), icon: 'fa-home', view: 'home' },
-      { label: t('nav.browse', 'Search'), icon: 'fa-search', view: 'browse' },
-      { label: t('nav.favorites', 'Favorites'), icon: 'fa-heart', view: 'favorites', badge: totalLikes },
-      { label: t('nav.subscription', 'Premium'), icon: 'fa-crown', view: 'subscription' },
-    ];
-  } else if (hasView('music') && hasView('revenue')) {
-    // Artist dashboard
-    primaryTabs = [
-      { label: t('nav.overview', 'Overview'), icon: 'fa-tachometer-alt', view: 'dashboard' },
-      { label: t('nav.music uploads', 'Uploads'), icon: 'fa-cloud-upload-alt', view: 'music' },
-      { label: t('nav.analytics', 'Stats'), icon: 'fa-chart-line', view: 'analytics' },
-      { label: t('nav.revenue & royalties', 'Royalties'), icon: 'fa-dollar-sign', view: 'revenue' },
-    ];
-  } else if (hasView('users') && hasView('songs')) {
-    // Admin dashboard
-    primaryTabs = [
-      { label: t('nav.overview', 'Overview'), icon: 'fa-tachometer-alt', view: 'dashboard' },
-      { label: t('nav.users', 'Users'), icon: 'fa-users', view: 'users' },
-      { label: t('nav.songs', 'Songs'), icon: 'fa-music', view: 'songs' },
-      { label: t('nav.payments', 'Payments'), icon: 'fa-money-bill-wave', view: 'payments' },
-    ];
-  } else {
-    // Fallback: take first 4 items
-    primaryTabs = validItems.slice(0, 4).map((i) => ({
+  const selectedTabs: { label: string; icon: string; view: string; badge?: number }[] = [];
+  for (const view of preferredViews) {
+    const tab = resolveTab(view);
+    if (tab && !selectedTabs.some((item) => item.view === tab.view)) {
+      selectedTabs.push(tab);
+    }
+  }
+
+  for (const item of validItems) {
+    if (!item.view) continue;
+    const tab = resolveTab(item.view);
+    if (tab && !selectedTabs.some((entry) => entry.view === tab.view)) {
+      selectedTabs.push(tab);
+    }
+  }
+
+  const primaryTabs = selectedTabs.slice(0, 5);
+
+  if (primaryTabs.length === 0) {
+    primaryTabs.push(...validItems.slice(0, 4).map((i) => ({
       label: i.label || i.view || '',
       icon: i.icon || 'fa-circle',
       view: i.view || '',
-    }));
+      badge: i.view === 'notifications' ? notifCount : i.view === 'favorites' ? totalLikes : undefined,
+    })));
   }
 
   return (
@@ -79,7 +114,9 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
                 <span className="mobile-nav-badge">{tab.badge > 99 ? '99+' : tab.badge}</span>
               ) : null}
             </div>
-            <span className="mobile-nav-label">{tab.label}</span>
+            <span className="mobile-nav-label">
+              {MOBILE_LABEL_KEYS[tab.view] ? t(MOBILE_LABEL_KEYS[tab.view], tab.label) : tab.label}
+            </span>
             {isActive && <div className="mobile-nav-active-dot" />}
           </button>
         );
@@ -96,7 +133,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
           <i className="fas fa-bars" />
           {notifCount > 0 && <span className="mobile-nav-badge notif">{notifCount > 99 ? '99+' : notifCount}</span>}
         </div>
-        <span className="mobile-nav-label">{t('nav.settings', 'Menu')}</span>
+        <span className="mobile-nav-label">{t('nav.mobile_menu', 'Menu')}</span>
       </button>
     </nav>
   );
