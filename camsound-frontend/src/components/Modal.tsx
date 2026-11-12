@@ -15,6 +15,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, title, onClose, children, size = 
 
   return (
     <div
+      className="modal-overlay"
       style={{
         position: 'fixed',
         inset: 0,
@@ -29,6 +30,7 @@ const Modal: React.FC<ModalProps> = ({ isOpen, title, onClose, children, size = 
       onClick={onClose}
     >
       <div
+        className="modal-content modal-container"
         role="dialog"
         aria-modal="true"
         style={{

@@ -391,7 +391,7 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Charts Row 1 */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: 20, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 420px), 1fr))', gap: 20, marginBottom: 24 }}>
         <div className="admin-card">
           <div className="admin-card-header">
             <h2 className="admin-card-title"><i className="fas fa-chart-line" /> User Registrations Trend</h2>
@@ -423,7 +423,7 @@ const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Top Content Tables */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(420px, 1fr))', gap: 20, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 420px), 1fr))', gap: 20, marginBottom: 24 }}>
         <div className="admin-card">
           <div className="admin-card-header">
             <h2 className="admin-card-title">🔥 Top Streaming Tracks</h2>
@@ -1602,4 +1602,3 @@ const AdminDashboard: React.FC = () => {
 };
 
 export default AdminDashboard;
-

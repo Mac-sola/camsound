@@ -5,6 +5,8 @@ export interface MobileBottomNavProps {
   activeView: string;
   onNavClick: (view: string) => void;
   onMenuToggle: () => void;
+  showMenu?: boolean;
+  menuExpanded?: boolean;
   notifCount?: number;
   totalLikes?: number;
   navItems?: { label?: string; icon?: string; view?: string; section?: string }[];
@@ -35,6 +37,8 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
   activeView,
   onNavClick,
   onMenuToggle,
+  showMenu = true,
+  menuExpanded = false,
   notifCount = 0,
   totalLikes = 0,
   navItems = [],
@@ -107,6 +111,7 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
             className={`mobile-nav-item ${isActive ? 'active' : ''}`}
             onClick={() => onNavClick(tab.view)}
             aria-label={tab.label}
+            aria-current={isActive ? 'page' : undefined}
           >
             <div className="mobile-nav-icon-wrapper">
               <i className={`fas ${tab.icon}`} />
@@ -122,19 +127,22 @@ export const MobileBottomNav: React.FC<MobileBottomNavProps> = ({
         );
       })}
 
-      {/* "More / Menu" button to open the full drawer sidebar */}
-      <button
-        type="button"
-        className="mobile-nav-item mobile-nav-menu-btn"
-        onClick={onMenuToggle}
-        aria-label="Open navigation menu"
-      >
-        <div className="mobile-nav-icon-wrapper">
-          <i className="fas fa-bars" />
-          {notifCount > 0 && <span className="mobile-nav-badge notif">{notifCount > 99 ? '99+' : notifCount}</span>}
-        </div>
-        <span className="mobile-nav-label">{t('nav.mobile_menu', 'Menu')}</span>
-      </button>
+      {showMenu && (
+        <button
+          type="button"
+          className="mobile-nav-item mobile-nav-menu-btn"
+          onClick={onMenuToggle}
+          aria-label={menuExpanded ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={menuExpanded}
+          aria-controls="primary-navigation"
+        >
+          <div className="mobile-nav-icon-wrapper">
+            <i className={`fas ${menuExpanded ? 'fa-times' : 'fa-bars'}`} />
+            {notifCount > 0 && <span className="mobile-nav-badge notif">{notifCount > 99 ? '99+' : notifCount}</span>}
+          </div>
+          <span className="mobile-nav-label">{t('nav.mobile_menu', 'Menu')}</span>
+        </button>
+      )}
     </nav>
   );
 };

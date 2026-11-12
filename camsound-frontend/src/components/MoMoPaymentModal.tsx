@@ -235,6 +235,7 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
 
   return (
     <div
+      className="modal-overlay momo-modal-overlay"
       style={{
         position: 'fixed',
         inset: 0,
@@ -248,6 +249,7 @@ export const MoMoPaymentModal: React.FC<MoMoPaymentProps> = ({
       }}
     >
       <div
+        className="modal-content modal-container momo-modal-container"
         style={{
           background: 'linear-gradient(145deg, #132219, #0d1712)',
           border: '1px solid rgba(250, 204, 21, 0.35)',

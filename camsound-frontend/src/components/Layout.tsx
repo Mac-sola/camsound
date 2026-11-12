@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import QuickStatsAccordion from './QuickStatsAccordion';
 import { useAuth } from '../context/AuthContext';
 import { useAudio } from '../context/AudioContext';
@@ -51,9 +51,21 @@ export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => 
   return (
     <>
       {/* Overlay for mobile */}
-      <div className={`sidebar-overlay ${isOpen ? 'show' : ''}`} onClick={onClose} />
+      {isOpen && (
+        <button
+          type="button"
+          className="sidebar-overlay show"
+          onClick={onClose}
+          aria-label="Close navigation menu"
+          tabIndex={-1}
+        />
+      )}
       
-      <div className={`sidebar-wrapper ${isOpen ? 'open' : ''}`}>
+      <aside
+        id="primary-navigation"
+        className={`sidebar-wrapper ${isOpen ? 'open' : ''}`}
+        aria-label="Primary navigation"
+      >
         <div className="sidebar-header" style={{ paddingBottom: 16 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <div style={{
@@ -146,7 +158,7 @@ export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => 
         </nav>
 
         {showQuickStats && <QuickStatsAccordion />}
-      </div>
+      </aside>
     </>
   );
 };
@@ -154,6 +166,7 @@ export const Sidebar: React.FC<SidebarProps & { isOpen: boolean; onClose: () => 
 /* ─── Top Bar ─── */
 interface TopBarProps {
   onMenuToggle: () => void;
+  menuExpanded: boolean;
   searchValue: string;
   onSearchChange: (v: string) => void;
   notifCount?: number;
@@ -166,7 +179,7 @@ interface TopBarProps {
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
-  onMenuToggle, searchValue, onSearchChange, notifCount, userName, userAvatar, onLogout, onNavClick, title, showSearch = true
+  onMenuToggle, menuExpanded, searchValue, onSearchChange, notifCount, userName, userAvatar, onLogout, onNavClick, title, showSearch = true
 }) => {
   const { t } = useLanguage();
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -187,11 +200,15 @@ export const TopBar: React.FC<TopBarProps> = ({
     <div className="top-bar" style={{ backdropFilter: 'blur(16px)', background: 'rgba(11, 15, 12, 0.85)', borderBottom: '1px solid rgba(255, 255, 255, 0.07)' }}>
       <div className="top-bar-left">
         <button
+          type="button"
           className="notif-btn d-lg-none"
           onClick={onMenuToggle}
           style={{ width: 38, height: 38 }}
+          aria-label={menuExpanded ? 'Close navigation menu' : 'Open navigation menu'}
+          aria-expanded={menuExpanded}
+          aria-controls="primary-navigation"
         >
-          <i className="fas fa-bars" />
+          <i className={`fas ${menuExpanded ? 'fa-times' : 'fa-bars'}`} />
         </button>
         {title && <h1 className="top-bar-title">{title}</h1>}
         {showSearch && <div className="search-wrap" style={{ position: 'relative', width: '100%', maxWidth: 420 }}>
@@ -501,6 +518,17 @@ const Layout: React.FC<LayoutProps> = ({
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  useEffect(() => {
+    if (!sidebarOpen) return;
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setSidebarOpen(false);
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [sidebarOpen]);
+
   const handleLogout = async () => {
     await logout();
     navigate('/');
@@ -524,6 +552,7 @@ const Layout: React.FC<LayoutProps> = ({
       <div className="main-col">
         <TopBar
           onMenuToggle={() => setSidebarOpen((o) => !o)}
+          menuExpanded={sidebarOpen}
           searchValue={searchValue}
           onSearchChange={onSearchChange}
           notifCount={notifCount}
@@ -545,6 +574,7 @@ const Layout: React.FC<LayoutProps> = ({
           activeView={activeView}
           onNavClick={onNavClick}
           onMenuToggle={() => setSidebarOpen((o) => !o)}
+          menuExpanded={sidebarOpen}
           notifCount={notifCount}
           totalLikes={totalLikes}
           navItems={navItems}
@@ -555,6 +585,3 @@ const Layout: React.FC<LayoutProps> = ({
 };
 
 export default Layout;
-
-
-

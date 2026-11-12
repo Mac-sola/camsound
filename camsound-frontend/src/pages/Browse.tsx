@@ -70,6 +70,7 @@ const Browse: React.FC = () => {
         activeView="browse"
         onNavClick={handleNavClick}
         onMenuToggle={() => navigate('/login')}
+        showMenu={false}
         navItems={guestNav}
       />
     </div>

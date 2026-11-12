@@ -74,10 +74,13 @@ const Landing: React.FC = () => {
 
             {/* Mobile Hamburger Toggle */}
             <button
+              type="button"
               className="d-lg-none"
               onClick={() => setMobileMenuOpen(o => !o)}
               style={{ color: 'var(--text-white)', fontSize: '1.4rem', background: 'none', border: 'none', cursor: 'pointer', padding: 8 }}
               aria-label="Toggle navigation"
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-public-navigation"
             >
               <i className={`fas ${mobileMenuOpen ? 'fa-times' : 'fa-bars'}`} />
             </button>
@@ -105,7 +108,7 @@ const Landing: React.FC = () => {
 
         {/* Mobile Dropdown Drawer */}
         {mobileMenuOpen && (
-          <div style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <div id="mobile-public-navigation" style={{ background: 'var(--bg-secondary)', borderBottom: '1px solid var(--border-color)', padding: '16px 24px', display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: 8, borderBottom: '1px solid var(--border-color)' }}>
               <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{t('common.language')}</span>
               <LanguageToggle />
